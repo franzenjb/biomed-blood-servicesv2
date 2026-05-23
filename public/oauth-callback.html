@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ArcGIS OAuth Callback</title>
+  </head>
+  <body>
+    <script>
+      if (location.hash) {
+        try {
+          window.opener.require("esri/kernel").id.setOAuthResponseHash(location.hash);
+        } catch {
+          try {
+            window.opener.dispatchEvent(new CustomEvent("arcgis:auth:hash", { detail: location.hash }));
+          } catch {
+            // The ArcGIS IdentityManager in the opener handles this event when origins match.
+          }
+        }
+        window.close();
+      } else if (location.search) {
+        window.opener.dispatchEvent(new CustomEvent("arcgis:auth:location:search", { detail: location.search }));
+        window.close();
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+import type Graphic from "@arcgis/core/Graphic";
+import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
+import type Layer from "@arcgis/core/layers/Layer";
+import type { ArcJurisdictionLayerCategory } from "../config/arcgisLayers";
+
+export type MasterLayerCategory = ArcJurisdictionLayerCategory | "hospitals" | "manufacturing";
+
+export type MasterFeatureSummary = {
+  title: string;
+  layerTitle: string;
+  category: MasterLayerCategory;
+  impact: string;
+  talkingPoint: string;
+  geography: Array<{ label: string; value: string }>;
+  metrics: Array<{ label: string; value: string }>;
+  source: string;
+  rawAttributes?: Record<string, unknown>;
+};
+
+const layerCategoryRules: Array<{ category: MasterLayerCategory; patterns: string[] }> = [
+  {
+    category: "manufacturing",
+    patterns: ["manufacturing", "warehouse", "kitting", "irl"]
+  },
+  {
+    category: "sites",
+    patterns: ["fixed site", "distribution site", "mobile staging", "site"]
+  },
+  {
+    category: "operations",
+    patterns: ["collection operations", "fy25 data", "zip", "drd", "portfolio"]
+  },
+  {
+    category: "geography",
+    patterns: ["district", "region", "division", "chapter", "county", "counties"]
+  }
+];
+
+const titleFields = [
+  "Name",
+  "NAME",
+  "SiteName",
+  "SITE_NAME",
+  "Site_Name",
+  "Facility",
+  "FACILITY",
+  "FacilityName",
+  "Chapter",
+  "CHAPTER",
+  "Region",
+  "REGION",
+  "District",
+  "DISTRICT",
+  "County",
+  "COUNTY",
+  "ZIP",
+  "ZIP_CODE",
+  "ZipCode"
+];
+
+const geographyFields = [
+  ["Division", ["Division", "DIVISION", "Biomed_Division", "BIOMED_DIVISION", "Div_Name"]],
+  ["Region", ["Region", "REGION", "Biomed_Region", "BIOMED_REGION", "RegionName"]],
+  ["District", ["District", "DISTRICT", "Biomed_District", "BIOMED_DISTRICT"]],
+  ["Chapter", ["Chapter", "CHAPTER", "HS_Chapter", "ChapterName"]],
+  ["County", ["County", "COUNTY", "CountyName", "CNTY_NAME"]],
+  ["ZIP", ["ZIP", "ZIP_CODE", "ZipCode", "POSTAL"]]
+] as const;
+
+const metricNameHints = [
+  "collection",
+  "collections",
+  "drive",
+  "drives",
+  "unit",
+  "units",
+  "rbc",
+  "red",
+  "platelet",
+  "plasma",
+  "sponsor",
+  "apo",
+  "total"
+];
+
+function normalize(value: string) {
+  return value.toLowerCase().replace(/[_-]+/g, " ");
+}
+
+function formatFieldLabel(fieldName: string) {
+  return fieldName
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function formatMetricValue(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return Math.abs(value) >= 1000 ? value.toLocaleString() : `${value}`;
+  }
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/,/g, ""));
+    if (Number.isFinite(parsed) && value.trim() !== "") {
+      return Math.abs(parsed) >= 1000 ? parsed.toLocaleString() : `${parsed}`;
+    }
+    return value.trim();
+  }
+  return "";
+}
+
+function getAttribute(attributes: Record<string, unknown>, candidates: readonly string[]) {
+  const entries = Object.entries(attributes);
+  for (const candidate of candidates) {
+    const exact = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
+    if (exact && exact[1] != null && `${exact[1]}`.trim()) return exact[1];
+  }
+  for (const candidate of candidates) {
+    const partial = entries.find(([key, value]) => normalize(key).includes(normalize(candidate)) && value != null);
+    if (partial && `${partial[1]}`.trim()) return partial[1];
+  }
+  return undefined;
+}
+
+export function classifyMasterLayer(title: string): MasterLayerCategory {
+  const normalized = normalize(title);
+  for (const rule of layerCategoryRules) {
+    if (rule.patterns.some((pattern) => normalized.includes(pattern))) return rule.category;
+  }
+  return "reference";
+}
+
+export function getMasterLayerImpact(layerTitle: string, category: MasterLayerCategory) {
+  if (category === "manufacturing") return "Shows where operational capacity turns donor generosity into patient-ready products.";
+  if (category === "sites") return "Shows the physical access points and logistics anchors that make collection and distribution possible.";
+  if (category === "operations") return "Connects FY25 collection activity to the geography and teams responsible for donor reach.";
+  if (category === "geography") return "Frames the jurisdiction story so a donor audience can understand local reach without raw operational clutter.";
+  if (category === "hospitals") return "Connects the BioMed network to patient care and hospital readiness.";
+  return "Adds source context for the BioMed operating map.";
+}
+
+export function getMasterTalkingPoint(category: MasterLayerCategory, layerTitle: string) {
+  if (category === "manufacturing") return "This is the backbone that converts donated blood into usable inventory for hospitals.";
+  if (category === "sites") return "Point to this as access infrastructure: where donors, staging, logistics, or distribution meet the network.";
+  if (category === "operations") return "Use this to connect collection activity to the operating geography that makes it accountable.";
+  if (category === "geography") return "Use the boundary to explain scale, stewardship, and who owns the local BioMed story.";
+  if (category === "hospitals") return "Use this to move from internal capacity to patient-care readiness.";
+  return `Use ${layerTitle} only as source context unless it directly supports the donor story.`;
+}
+
+export function summarizeMasterFeature(graphic: Graphic, layerTitle?: string, includeRawAttributes = false): MasterFeatureSummary {
+  const attributes = (graphic.attributes ?? {}) as Record<string, unknown>;
+  const graphicWithSource = graphic as Graphic & { sourceLayer?: Layer };
+  const resolvedLayerTitle =
+    layerTitle ||
+    ((graphic.layer as Layer | undefined)?.title ?? graphicWithSource.sourceLayer?.title) ||
+    "BioMed source layer";
+  const category = classifyMasterLayer(resolvedLayerTitle);
+  const titleValue = getAttribute(attributes, titleFields);
+  const title = titleValue ? `${titleValue}` : resolvedLayerTitle;
+
+  const geography: Array<{ label: string; value: string }> = [];
+  geographyFields.forEach(([label, candidates]) => {
+    const value = getAttribute(attributes, candidates);
+    if (value && geography.length < 5) {
+      geography.push({ label, value: `${value}` });
+    }
+  });
+
+  const metrics = Object.entries(attributes)
+    .filter(([key, value]) => {
+      if (value == null || value === "") return false;
+      if (typeof value !== "number" && Number.isNaN(Number(`${value}`.replace(/,/g, "")))) return false;
+      const normalizedKey = normalize(key);
+      return metricNameHints.some((hint) => normalizedKey.includes(hint));
+    })
+    .slice(0, 3)
+    .map(([key, value]) => ({
+      label: formatFieldLabel(key),
+      value: formatMetricValue(value)
+    }))
+    .filter((item) => item.value);
+
+  return {
+    title,
+    layerTitle: resolvedLayerTitle,
+    category,
+    impact: getMasterLayerImpact(resolvedLayerTitle, category),
+    talkingPoint: getMasterTalkingPoint(category, resolvedLayerTitle),
+    geography,
+    metrics,
+    source: resolvedLayerTitle,
+    rawAttributes: includeRawAttributes ? attributes : undefined
+  };
+}
+
+export function isQueryableFeatureLayer(layer: Layer): layer is FeatureLayer {
+  return typeof (layer as FeatureLayer).queryFeatureCount === "function";
+}

@@ -1,0 +1,2936 @@
+/* Lifted map/dashboard styles from biomed-blood-overview. Scoped to .biomed-live-*, .biomed-master-*, .hospital-network-*. */
+:root {
+  --paper-soft: #f3f5f7;
+  --paper-white: #ffffff;
+  --paper-warm: #f8f1ea;
+  --editorial-ink: #17191d;
+  --editorial-muted: #667085;
+  --editorial-line: #d7dde5;
+  --editorial-red: #c21f32;
+  --editorial-red-dark: #821525;
+  --editorial-blue: #1d4f73;
+  --editorial-gold: #d6a64f;
+  --editorial-teal: #2f766d;
+  --display-font: Georgia, "Times New Roman", serif;
+  --body-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono-font: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --shadow: 0 22px 70px rgba(23, 33, 47, 0.12);
+  --biomed-detail-width: 22rem;
+  --biomed-left-panel-width: clamp(18rem, 22vw, 24rem);
+}
+
+
+
+/* Live BioMed atlas: real ArcGIS web map with client-friendly controls. */
+.biomed-live-tool {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: var(--paper-soft);
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  isolation: isolate;
+}
+
+
+.site-map-tool h1,
+.site-map-tool h2,
+.site-map-tool h3,
+.site-map-tool strong,
+.biomed-live-tool h1,
+.biomed-live-tool h2,
+.biomed-live-tool h3,
+.biomed-live-tool strong,
+.hospital-network-tool h1,
+.hospital-network-tool h2,
+.hospital-network-tool h3,
+.hospital-network-tool strong {
+  font-family: var(--body-font);
+}
+
+
+.biomed-live-map-shell,
+.biomed-live-arcgis-map,
+.biomed-live-vignette {
+  position: absolute;
+  inset: 0;
+}
+
+
+.biomed-live-map-shell {
+  background: #eef3f7;
+}
+
+
+.biomed-live-arcgis-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.biomed-live-vignette {
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(246, 247, 249, 0.94) 0%, rgba(246, 247, 249, 0.68) 27%, rgba(246, 247, 249, 0.18) 56%, rgba(246, 247, 249, 0.58) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.04) 38%, rgba(23, 25, 29, 0.08));
+}
+
+
+.biomed-live-signin-overlay {
+  position: absolute;
+  inset: 5.6rem 0 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+
+.biomed-live-signin-card {
+  display: grid;
+  justify-items: center;
+  width: min(28rem, calc(100vw - 2rem));
+  gap: 1rem;
+  color: var(--editorial-ink);
+  text-align: center;
+}
+
+
+.biomed-live-signin-mark {
+  display: grid;
+  width: 4.6rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(23, 25, 29, 0.08);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--editorial-red);
+  font-family: var(--body-font);
+  font-size: 4.3rem;
+  font-weight: 900;
+  line-height: 0.7;
+  box-shadow: 0 18px 54px rgba(23, 33, 47, 0.12);
+}
+
+
+.biomed-live-signin-card h2,
+.biomed-live-signin-card p {
+  margin: 0;
+}
+
+
+.biomed-live-signin-card h2 {
+  font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+  line-height: 1.1;
+}
+
+
+.biomed-live-signin-card p {
+  max-width: 24rem;
+  color: var(--editorial-muted);
+  font-size: 0.96rem;
+  line-height: 1.45;
+}
+
+
+.biomed-live-signin-card button {
+  min-height: 3.6rem;
+  border: 1px solid var(--editorial-red);
+  border-radius: 0.45rem;
+  background: var(--editorial-red);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 850;
+  padding: 0 2.4rem;
+}
+
+
+.biomed-live-signin-card button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+
+.biomed-live-signin-card small {
+  color: var(--editorial-red-dark);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+
+.biomed-live-signin-card a {
+  color: var(--editorial-red);
+  font-size: 0.84rem;
+  font-weight: 820;
+}
+
+
+.biomed-live-command,
+.biomed-live-left,
+.biomed-live-right {
+  position: absolute;
+  z-index: 3;
+}
+
+
+.biomed-live-command {
+  top: 1.1rem;
+  left: clamp(1rem, 2.4vw, 2rem);
+  right: clamp(1rem, 2.4vw, 2rem);
+  display: grid;
+  grid-template-columns: auto minmax(18rem, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+
+.biomed-live-back,
+.biomed-live-actions a,
+.biomed-live-actions button,
+.biomed-live-layer-summary button {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 999px;
+  color: var(--editorial-ink);
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-back {
+  padding: 0 0.75rem;
+  background: var(--paper-soft);
+}
+
+
+.biomed-live-title-block {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+
+.biomed-live-title-block h1,
+.biomed-live-title-block p {
+  margin: 0;
+}
+
+
+.biomed-live-title-block h1 {
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  font-size: clamp(1.9rem, 3vw, 3rem);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 0.96;
+}
+
+
+.biomed-live-title-block > p {
+  max-width: 44rem;
+  color: var(--editorial-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+
+.biomed-live-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+
+.biomed-live-actions a,
+.biomed-live-actions button {
+  padding: 0 0.78rem;
+  background: var(--editorial-red);
+  color: #fff;
+}
+
+
+.biomed-live-actions a + a {
+  background: var(--paper-soft);
+  color: var(--editorial-ink);
+}
+
+
+.biomed-live-actions button {
+  border-color: var(--editorial-red);
+}
+
+
+.biomed-live-actions button:disabled {
+  cursor: default;
+  opacity: 0.72;
+}
+
+
+.biomed-live-left,
+.biomed-live-right {
+  top: 7.7rem;
+  display: grid;
+  gap: 0.7rem;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100svh - 8.7rem);
+  overflow-y: auto;
+}
+
+
+.biomed-live-left {
+  left: clamp(1rem, 2.4vw, 2rem);
+}
+
+
+.biomed-live-right {
+  right: clamp(1rem, 2.4vw, 2rem);
+  width: min(20rem, calc(100vw - 2rem));
+}
+
+
+.biomed-live-start-card,
+.biomed-live-place-search,
+.biomed-live-help-card,
+.biomed-live-panel,
+.biomed-live-footnote,
+.biomed-live-layer-summary,
+.biomed-live-selected-layer,
+.biomed-live-layer-list,
+.biomed-live-errors {
+  border: 1px solid rgba(23, 25, 29, 0.11);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 54px rgba(23, 33, 47, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+
+.biomed-live-start-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+
+.biomed-live-status-line {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--editorial-red);
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-status-line span {
+  width: 0.54rem;
+  height: 0.54rem;
+  border-radius: 999px;
+  background: var(--editorial-gold);
+  box-shadow: 0 0 0 0.32rem rgba(214, 166, 79, 0.16);
+}
+
+
+.biomed-live-status-line span.is-live {
+  background: #39b98f;
+  box-shadow: 0 0 0 0.32rem rgba(57, 185, 143, 0.16);
+}
+
+
+.biomed-live-start-card h2,
+.biomed-live-help-card h2 {
+  margin: 0;
+  color: var(--editorial-ink);
+  font-size: 1.08rem;
+  line-height: 1.15;
+}
+
+
+.biomed-live-start-card p,
+.biomed-live-help-card p {
+  margin: 0;
+  color: var(--editorial-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+
+.biomed-live-source-note {
+  color: var(--editorial-muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+
+.biomed-live-start-card button {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--editorial-red);
+  border-radius: 999px;
+  background: var(--editorial-red);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 1rem;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-place-search {
+  display: grid;
+  gap: 0.48rem;
+  padding: 0.9rem;
+}
+
+
+.biomed-live-place-search label {
+  color: var(--editorial-ink);
+  font-size: 1.02rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+
+.biomed-live-place-search div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.45rem;
+}
+
+
+.biomed-live-place-search input {
+  min-width: 0;
+  min-height: 2.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.16);
+  border-radius: 0.38rem;
+  background: #fff;
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  font-size: 0.86rem;
+  padding: 0 0.72rem;
+}
+
+
+.biomed-live-place-search button {
+  min-height: 2.45rem;
+  border: 1px solid var(--editorial-ink);
+  border-radius: 0.38rem;
+  background: var(--editorial-ink);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 0.75rem;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-place-search small {
+  color: var(--editorial-muted);
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+
+.biomed-live-help-card {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+}
+
+
+.biomed-live-panel {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+}
+
+
+.biomed-live-panel.compact {
+  gap: 0.6rem;
+}
+
+
+.biomed-live-panel-heading {
+  display: grid;
+  grid-template-columns: 1.35rem 1fr;
+  gap: 0.62rem;
+  align-items: start;
+}
+
+
+.biomed-live-panel-heading svg {
+  margin-top: 0.15rem;
+  color: var(--editorial-red);
+}
+
+
+.biomed-live-panel-heading h2,
+.biomed-live-selected-layer h2 {
+  margin: 0;
+  color: var(--editorial-ink);
+  font-size: 1.02rem;
+  line-height: 1.15;
+}
+
+
+.biomed-live-panel-heading p,
+.biomed-live-selected-layer p {
+  margin: 0.12rem 0 0;
+  color: var(--editorial-muted);
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+
+.biomed-live-presets {
+  display: grid;
+  gap: 0.45rem;
+}
+
+
+.biomed-live-presets.area {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+
+.biomed-live-presets button,
+.biomed-live-focus-grid button,
+.biomed-live-layer-list button {
+  width: 100%;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 0.45rem;
+  background: #fff;
+  color: var(--editorial-ink);
+  cursor: pointer;
+  font-family: var(--body-font);
+  text-align: left;
+}
+
+
+.biomed-live-presets button {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.58rem;
+  align-items: center;
+  min-height: 3.65rem;
+  padding: 0.62rem;
+}
+
+
+.biomed-live-presets button[aria-pressed="true"] {
+  border-color: var(--editorial-ink);
+  background: var(--editorial-ink);
+  color: #fff;
+  box-shadow: 4px 4px 0 var(--editorial-red);
+}
+
+
+.biomed-live-presets strong,
+.biomed-live-presets small,
+.biomed-live-focus-grid strong,
+.biomed-live-focus-grid span,
+.biomed-live-layer-list strong,
+.biomed-live-layer-list small {
+  display: block;
+}
+
+
+.biomed-live-presets strong,
+.biomed-live-focus-grid strong {
+  font-size: 0.84rem;
+  line-height: 1.15;
+}
+
+
+.biomed-live-presets small,
+.biomed-live-focus-grid span {
+  margin-top: 0.12rem;
+  color: var(--editorial-muted);
+  font-size: 0.68rem;
+  line-height: 1.3;
+}
+
+
+.biomed-live-presets button[aria-pressed="true"] small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+.biomed-live-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+
+.biomed-live-focus-grid button {
+  min-height: 4.5rem;
+  padding: 0.62rem;
+}
+
+
+.biomed-live-footnote {
+  display: grid;
+  grid-template-columns: 1rem 1fr auto;
+  gap: 0.52rem;
+  align-items: center;
+  padding: 0.72rem;
+  color: var(--editorial-muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+
+.biomed-live-footnote svg {
+  color: var(--editorial-teal);
+}
+
+
+.biomed-live-footnote a {
+  color: var(--editorial-red);
+  font-weight: 820;
+  white-space: nowrap;
+}
+
+
+.biomed-live-layer-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+}
+
+
+.biomed-live-layer-summary span,
+.biomed-live-selected-layer dt {
+  color: var(--editorial-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-layer-summary strong {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--editorial-ink);
+  font-size: 2.1rem;
+  line-height: 0.9;
+}
+
+
+.biomed-live-layer-summary small {
+  color: var(--editorial-muted);
+  font-size: 0.9rem;
+}
+
+
+.biomed-live-layer-summary button {
+  padding: 0 0.72rem;
+  background: #fff;
+}
+
+
+.biomed-live-category-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+
+.biomed-live-category-strip span {
+  display: grid;
+  min-height: 2.05rem;
+  align-content: center;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--editorial-ink);
+  font-size: 0.7rem;
+  font-weight: 820;
+  text-align: center;
+  backdrop-filter: blur(18px);
+}
+
+
+.biomed-live-selected-layer {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.85rem;
+}
+
+
+.biomed-live-selected-layer > p {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--editorial-red);
+  font-family: var(--mono-font);
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.biomed-live-selected-layer dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+}
+
+
+.biomed-live-selected-layer dd {
+  margin: 0.14rem 0 0;
+  color: var(--editorial-ink);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+
+.biomed-live-layer-list {
+  display: grid;
+  gap: 0.42rem;
+  padding: 0.55rem;
+}
+
+
+.biomed-live-layer-list button {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.58rem;
+}
+
+
+.biomed-live-layer-list button[aria-pressed="true"] svg {
+  color: var(--editorial-teal);
+}
+
+
+.biomed-live-layer-list button:not([aria-pressed="true"]) {
+  opacity: 0.58;
+}
+
+
+.biomed-live-layer-list button.is-selected {
+  border-color: var(--editorial-red);
+  background: rgba(194, 31, 50, 0.08);
+  opacity: 1;
+}
+
+
+.biomed-live-layer-list strong {
+  color: var(--editorial-ink);
+  font-size: 0.78rem;
+  line-height: 1.18;
+}
+
+
+.biomed-live-layer-list small {
+  margin-top: 0.12rem;
+  color: var(--editorial-muted);
+  font-size: 0.64rem;
+}
+
+
+.biomed-live-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 5rem;
+  justify-content: center;
+  color: var(--editorial-muted);
+  font-size: 0.82rem;
+}
+
+
+.biomed-live-errors {
+  display: grid;
+  gap: 0.28rem;
+  padding: 0.72rem;
+  color: var(--editorial-red-dark);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+
+.biomed-live-errors strong {
+  color: var(--editorial-ink);
+}
+
+
+.biomed-live-tool arcgis-expand {
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+
+
+.biomed-live-tool arcgis-layer-list,
+.biomed-live-tool arcgis-legend {
+  display: block;
+  width: min(23rem, calc(100vw - 2rem));
+  max-height: 31rem;
+  overflow: auto;
+}
+
+
+/* BioMed map suite: presenter map, operations workbench, and raw layer explorer. */
+.biomed-master-v3 {
+  --biomed-left-panel-width: clamp(18rem, 22vw, 24rem);
+  --biomed-detail-width: 22rem;
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #e7edf2;
+  color: #18202a;
+  font-family: var(--body-font);
+  isolation: isolate;
+}
+
+
+.biomed-master-v3 h1,
+.biomed-master-v3 h2,
+.biomed-master-v3 h3,
+.biomed-master-v3 strong {
+  font-family: var(--body-font);
+}
+
+
+.biomed-master-map-shell,
+.biomed-master-arcgis-map,
+.biomed-master-map-wash {
+  position: absolute;
+  inset: 0;
+}
+
+
+.biomed-master-map-shell {
+  background: #e4ebf0;
+}
+
+
+.biomed-master-arcgis-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.biomed-master-map-wash {
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(15, 26, 36, 0.28) 0%, rgba(15, 26, 36, 0.1) 18%, rgba(255, 255, 255, 0) 43%, rgba(248, 250, 251, 0.54) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 44%, rgba(16, 25, 35, 0.1));
+}
+
+
+.biomed-master-command,
+.biomed-master-tabs,
+.biomed-master-left,
+.biomed-master-right,
+.biomed-master-reopen,
+.biomed-master-bottom,
+.biomed-master-signin,
+.biomed-master-warning {
+  position: absolute;
+  z-index: 3;
+}
+
+
+.biomed-master-command {
+  inset: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(18rem, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.2rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(90deg, rgba(19, 29, 39, 0.98), rgba(39, 49, 61, 0.98));
+  color: #fff;
+  box-shadow: 0 18px 55px rgba(15, 23, 31, 0.26);
+}
+
+
+.biomed-master-brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.85rem;
+  color: #fff;
+  text-decoration: none;
+}
+
+
+.biomed-master-cross {
+  display: grid;
+  width: 2.55rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--editorial-red);
+  font-size: 2.45rem;
+  font-weight: 950;
+  line-height: 0.65;
+}
+
+
+.biomed-master-brand strong {
+  display: block;
+  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-weight: 840;
+  line-height: 1;
+}
+
+
+.biomed-master-brand small {
+  display: block;
+  margin-top: 0.2rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+
+.biomed-master-preset {
+  display: grid;
+  gap: 0.18rem;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.63rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-preset select {
+  min-height: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.38rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: var(--body-font);
+  font-size: 0.92rem;
+  padding: 0 0.7rem;
+}
+
+
+.biomed-master-actions,
+.biomed-master-auth {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+
+.biomed-master-actions a,
+.biomed-master-actions button,
+.biomed-master-auth button,
+.biomed-master-focus button {
+  display: inline-flex;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.38rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  padding: 0 0.72rem;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-auth {
+  justify-content: flex-end;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.78rem;
+}
+
+
+.biomed-master-auth > span {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--editorial-gold);
+  box-shadow: 0 0 0 0.28rem rgba(214, 166, 79, 0.16);
+}
+
+
+.biomed-master-auth[data-authenticated="true"] > span {
+  background: #57c98a;
+  box-shadow: 0 0 0 0.28rem rgba(87, 201, 138, 0.16);
+}
+
+
+.biomed-master-auth button {
+  border-color: var(--editorial-red);
+  background: var(--editorial-red);
+}
+
+
+.biomed-master-auth button:disabled {
+  cursor: wait;
+  opacity: 0.76;
+}
+
+
+.biomed-master-tabs {
+  top: 5rem;
+  left: 1rem;
+  right: calc(var(--biomed-detail-width) + 1.5rem);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(7.2rem, 1fr));
+  gap: 0.35rem;
+  transition:
+    left 180ms ease,
+    right 180ms ease;
+}
+
+
+.biomed-master-tabs button {
+  display: inline-flex;
+  min-height: 2.65rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 0.42rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1f2933;
+  cursor: pointer;
+  font-family: var(--body-font);
+  font-size: 0.78rem;
+  font-weight: 760;
+  box-shadow: 0 12px 34px rgba(18, 28, 38, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+
+.biomed-master-tabs button[aria-pressed="true"] {
+  border-color: var(--editorial-red);
+  background: var(--editorial-red);
+  color: #fff;
+}
+
+
+.biomed-master-left,
+.biomed-master-right {
+  top: 5rem;
+  bottom: 1rem;
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 64px rgba(15, 23, 31, 0.18);
+  backdrop-filter: blur(18px);
+  transition:
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+
+.biomed-master-left {
+  left: 1rem;
+  width: var(--biomed-left-panel-width);
+  padding: 0.9rem;
+  background: rgba(32, 43, 55, 0.94);
+  color: #edf3f6;
+}
+
+
+.biomed-master-right {
+  right: 1rem;
+  width: min(var(--biomed-detail-width), calc(100vw - 2rem));
+  padding: 0.85rem;
+  background: rgba(248, 250, 251, 0.96);
+  color: #1e2732;
+}
+
+
+.biomed-master-v3[data-layer-panel="closed"] .biomed-master-left {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(calc(-100% - 1.2rem));
+}
+
+
+.biomed-master-v3[data-layer-panel="closed"] .biomed-master-tabs,
+.biomed-master-v3[data-layer-panel="closed"] .biomed-master-compact-tools,
+.biomed-master-v3[data-layer-panel="closed"] .biomed-master-float-card {
+  left: 1rem;
+}
+
+
+.biomed-master-v3[data-detail-panel="closed"] .biomed-master-right {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(calc(100% + 1.2rem));
+}
+
+
+.biomed-master-v3[data-detail-panel="closed"] .biomed-master-tabs,
+.biomed-master-v3[data-detail-panel="closed"] .biomed-master-compact-tools,
+.biomed-master-v3[data-detail-panel="closed"] .biomed-master-float-card {
+  right: 1rem;
+}
+
+
+.biomed-master-panel-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+  color: #68717b;
+  font-family: var(--mono-font);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-panel-tools button,
+.biomed-master-reopen {
+  display: inline-flex;
+  min-height: 2.05rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e2732;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 0.7rem;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-left .biomed-master-panel-tools {
+  color: rgba(237, 243, 246, 0.64);
+}
+
+
+.biomed-master-left .biomed-master-panel-tools button {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #edf3f6;
+}
+
+
+.biomed-master-detail-resizer {
+  position: absolute;
+  top: 0.65rem;
+  bottom: 0.65rem;
+  left: 0.12rem;
+  width: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: col-resize;
+  padding: 0;
+}
+
+
+.biomed-master-detail-resizer::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.18rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: rgba(23, 25, 29, 0.2);
+  transform: translate(-50%, -50%);
+}
+
+
+.biomed-master-detail-resizer:hover::after,
+.biomed-master-detail-resizer:focus-visible::after {
+  background: var(--editorial-red);
+}
+
+
+.biomed-master-reopen {
+  top: 12.2rem;
+  z-index: 4;
+  box-shadow: 0 14px 42px rgba(15, 23, 31, 0.16);
+}
+
+
+.biomed-master-reopen-left {
+  left: 1rem;
+}
+
+
+.biomed-master-reopen-right {
+  right: 1rem;
+}
+
+
+.biomed-master-panel-heading {
+  display: grid;
+  grid-template-columns: 1.3rem 1fr;
+  gap: 0.62rem;
+  align-items: start;
+}
+
+
+.biomed-master-panel-heading h2,
+.biomed-master-selected-card h2,
+.biomed-master-kpi-card h2,
+.biomed-master-provenance h2,
+.biomed-master-notes h2 {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.15;
+}
+
+
+.biomed-master-panel-heading p,
+.biomed-master-selected-card p,
+.biomed-master-provenance p,
+.biomed-master-notes li {
+  margin: 0.15rem 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.78rem;
+  line-height: 1.38;
+}
+
+
+.biomed-master-right .biomed-master-selected-card p,
+.biomed-master-right .biomed-master-provenance p,
+.biomed-master-right .biomed-master-notes li {
+  color: #68717b;
+}
+
+
+.biomed-master-search {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr) 1rem;
+  gap: 0.55rem;
+  align-items: center;
+  min-height: 2.45rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0 0.65rem;
+}
+
+
+.biomed-master-search input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--body-font);
+  font-size: 0.84rem;
+}
+
+
+.biomed-master-search input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+
+.biomed-master-source-note,
+.biomed-master-add-layer {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+
+.biomed-master-source-note svg,
+.biomed-master-add-layer svg {
+  color: #7fd1b2;
+}
+
+
+.biomed-master-layer-groups {
+  display: grid;
+  gap: 0.65rem;
+}
+
+
+.biomed-master-layer-group {
+  display: grid;
+  gap: 0.42rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 0.65rem;
+}
+
+
+.biomed-master-layer-group > div,
+.biomed-master-layer-group button {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+
+.biomed-master-layer-group > div {
+  color: #fff;
+}
+
+
+.biomed-master-layer-group > div b {
+  display: grid;
+  min-width: 1.55rem;
+  min-height: 1.55rem;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.72rem;
+}
+
+
+.biomed-master-layer-group strong,
+.biomed-master-layer-group small {
+  display: block;
+}
+
+
+.biomed-master-layer-group strong {
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.biomed-master-layer-group small {
+  margin-top: 0.1rem;
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.65rem;
+  line-height: 1.3;
+}
+
+
+.biomed-master-layer-group button {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: #edf3f6;
+  cursor: pointer;
+  font-family: var(--body-font);
+  padding: 0.5rem;
+  text-align: left;
+}
+
+
+.biomed-master-layer-group button:disabled {
+  cursor: default;
+  opacity: 0.84;
+}
+
+
+.biomed-master-layer-group button[aria-pressed="true"] {
+  border-color: rgba(51, 150, 239, 0.5);
+  background: rgba(51, 150, 239, 0.14);
+}
+
+
+.biomed-master-swatch,
+.biomed-master-legend-dot,
+.biomed-master-dot {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: #6c7a86;
+}
+
+
+.category-sites,
+.biomed-master-legend-dot.sites,
+.biomed-master-dot.blue {
+  background: #2f76d1;
+}
+
+
+.category-geography,
+.biomed-master-legend-dot.geography {
+  background: #a46abd;
+}
+
+
+.category-operations,
+.biomed-master-legend-dot.collections {
+  background: #4f9654;
+}
+
+
+.category-manufacturing,
+.biomed-master-legend-dot.manufacturing,
+.biomed-master-dot.red {
+  background: #d71920;
+}
+
+
+.biomed-master-dot.gold {
+  background: #d6a64f;
+}
+
+
+.biomed-master-selected-card,
+.biomed-master-kpi-card,
+.biomed-master-provenance,
+.biomed-master-notes {
+  display: grid;
+  gap: 0.75rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.48rem;
+  background: rgba(255, 255, 255, 0.88);
+  padding: 0.85rem;
+}
+
+
+.biomed-master-selected-card > p:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--editorial-red);
+  font-family: var(--mono-font);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-selected-card h2 {
+  font-size: 1.22rem;
+}
+
+
+.biomed-master-type {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 0.28rem 0.55rem;
+}
+
+
+.biomed-master-metrics,
+.biomed-master-kpi-card div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+
+.biomed-master-metrics article,
+.biomed-master-kpi-card div {
+  align-content: center;
+  min-height: 3.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.08);
+  border-radius: 0.38rem;
+  background: #f3f6f8;
+  padding: 0.55rem;
+}
+
+
+.biomed-master-metrics strong,
+.biomed-master-kpi-card strong {
+  display: block;
+  color: #1e2732;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+
+.biomed-master-metrics span,
+.biomed-master-kpi-card span,
+.biomed-master-selected-card dt {
+  display: block;
+  margin-top: 0.18rem;
+  color: #68717b;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-selected-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+}
+
+
+.biomed-master-selected-card dd {
+  margin: 0.1rem 0 0;
+  color: #1e2732;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+
+.biomed-master-talking-point {
+  display: grid;
+  gap: 0.3rem;
+  border: 1px solid rgba(194, 31, 50, 0.16);
+  border-radius: 0.42rem;
+  background: #fff7f8;
+  color: #4a2530;
+  font-size: 0.78rem;
+  line-height: 1.36;
+  padding: 0.65rem 0.75rem;
+}
+
+
+.biomed-master-talking-point strong {
+  color: var(--editorial-red-dark);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-kpi-card div {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+
+.biomed-master-kpi-card strong {
+  font-size: 1.1rem;
+}
+
+
+.biomed-master-provenance p {
+  display: grid;
+  grid-template-columns: 0.65rem 1fr;
+  gap: 0.52rem;
+  align-items: center;
+}
+
+
+.biomed-master-notes ul {
+  display: grid;
+  gap: 0.42rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+
+.biomed-master-signin {
+  left: calc((100vw - min(var(--biomed-detail-width), calc(100vw - 2rem)) - 1rem) / 2);
+  top: 50%;
+  width: min(28rem, calc(100vw - 2rem));
+  transform: translate(-50%, -50%);
+}
+
+
+.biomed-master-v3[data-detail-panel="closed"] .biomed-master-signin {
+  left: 50%;
+}
+
+
+.biomed-master-signin > div {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 0.6rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 28px 80px rgba(15, 23, 31, 0.22);
+  padding: 1.35rem;
+  text-align: center;
+  backdrop-filter: blur(20px);
+}
+
+
+.biomed-master-signin h2,
+.biomed-master-signin p {
+  margin: 0;
+}
+
+
+.biomed-master-signin h2 {
+  font-size: 1.35rem;
+  line-height: 1.12;
+}
+
+
+.biomed-master-signin p {
+  color: #68717b;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+
+.biomed-master-signin button {
+  min-height: 2.75rem;
+  border: 1px solid var(--editorial-red);
+  border-radius: 999px;
+  background: var(--editorial-red);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 1.25rem;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-signin button:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+
+.biomed-master-signin small {
+  color: var(--editorial-red-dark);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+
+.biomed-master-bottom {
+  left: calc(var(--biomed-left-panel-width) + 1.5rem);
+  right: calc(var(--biomed-detail-width) + 1.5rem);
+  bottom: 0.9rem;
+  display: grid;
+  grid-template-columns: max-content max-content max-content minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+  min-height: 3.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 54px rgba(15, 23, 31, 0.14);
+  color: #3f4a55;
+  font-size: 0.74rem;
+  padding: 0.65rem 0.8rem;
+  backdrop-filter: blur(16px);
+  transition:
+    left 180ms ease,
+    right 180ms ease;
+}
+
+
+.biomed-master-bottom > div {
+  display: flex;
+  align-items: center;
+  gap: 0.48rem;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+
+.biomed-master-bottom strong {
+  color: #18202a;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-focus {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+
+.biomed-master-focus button {
+  min-height: 2rem;
+  border-color: rgba(23, 25, 29, 0.14);
+  background: #fff;
+  color: #18202a;
+  padding: 0 0.48rem;
+}
+
+
+.biomed-master-focus button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+
+.biomed-master-compact-tools,
+.biomed-master-float-card {
+  position: absolute;
+  z-index: 4;
+  left: 1rem;
+  right: calc(var(--biomed-detail-width) + 1.5rem);
+  transition:
+    left 180ms ease,
+    right 180ms ease;
+}
+
+
+.biomed-master-compact-tools {
+  bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.45rem;
+  pointer-events: none;
+}
+
+
+.biomed-master-compact-tools button {
+  display: inline-flex;
+  min-height: 2.3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14px 42px rgba(15, 23, 31, 0.14);
+  color: #1e2732;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 0.8rem;
+  pointer-events: auto;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-compact-tools button[aria-pressed="true"] {
+  border-color: var(--editorial-red);
+  background: var(--editorial-red);
+  color: #fff;
+}
+
+
+.biomed-master-float-card {
+  bottom: 4rem;
+  display: grid;
+  width: min(34rem, calc(100vw - var(--biomed-detail-width) - 3rem));
+  justify-self: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 0.52rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 20px 58px rgba(15, 23, 31, 0.17);
+  color: #26313d;
+  margin-inline: auto;
+  padding: 0.8rem;
+  backdrop-filter: blur(16px);
+}
+
+
+.biomed-master-float-card h2,
+.biomed-master-float-card p {
+  margin: 0;
+}
+
+
+.biomed-master-float-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+
+.biomed-master-float-card h2 {
+  font-size: 0.9rem;
+}
+
+
+.biomed-master-float-close {
+  display: inline-grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: #1e2732;
+  cursor: pointer;
+}
+
+
+.biomed-master-float-close:hover,
+.biomed-master-float-close:focus-visible {
+  border-color: rgba(194, 31, 50, 0.38);
+  color: var(--editorial-red);
+  outline: 2px solid rgba(194, 31, 50, 0.18);
+  outline-offset: 0.12rem;
+}
+
+
+.biomed-master-float-card p,
+.biomed-master-float-card a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #586573;
+  font-size: 0.76rem;
+  line-height: 1.34;
+}
+
+
+.biomed-master-float-card a {
+  color: var(--editorial-red-dark);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+
+.biomed-master-geo-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: end;
+}
+
+
+.biomed-master-geo-search label {
+  display: grid;
+  gap: 0.32rem;
+}
+
+
+.biomed-master-geo-search span {
+  color: #68717b;
+  font-family: var(--mono-font);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-geo-search input {
+  min-height: 2.55rem;
+  min-width: 0;
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 0.42rem;
+  background: #fff;
+  color: #1e2732;
+  font-family: var(--body-font);
+  font-size: 0.9rem;
+  padding: 0 0.75rem;
+}
+
+
+.biomed-master-geo-search button,
+.biomed-master-geo-results button {
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 0.42rem;
+  background: #1e2732;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  min-height: 2.4rem;
+  text-transform: uppercase;
+}
+
+
+.biomed-master-geo-search button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+
+.biomed-master-geo-results {
+  display: grid;
+  gap: 0.42rem;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+
+.biomed-master-geo-results button {
+  display: grid;
+  grid-template-columns: 5.25rem minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  background: #fff;
+  color: #1e2732;
+  padding: 0.52rem 0.58rem;
+  text-align: left;
+  text-transform: none;
+}
+
+
+.biomed-master-geo-results button.geo-level-division {
+  border-color: rgba(215, 25, 32, 0.34);
+  background: #fff6f7;
+}
+
+
+.biomed-master-geo-results button.geo-level-region {
+  border-color: rgba(164, 106, 189, 0.4);
+  background: #fbf7ff;
+}
+
+
+.biomed-master-geo-results button.geo-level-state {
+  border-color: rgba(47, 118, 209, 0.34);
+  background: #f5f9ff;
+}
+
+
+.biomed-master-geo-results button.geo-level-chapter {
+  border-color: rgba(79, 150, 84, 0.36);
+  background: #f5fbf6;
+}
+
+
+.biomed-master-geo-results button.geo-level-county {
+  border-color: rgba(214, 166, 79, 0.5);
+  background: #fffaf0;
+}
+
+
+.biomed-master-geo-level {
+  display: inline-grid;
+  min-height: 1.62rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #fff;
+  font-family: var(--mono-font);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 0 0.45rem;
+  text-transform: uppercase;
+}
+
+
+.geo-level-division .biomed-master-geo-level {
+  background: #d71920;
+}
+
+
+.geo-level-region .biomed-master-geo-level {
+  background: #a46abd;
+}
+
+
+.geo-level-state .biomed-master-geo-level {
+  background: #2f76d1;
+}
+
+
+.geo-level-chapter .biomed-master-geo-level {
+  background: #4f9654;
+}
+
+
+.geo-level-county .biomed-master-geo-level {
+  background: #b9862f;
+}
+
+
+.biomed-master-geo-result-text {
+  min-width: 0;
+}
+
+
+.biomed-master-geo-results strong,
+.biomed-master-geo-results small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.biomed-master-geo-results small {
+  color: #68717b;
+  font-family: var(--body-font);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+
+.biomed-master-warning {
+  left: 50%;
+  bottom: 5rem;
+  display: grid;
+  max-width: min(34rem, calc(100vw - 2rem));
+  gap: 0.25rem;
+  border: 1px solid rgba(194, 31, 50, 0.3);
+  border-radius: 0.48rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--editorial-red-dark);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  padding: 0.7rem 0.85rem;
+  transform: translateX(-50%);
+}
+
+
+.biomed-master-warning strong {
+  color: #18202a;
+}
+@media (max-width: 1180px) {
+.biomed-master-command {
+    grid-template-columns: 1fr auto;
+  }
+.biomed-master-preset,
+  .biomed-master-actions {
+    display: none;
+  }
+.biomed-master-tabs {
+    left: 1rem;
+    right: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+  }
+.biomed-master-left,
+  .biomed-master-right {
+    top: 12.3rem;
+    bottom: 5.3rem;
+    width: min(21rem, calc(50vw - 1.5rem));
+  }
+.biomed-master-bottom {
+    left: 1rem;
+    right: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+.biomed-master-compact-tools,
+  .biomed-master-float-card {
+    left: 1rem;
+    right: 1rem;
+  }
+}
+@media (max-width: 760px) {
+.biomed-master-v3 {
+    min-height: 100svh;
+    overflow-y: auto;
+  }
+.biomed-master-map-shell {
+    position: fixed;
+    height: 100svh;
+  }
+.biomed-master-command,
+  .biomed-master-tabs,
+  .biomed-master-left,
+  .biomed-master-right,
+  .biomed-master-reopen,
+  .biomed-master-bottom,
+  .biomed-master-compact-tools,
+  .biomed-master-float-card,
+  .biomed-master-signin {
+    position: relative;
+    inset: auto;
+    transform: none;
+  }
+.biomed-master-command {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+.biomed-master-auth {
+    justify-content: flex-start;
+  }
+.biomed-master-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 1rem;
+  }
+.biomed-master-left,
+  .biomed-master-right,
+  .biomed-master-bottom {
+    width: auto;
+    max-height: none;
+    margin: 1rem;
+  }
+.biomed-master-detail-resizer {
+    display: none;
+  }
+.biomed-master-reopen {
+    top: auto;
+    right: auto;
+    left: auto;
+    width: calc(100% - 2rem);
+    margin: 1rem;
+  }
+.biomed-master-v3[data-layer-panel="closed"] .biomed-master-left,
+  .biomed-master-v3[data-detail-panel="closed"] .biomed-master-right {
+    display: none;
+  }
+.biomed-master-left {
+    margin-top: 12rem;
+  }
+.biomed-master-bottom {
+    grid-template-columns: 1fr;
+  }
+.biomed-master-compact-tools {
+    justify-content: flex-start;
+    margin: 1rem;
+    overflow-x: auto;
+  }
+.biomed-master-float-card {
+    width: auto;
+    margin: 1rem;
+  }
+.biomed-master-signin {
+    width: auto;
+    margin: 1rem;
+  }
+}
+
+
+/* Hospital network ArcGIS SDK showcase. */
+.hospital-network-tool {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #edf1f5;
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  isolation: isolate;
+}
+
+
+.hospital-network-title-block h1,
+.hospital-network-metric-stack strong {
+  font-family: var(--body-font);
+}
+
+
+.hospital-network-map-shell,
+.hospital-network-arcgis-map,
+.hospital-network-vignette {
+  position: absolute;
+  inset: 0;
+}
+
+
+.hospital-network-map-shell {
+  background: #e7edf3;
+}
+
+
+.hospital-network-arcgis-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+.hospital-network-vignette {
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(237, 241, 245, 0.96) 0%, rgba(237, 241, 245, 0.72) 28%, rgba(237, 241, 245, 0.08) 56%, rgba(237, 241, 245, 0.64) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.04) 42%, rgba(23, 25, 29, 0.1));
+}
+
+
+.hospital-network-mobile-preview {
+  display: none;
+}
+
+
+.hospital-network-command,
+.hospital-network-left,
+.hospital-network-right,
+.hospital-network-legend {
+  position: absolute;
+  z-index: 3;
+}
+
+
+.hospital-network-command {
+  top: 1.1rem;
+  left: clamp(1rem, 2.4vw, 2rem);
+  right: clamp(1rem, 2.4vw, 2rem);
+  display: grid;
+  grid-template-columns: auto minmax(18rem, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border: 1px solid rgba(23, 25, 29, 0.11);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+
+.hospital-network-back,
+.hospital-network-actions a {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 1px solid rgba(23, 25, 29, 0.14);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-back {
+  padding: 0 0.75rem;
+  background: var(--paper-soft);
+  color: var(--editorial-ink);
+}
+
+
+.hospital-network-title-block {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+
+.hospital-network-title-block h1,
+.hospital-network-title-block p {
+  margin: 0;
+}
+
+
+.hospital-network-title-block h1 {
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  font-size: clamp(1.9rem, 3vw, 3.05rem);
+  font-weight: 850;
+  letter-spacing: 0;
+  line-height: 0.96;
+}
+
+
+.hospital-network-title-block p {
+  max-width: 48rem;
+  color: var(--editorial-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+
+.hospital-network-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+
+.hospital-network-actions a {
+  padding: 0 0.78rem;
+  background: var(--editorial-red);
+  color: #fff;
+}
+
+
+.hospital-network-actions a + a {
+  background: var(--editorial-ink);
+}
+
+
+.hospital-network-left,
+.hospital-network-right {
+  top: 7.7rem;
+  display: grid;
+  gap: 0.7rem;
+  width: min(24rem, calc(100vw - 2rem));
+  max-height: calc(100svh - 12.2rem);
+  overflow-y: auto;
+}
+
+
+.hospital-network-left {
+  left: clamp(1rem, 2.4vw, 2rem);
+}
+
+
+.hospital-network-right {
+  right: clamp(1rem, 2.4vw, 2rem);
+  width: min(21rem, calc(100vw - 2rem));
+}
+
+
+.hospital-network-start-card,
+.hospital-network-region-select,
+.hospital-network-panel,
+.hospital-network-metric-stack,
+.hospital-network-selected,
+.hospital-network-feature-list,
+.hospital-network-legend {
+  border: 1px solid rgba(23, 25, 29, 0.11);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 54px rgba(23, 33, 47, 0.14);
+  backdrop-filter: blur(16px);
+}
+
+
+.hospital-network-start-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+
+.hospital-network-status-line {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--editorial-red);
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-status-line span {
+  width: 0.54rem;
+  height: 0.54rem;
+  border-radius: 999px;
+  background: var(--editorial-gold);
+  box-shadow: 0 0 0 0.32rem rgba(214, 166, 79, 0.16);
+}
+
+
+.hospital-network-status-line span.is-live {
+  background: #39b98f;
+  box-shadow: 0 0 0 0.32rem rgba(57, 185, 143, 0.16);
+}
+
+
+.hospital-network-start-card h2,
+.hospital-network-panel-heading h2,
+.hospital-network-selected h2 {
+  margin: 0;
+  color: var(--editorial-ink);
+  font-size: 1.08rem;
+  line-height: 1.15;
+}
+
+
+.hospital-network-start-card p,
+.hospital-network-panel-heading p,
+.hospital-network-selected p,
+.hospital-network-start-card small {
+  margin: 0;
+  color: var(--editorial-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+
+.hospital-network-start-card small {
+  font-size: 0.74rem;
+}
+
+
+.hospital-network-start-card button {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 0;
+  border-radius: 0.42rem;
+  background: var(--editorial-red);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--body-font);
+  font-size: 0.82rem;
+  font-weight: 850;
+  padding: 0 0.82rem;
+  box-shadow: 0 12px 26px rgba(194, 31, 50, 0.2);
+}
+
+
+.hospital-network-start-card button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+
+.hospital-network-start-card .hospital-network-error {
+  color: #9f1d2d;
+  font-weight: 780;
+}
+
+
+.hospital-network-region-select {
+  display: grid;
+  gap: 0.46rem;
+  padding: 0.9rem;
+}
+
+
+.hospital-network-region-select span,
+.hospital-network-selected dt {
+  color: var(--editorial-muted);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-region-select select {
+  width: 100%;
+  min-height: 2.45rem;
+  border: 1px solid rgba(23, 25, 29, 0.16);
+  border-radius: 0.38rem;
+  background: #fff;
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  font-size: 0.9rem;
+  font-weight: 760;
+  padding: 0 0.7rem;
+}
+
+
+.hospital-network-panel {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+}
+
+
+.hospital-network-panel-heading {
+  display: grid;
+  grid-template-columns: 1.35rem 1fr;
+  gap: 0.62rem;
+  align-items: start;
+}
+
+
+.hospital-network-panel-heading svg {
+  margin-top: 0.15rem;
+  color: var(--editorial-red);
+}
+
+
+.hospital-network-panel-heading p {
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  line-height: 1.42;
+}
+
+
+.hospital-network-lens-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+
+.hospital-network-lens-grid button,
+.hospital-network-feature-list button {
+  width: 100%;
+  border: 1px solid rgba(23, 25, 29, 0.12);
+  border-radius: 0.45rem;
+  background: #fff;
+  color: var(--editorial-ink);
+  cursor: pointer;
+  font-family: var(--body-font);
+  text-align: left;
+}
+
+
+.hospital-network-lens-grid button {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  gap: 0.58rem;
+  align-items: center;
+  min-height: 4rem;
+  padding: 0.62rem;
+}
+
+
+.hospital-network-lens-grid button[aria-pressed="true"] {
+  border-color: var(--editorial-ink);
+  background: var(--editorial-ink);
+  color: #fff;
+  box-shadow: 4px 4px 0 var(--editorial-red);
+}
+
+
+.hospital-network-lens-grid strong,
+.hospital-network-lens-grid small,
+.hospital-network-feature-list strong,
+.hospital-network-feature-list small,
+.hospital-network-source-list strong,
+.hospital-network-source-list small {
+  display: block;
+}
+
+
+.hospital-network-lens-grid strong,
+.hospital-network-feature-list strong,
+.hospital-network-source-list strong {
+  font-size: 0.8rem;
+  line-height: 1.16;
+}
+
+
+.hospital-network-lens-grid small,
+.hospital-network-feature-list small,
+.hospital-network-source-list small {
+  margin-top: 0.12rem;
+  color: var(--editorial-muted);
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+
+.hospital-network-lens-grid button[aria-pressed="true"] small {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+
+.hospital-network-source-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+
+.hospital-network-source-list span {
+  display: grid;
+  gap: 0.08rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.42rem;
+  background: rgba(247, 249, 252, 0.9);
+}
+
+
+.hospital-network-metric-stack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.75rem;
+}
+
+
+.hospital-network-metric-stack article {
+  display: grid;
+  min-height: 4.6rem;
+  align-content: space-between;
+  padding: 0.65rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.42rem;
+  background: #fff;
+}
+
+
+.hospital-network-metric-stack span {
+  color: var(--editorial-muted);
+  font-size: 0.64rem;
+  font-weight: 850;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-metric-stack strong {
+  color: var(--editorial-ink);
+  font-family: var(--body-font);
+  font-size: 1.85rem;
+  font-weight: 850;
+  line-height: 0.9;
+}
+
+
+.hospital-network-selected {
+  display: grid;
+  gap: 0.72rem;
+  padding: 0.9rem;
+}
+
+
+.hospital-network-selected > p:first-child {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--editorial-red);
+  font-family: var(--mono-font);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-type {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 1.8rem;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(23, 25, 29, 0.08);
+  color: var(--editorial-ink);
+  font-family: var(--mono-font);
+  font-size: 0.65rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  padding: 0 0.65rem;
+  text-transform: uppercase;
+}
+
+
+.hospital-network-type.type-distribution {
+  background: rgba(194, 31, 50, 0.1);
+  color: var(--editorial-red-dark);
+}
+
+
+.hospital-network-type.type-opportunity {
+  background: rgba(214, 166, 79, 0.18);
+  color: #755314;
+}
+
+
+.hospital-network-selected dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.48rem;
+  margin: 0;
+}
+
+
+.hospital-network-selected dl div {
+  padding: 0.55rem;
+  border: 1px solid rgba(23, 25, 29, 0.1);
+  border-radius: 0.42rem;
+  background: rgba(247, 249, 252, 0.88);
+}
+
+
+.hospital-network-selected dd {
+  margin: 0.14rem 0 0;
+  color: var(--editorial-ink);
+  font-size: 0.86rem;
+  font-weight: 820;
+  line-height: 1.25;
+}
+
+
+.hospital-network-feature-list {
+  display: grid;
+  gap: 0.42rem;
+  padding: 0.55rem;
+}
+
+
+.hospital-network-feature-list button {
+  display: grid;
+  grid-template-columns: 1rem 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.58rem;
+}
+
+
+.hospital-network-feature-list button.is-selected {
+  border-color: var(--editorial-red);
+  background: rgba(194, 31, 50, 0.08);
+  box-shadow: 4px 4px 0 rgba(194, 31, 50, 0.18);
+}
+
+
+.hospital-network-feature-list button:not(.is-selected) {
+  opacity: 0.72;
+}
+
+
+.hospital-network-legend {
+  right: clamp(1rem, 2.4vw, 2rem);
+  bottom: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: min(38rem, calc(100vw - 2rem));
+  padding: 0.65rem;
+}
+
+
+.hospital-network-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  color: var(--editorial-ink);
+  font-size: 0.72rem;
+  font-weight: 820;
+  white-space: nowrap;
+}
+
+
+.hospital-network-legend i {
+  display: inline-block;
+  width: 0.72rem;
+  height: 0.72rem;
+  border: 1px solid rgba(23, 25, 29, 0.65);
+  border-radius: 999px;
+}
+
+
+.hospital-network-legend .legend-red {
+  background: #ca2331;
+}
+
+
+.hospital-network-legend .legend-blue {
+  background: #126db9;
+}
+
+
+.hospital-network-legend .legend-green {
+  background: #238e42;
+}
+
+
+.hospital-network-legend .legend-gold {
+  border-radius: 0.15rem;
+  background: #d6a64f;
+  transform: rotate(45deg);
+}
+@media (max-width: 720px) {
+.biomed-live-tool {
+    display: grid;
+    min-height: auto;
+    overflow: visible;
+    gap: 1rem;
+    padding: 1rem;
+  }
+.biomed-live-map-shell,
+  .biomed-live-command,
+  .biomed-live-left,
+  .biomed-live-right {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-height: none;
+  }
+.biomed-live-map-shell {
+    min-height: 36rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    order: 2;
+  }
+.biomed-live-command {
+    order: 1;
+  }
+.biomed-live-left,
+  .biomed-live-right {
+    order: 3;
+  }
+}
+@media (max-width: 980px) {
+.hospital-network-tool {
+    display: grid;
+    min-height: auto;
+    overflow: visible;
+    gap: 1rem;
+    padding: 1rem;
+  }
+.hospital-network-map-shell,
+  .hospital-network-command,
+  .hospital-network-left,
+  .hospital-network-right,
+  .hospital-network-legend {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-height: none;
+  }
+.hospital-network-command {
+    order: 1;
+  }
+.hospital-network-map-shell {
+    min-height: 36rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    order: 2;
+  }
+.hospital-network-vignette {
+    background:
+      linear-gradient(180deg, rgba(237, 241, 245, 0.18), rgba(237, 241, 245, 0.02) 48%, rgba(23, 25, 29, 0.06)),
+      linear-gradient(90deg, rgba(237, 241, 245, 0.16), rgba(237, 241, 245, 0.02) 52%, rgba(237, 241, 245, 0.12));
+  }
+.hospital-network-mobile-preview {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
+  }
+.hospital-network-mobile-preview::before {
+    content: "";
+    position: absolute;
+    left: 10%;
+    top: 16%;
+    width: 78%;
+    height: 64%;
+    border: 1px dashed rgba(29, 79, 115, 0.26);
+    border-radius: 44% 52% 48% 40%;
+    background: rgba(47, 118, 109, 0.04);
+  }
+.hospital-network-mobile-preview .preview-node {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.34rem;
+    transform: translate(-50%, -50%);
+  }
+.hospital-network-mobile-preview .preview-node i {
+    width: 0.72rem;
+    height: 0.72rem;
+    border: 1px solid rgba(23, 25, 29, 0.72);
+    border-radius: 999px;
+    background: #238e42;
+    box-shadow: 0 0 0 0.28rem rgba(255, 255, 255, 0.75);
+  }
+.hospital-network-mobile-preview .preview-node.type-distribution i {
+    border-radius: 0.15rem;
+    background: #ca2331;
+  }
+.hospital-network-mobile-preview .preview-node.type-opportunity i {
+    border-radius: 0.15rem;
+    background: #d6a64f;
+    transform: rotate(45deg);
+  }
+.hospital-network-mobile-preview .preview-node.tier-tier1 i {
+    background: #ca2331;
+  }
+.hospital-network-mobile-preview .preview-node.tier-tier2 i {
+    background: #126db9;
+  }
+.hospital-network-mobile-preview .preview-node.is-selected i {
+    width: 0.95rem;
+    height: 0.95rem;
+    box-shadow: 0 0 0 0.3rem rgba(255, 255, 255, 0.9), 0 0 0 0.52rem rgba(194, 31, 50, 0.2);
+  }
+.hospital-network-mobile-preview .preview-node b {
+    max-width: 9rem;
+    border: 1px solid rgba(23, 25, 29, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--editorial-ink);
+    font-size: 0.66rem;
+    line-height: 1.1;
+    padding: 0.22rem 0.45rem;
+    white-space: nowrap;
+  }
+.hospital-network-left,
+  .hospital-network-right {
+    order: 3;
+  }
+.hospital-network-legend {
+    order: 4;
+  }
+}
+@media (max-width: 760px) {
+.hospital-network-command {
+    grid-template-columns: 1fr;
+  }
+.hospital-network-actions,
+  .hospital-network-back {
+    width: fit-content;
+  }
+.hospital-network-lens-grid,
+  .hospital-network-selected dl,
+  .hospital-network-metric-stack {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+.biomed-live-command {
+    grid-template-columns: 1fr;
+  }
+.biomed-live-actions,
+  .biomed-live-back {
+    width: fit-content;
+  }
+.biomed-live-proof-grid,
+  .biomed-live-focus-grid,
+  .biomed-live-selected-layer dl {
+    grid-template-columns: 1fr;
+  }
+.biomed-live-footnote {
+    grid-template-columns: 1rem 1fr;
+  }
+.biomed-live-footnote a {
+    grid-column: 2;
+    width: fit-content;
+  }
+}

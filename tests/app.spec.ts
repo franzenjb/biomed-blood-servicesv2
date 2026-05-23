@@ -19,6 +19,8 @@ test.describe("Hub", () => {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
     await expect(page.getByTestId("hub-card-map")).toBeVisible();
+    await expect(page.getByTestId("hub-card-map-v3")).toBeVisible();
+    await expect(page.getByTestId("hub-card-dashboard")).toBeVisible();
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
@@ -80,35 +82,17 @@ test.describe("Slide deck", () => {
   });
 });
 
-test.describe("Map (public-safe gate)", () => {
-  test("loads anonymously with NO sign-in prompt or permission error", async ({ page }) => {
-    const badMessages: string[] = [];
-    const watch = (text: string) => {
-      if (/permission|do not have|sign in|token required|401|invalid token/i.test(text)) {
-        badMessages.push(text);
-      }
-    };
-    page.on("console", (m) => watch(m.text()));
-    page.on("pageerror", (e) => watch(e.message));
+test.describe("Real maps (OAuth)", () => {
+  for (const path of ["/map", "/dashboard", "/map-v3"]) {
+    test(`${path} renders the ArcGIS sign-in gate (not crash)`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.getByText(/sign in/i).first()).toBeVisible({ timeout: 20_000 });
+    });
+  }
 
+  test("map back link returns to hub", async ({ page }) => {
     await page.goto("/map");
-    await expect(page.getByTestId("map-workspace")).toBeVisible();
-    await expect(page.locator(".esri-view")).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByTestId("map-loading")).toHaveCount(0, { timeout: 30_000 });
-    await expect(page.locator(".esri-identity-modal")).toHaveCount(0);
-    expect(badMessages, badMessages.join("\n")).toEqual([]);
-  });
-
-  test("layer toggles, region focus, and hub return work", async ({ page }) => {
-    await page.goto("/map");
-    await expect(page.locator(".esri-view")).toBeVisible({ timeout: 30_000 });
-    const future = page.getByTestId("toggle-future").locator("input");
-    await expect(future).not.toBeChecked();
-    await future.check();
-    await expect(future).toBeChecked();
-    await page.getByTestId("region-tennessee").click();
-    await expect(page.getByTestId("region-tennessee")).toHaveClass(/is-active/);
-    await page.getByTestId("map-to-hub").click();
+    await page.locator("a.biomed-live-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
 });

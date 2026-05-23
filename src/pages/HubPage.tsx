@@ -39,8 +39,24 @@ export default function HubPage() {
         <Link to="/map" className="hub__card hub__card--map" data-testid="hub-card-map">
           <span className="hub__index mono">06</span>
           <span className="hub__body">
-            <span className="hub__title">Map &amp; Data</span>
-            <span className="hub__q">Explore collections and reach on a live map.</span>
+            <span className="hub__title">BioMed Blood Map</span>
+            <span className="hub__q">Live ArcGIS map of real BioMed data. Red Cross sign-in required.</span>
+          </span>
+        </Link>
+
+        <Link to="/map-v3" className="hub__card hub__card--map" data-testid="hub-card-map-v3">
+          <span className="hub__index mono">07</span>
+          <span className="hub__body">
+            <span className="hub__title">Master Map</span>
+            <span className="hub__q">FY25 jurisdiction map with presenter modes. Sign-in required.</span>
+          </span>
+        </Link>
+
+        <Link to="/dashboard" className="hub__card hub__card--map" data-testid="hub-card-dashboard">
+          <span className="hub__index mono">08</span>
+          <span className="hub__body">
+            <span className="hub__title">Hospital Dashboard</span>
+            <span className="hub__q">Hospital network reach, tiers, and distribution. Sign-in required.</span>
           </span>
         </Link>
       </nav>
