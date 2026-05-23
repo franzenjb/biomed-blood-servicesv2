@@ -18,9 +18,9 @@ test.describe("Hub", () => {
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    await expect(page.getByTestId("hub-card-map")).toBeVisible();
-    await expect(page.getByTestId("hub-card-map-v3")).toBeVisible();
-    await expect(page.getByTestId("hub-card-dashboard")).toBeVisible();
+    for (const id of ["map", "map-v3", "dashboard", "map-tool", "ops", "layers", "maps-menu"]) {
+      await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
+    }
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
@@ -95,4 +95,14 @@ test.describe("Real maps (OAuth)", () => {
     await page.locator("a.biomed-live-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
+
+  // The remaining lifted tools — verify each route mounts (does not fall through
+  // to the home redirect). Dragon will weed out the ones he doesn't want.
+  for (const path of ["/map-tool", "/ops", "/layers", "/maps-menu"]) {
+    test(`${path} mounts`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page).toHaveURL(new RegExp(path.replace(/\//g, "\\/") + "$"));
+      await expect(page.locator(".route-loading")).toHaveCount(0, { timeout: 15_000 });
+    });
+  }
 });

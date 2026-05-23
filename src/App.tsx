@@ -7,6 +7,10 @@ const SectionDeckPage = lazy(() => import("./pages/SectionDeckPage"));
 const BiomedLiveMapToolPage = lazy(() => import("./pages/BiomedLiveMapToolPage"));
 const BiomedMasterMapV3Page = lazy(() => import("./pages/BiomedMasterMapV3Page"));
 const HospitalNetworkPage = lazy(() => import("./pages/HospitalNetworkPage"));
+const SiteMapToolPage = lazy(() => import("./pages/SiteMapToolPage"));
+const BiomedOpsWorkbenchPage = lazy(() => import("./pages/BiomedOpsWorkbenchPage"));
+const BiomedLayerExplorerPage = lazy(() => import("./pages/BiomedLayerExplorerPage"));
+const MapsPage = lazy(() => import("./pages/MapsPage"));
 
 function Fallback() {
   return (
@@ -27,6 +31,10 @@ export default function App() {
           <Route path="/map" element={<BiomedLiveMapToolPage />} />
           <Route path="/map-v3" element={<BiomedMasterMapV3Page />} />
           <Route path="/dashboard" element={<HospitalNetworkPage />} />
+          <Route path="/map-tool" element={<SiteMapToolPage />} />
+          <Route path="/ops" element={<BiomedOpsWorkbenchPage />} />
+          <Route path="/layers" element={<BiomedLayerExplorerPage />} />
+          <Route path="/maps-menu" element={<MapsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

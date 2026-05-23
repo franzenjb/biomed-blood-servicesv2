@@ -59,6 +59,38 @@ export default function HubPage() {
             <span className="hub__q">Hospital network reach, tiers, and distribution. Sign-in required.</span>
           </span>
         </Link>
+
+        <Link to="/map-tool" className="hub__card hub__card--map" data-testid="hub-card-map-tool">
+          <span className="hub__index mono">09</span>
+          <span className="hub__body">
+            <span className="hub__title">Map App V1</span>
+            <span className="hub__q">Earlier site-map tool. Candidate to keep or cut.</span>
+          </span>
+        </Link>
+
+        <Link to="/ops" className="hub__card hub__card--map" data-testid="hub-card-ops">
+          <span className="hub__index mono">10</span>
+          <span className="hub__body">
+            <span className="hub__title">Ops Workbench</span>
+            <span className="hub__q">Operations workbench view. Candidate to keep or cut.</span>
+          </span>
+        </Link>
+
+        <Link to="/layers" className="hub__card hub__card--map" data-testid="hub-card-layers">
+          <span className="hub__index mono">11</span>
+          <span className="hub__body">
+            <span className="hub__title">Layer Explorer</span>
+            <span className="hub__q">Browse ArcGIS layers. Candidate to keep or cut.</span>
+          </span>
+        </Link>
+
+        <Link to="/maps-menu" className="hub__card hub__card--map" data-testid="hub-card-maps-menu">
+          <span className="hub__index mono">12</span>
+          <span className="hub__body">
+            <span className="hub__title">Maps Menu (classic)</span>
+            <span className="hub__q">The old maps landing. Candidate to keep or cut.</span>
+          </span>
+        </Link>
       </nav>
 
       <footer className="hub__foot">
