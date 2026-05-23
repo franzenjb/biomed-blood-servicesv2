@@ -1,0 +1,178 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--arc-cream);
+  color: var(--arc-gray-900);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--arc-black);
+}
+
+/* Shared atoms ---------------------------------------------------------- */
+
+.red-rule {
+  width: 40px;
+  height: 3px;
+  background: var(--arc-red);
+}
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  color: var(--arc-red);
+}
+
+.eyebrow--light {
+  color: #ff5d6c;
+}
+
+.mono {
+  font-family: var(--font-data);
+}
+
+/* Buttons --------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 2px;
+  transition: transform 0.18s var(--ease), background 0.18s var(--ease),
+    color 0.18s var(--ease), border-color 0.18s var(--ease);
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn--primary {
+  background: var(--arc-red);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: var(--arc-red-deep);
+}
+
+.btn--ghost {
+  border: 1px solid var(--ink-line);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.btn--ghost:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn--outline {
+  border: 1px solid var(--arc-gray-300);
+  color: var(--arc-black);
+}
+
+.btn--outline:hover {
+  border-color: var(--arc-black);
+}
+
+/* Red Cross mark -------------------------------------------------------- */
+
+.rc-mark {
+  flex: none;
+}
+
+/* App shell ------------------------------------------------------------- */
+
+.app-shell {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--ink-900);
+  color: var(--ink-soft);
+  font-family: var(--font-data);
+  letter-spacing: 1px;
+  font-size: 14px;
+}
+
+/* Scrollbar ------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--arc-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--arc-gray-300);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--arc-gray-500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

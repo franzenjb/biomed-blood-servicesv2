@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">BioMed Master Map V3 preview</title>
+  <desc id="desc">A command map preview with source layers, curated view tabs, and a selected feature intelligence panel.</desc>
+  <defs>
+    <linearGradient id="chrome" x1="0" x2="1">
+      <stop offset="0" stop-color="#17212b"/>
+      <stop offset="1" stop-color="#27313d"/>
+    </linearGradient>
+    <linearGradient id="map" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3f7f8"/>
+      <stop offset="0.52" stop-color="#e4eef4"/>
+      <stop offset="1" stop-color="#d7e8ef"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f1720" flood-opacity=".18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="760" fill="#eef2f4"/>
+  <rect width="1200" height="72" fill="url(#chrome)"/>
+  <circle cx="34" cy="36" r="19" fill="#fff"/>
+  <path d="M30 22h8v10h10v8H38v10h-8V40H20v-8h10z" fill="#d71920"/>
+  <text x="76" y="31" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#fff">BioMed Master Map V3</text>
+  <text x="76" y="53" font-family="Arial, sans-serif" font-size="12" fill="#c8d3dc">National Operations - Blood Services - BioMed</text>
+  <rect x="560" y="15" width="160" height="42" rx="4" fill="#202a35" stroke="#66717d"/>
+  <text x="576" y="31" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#aeb8c1">VIEW PRESET</text>
+  <text x="576" y="48" font-family="Arial, sans-serif" font-size="14" fill="#fff">Executive View</text>
+  <circle cx="1008" cy="36" r="5" fill="#62c98a"/>
+  <text x="1020" y="40" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">Signed in</text>
+
+  <rect x="0" y="72" width="256" height="688" fill="#26313c"/>
+  <rect x="256" y="72" width="722" height="688" fill="url(#map)"/>
+  <rect x="978" y="72" width="222" height="688" fill="#f8fafb"/>
+
+  <text x="74" y="107" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#fff">LAYERS</text>
+  <text x="144" y="107" font-family="Arial, sans-serif" font-size="13" font-weight="800" fill="#bcc8d1">SEARCH</text>
+  <rect x="56" y="122" width="164" height="28" rx="4" fill="#303c48" stroke="#55616d"/>
+  <text x="72" y="141" font-family="Arial, sans-serif" font-size="11" fill="#cbd4dc">Search layers...</text>
+
+  <g font-family="Arial, sans-serif" font-size="12" fill="#edf3f6">
+    <text x="58" y="185" font-weight="700">BioMed Collections 22-26</text>
+    <text x="58" y="254" font-weight="700">Hospital Portfolio_WorkingCopy</text>
+    <text x="58" y="323" font-weight="700">Biomed Manufacturing</text>
+    <text x="58" y="392" font-weight="700">Jurisdictions &amp; Regions</text>
+    <text x="58" y="461" font-weight="700">Distribution &amp; Operations</text>
+  </g>
+  <g fill="none" stroke="#7d8792" opacity=".55">
+    <path d="M46 205h170M46 274h170M46 343h170M46 412h170M46 481h170"/>
+  </g>
+  <g fill="#1e9ced">
+    <rect x="42" y="173" width="10" height="10" rx="2"/>
+    <rect x="42" y="242" width="10" height="10" rx="2"/>
+    <rect x="42" y="311" width="10" height="10" rx="2"/>
+    <rect x="42" y="380" width="10" height="10" rx="2"/>
+    <rect x="42" y="449" width="10" height="10" rx="2"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="274" y="82" width="128" height="40" rx="5" fill="#d71920"/>
+    <rect x="408" y="82" width="128" height="40" rx="5" fill="#fff" stroke="#d2d9df"/>
+    <rect x="542" y="82" width="128" height="40" rx="5" fill="#fff" stroke="#d2d9df"/>
+    <rect x="676" y="82" width="128" height="40" rx="5" fill="#fff" stroke="#d2d9df"/>
+    <rect x="810" y="82" width="128" height="40" rx="5" fill="#fff" stroke="#d2d9df"/>
+  </g>
+  <text x="306" y="107" font-family="Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">Executive</text>
+  <text x="432" y="107" font-family="Arial, sans-serif" font-size="14" fill="#30363d">Jurisdictions</text>
+  <text x="573" y="107" font-family="Arial, sans-serif" font-size="14" fill="#30363d">Collections</text>
+  <text x="716" y="107" font-family="Arial, sans-serif" font-size="14" fill="#30363d">Hospitals</text>
+  <text x="846" y="107" font-family="Arial, sans-serif" font-size="14" fill="#30363d">Manufacturing</text>
+
+  <g fill="none" stroke-width="2" opacity=".75">
+    <path d="M335 338c68-42 150-83 233-61 85 23 138 97 241 82 50-7 89-32 118-61" stroke="#73abd5"/>
+    <path d="M317 478c89-72 178-85 267-40 83 42 168 21 251-42" stroke="#b074ca"/>
+    <path d="M386 224c82-14 163-12 241 10 83 24 172 13 266-33" stroke="#67b881"/>
+  </g>
+  <g opacity=".72">
+    <path d="M333 225l73 24 54 74-34 73-86 12-58-49 2-86z" fill="#72b7d2"/>
+    <path d="M506 318l92-27 86 46 7 94-66 59-95-20-46-74z" fill="#e9aa76"/>
+    <path d="M714 257l98 11 64 75-23 98-95 44-88-49-16-101z" fill="#ba8bd1"/>
+    <path d="M373 463l94-22 74 58-8 92-82 42-83-40-22-84z" fill="#d7cc77"/>
+  </g>
+  <g font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#59636c">
+    <text x="569" y="356">UNITED</text>
+    <text x="564" y="378">STATES</text>
+    <text x="472" y="194">CANADA</text>
+    <text x="541" y="608">MEXICO</text>
+  </g>
+  <g>
+    <circle cx="365" cy="286" r="6" fill="#2f76d1"/>
+    <circle cx="512" cy="373" r="8" fill="#2f76d1"/>
+    <circle cx="652" cy="420" r="10" fill="#2f76d1"/>
+    <circle cx="811" cy="356" r="9" fill="#2f76d1"/>
+    <circle cx="884" cy="489" r="11" fill="#2f76d1"/>
+    <circle cx="438" cy="516" r="9" fill="#9146a5"/>
+    <circle cx="733" cy="500" r="6" fill="#4f9654"/>
+    <circle cx="615" cy="261" r="5" fill="#4f9654"/>
+    <path d="M497 288h10v-10h8v10h10v8h-10v10h-8v-10h-10z" fill="#d71920"/>
+    <path d="M712 328h10v-10h8v10h10v8h-10v10h-8v-10h-10z" fill="#d71920"/>
+    <path d="M838 422h10v-10h8v10h10v8h-10v10h-8v-10h-10z" fill="#d71920"/>
+    <path d="M551 510h10v-10h8v10h10v8h-10v10h-8v-10h-10z" fill="#d71920"/>
+  </g>
+  <rect x="274" y="636" width="678" height="82" rx="6" fill="#fff" filter="url(#shadow)" opacity=".94"/>
+  <text x="292" y="661" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#26313c">COLLECTIONS</text>
+  <text x="410" y="661" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#26313c">FIXED SITES</text>
+  <text x="532" y="661" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#26313c">JURISDICTIONS</text>
+  <text x="674" y="661" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#26313c">MANUFACTURING</text>
+  <text x="824" y="661" font-family="Arial, sans-serif" font-size="11" font-weight="800" fill="#26313c">DISTRIBUTION</text>
+
+  <text x="1000" y="110" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#26313c">SELECTED REGION</text>
+  <text x="1000" y="154" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#26313c">Southeast Region</text>
+  <text x="1000" y="178" font-family="Arial, sans-serif" font-size="12" fill="#66717d">Division: South Atlantic</text>
+  <line x1="1000" y1="213" x2="1170" y2="213" stroke="#ccd3da"/>
+  <text x="1000" y="238" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#26313c">KEY METRICS</text>
+  <g font-family="Arial, sans-serif" fill="#26313c">
+    <text x="1000" y="279" font-size="13" font-weight="700">Collections (FY25)</text>
+    <text x="1000" y="326" font-size="13" font-weight="700">Fixed Sites</text>
+    <text x="1000" y="373" font-size="13" font-weight="700">Manufacturing Sites</text>
+    <text x="1000" y="420" font-size="13" font-weight="700">Distribution Sites</text>
+  </g>
+  <line x1="1000" y1="462" x2="1170" y2="462" stroke="#ccd3da"/>
+  <text x="1000" y="488" font-family="Arial, sans-serif" font-size="12" font-weight="800" fill="#26313c">PRESENTATION NOTES</text>
+  <text x="1000" y="522" font-family="Arial, sans-serif" font-size="12" fill="#66717d">Strengths / Opportunities</text>
+  <text x="1000" y="548" font-family="Arial, sans-serif" font-size="12" fill="#66717d">Risks / Gaps</text>
+  <text x="1000" y="574" font-family="Arial, sans-serif" font-size="12" fill="#66717d">Priority Actions</text>
+</svg>

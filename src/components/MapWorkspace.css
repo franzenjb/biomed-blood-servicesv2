@@ -1,0 +1,200 @@
+.mapws {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+}
+
+.mapws__map {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #dfe3e6;
+}
+
+/* Calcite/ArcGIS widget polish */
+.mapws .esri-view .esri-ui-corner .esri-component {
+  border-radius: 2px;
+}
+
+.mapws__panel {
+  height: 100%;
+  overflow-y: auto;
+  background: var(--arc-cream);
+  border-left: 1px solid var(--arc-gray-100);
+  padding: 72px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.mapws__head h1 {
+  margin-top: 12px;
+  font-size: 26px;
+  line-height: 1.12;
+}
+.mapws__lede {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--arc-gray-500);
+}
+
+.mapws__h2 {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--arc-gray-500);
+  margin-bottom: 14px;
+}
+
+.mapws__group {
+  border-top: 1px solid var(--arc-gray-100);
+  padding-top: 22px;
+}
+
+/* Toggles ---------------------------------------------------------------*/
+
+.mapws__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.mapws__toggle input {
+  margin-top: 3px;
+  accent-color: var(--arc-red);
+  width: 16px;
+  height: 16px;
+}
+.mapws__swatch {
+  margin-top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex: none;
+}
+.swatch--collections {
+  background: var(--arc-red);
+}
+.swatch--hospitals {
+  background: var(--arc-info);
+}
+.swatch--future {
+  background: #fff;
+  border: 2px solid var(--arc-red);
+}
+.mapws__toggle-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--arc-black);
+}
+.mapws__toggle-hint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--arc-gray-500);
+}
+
+/* Region pills ----------------------------------------------------------*/
+
+.mapws__regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mapws__pill {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border: 1px solid var(--arc-gray-300);
+  border-radius: 999px;
+  color: var(--arc-gray-700);
+  background: #fff;
+  transition: all 0.18s var(--ease);
+}
+.mapws__pill:hover {
+  border-color: var(--arc-black);
+}
+.mapws__pill.is-active {
+  background: var(--arc-black);
+  border-color: var(--arc-black);
+  color: #fff;
+}
+
+/* Info stats ------------------------------------------------------------*/
+
+.mapws__info-sub {
+  font-size: 13px;
+  color: var(--arc-gray-500);
+  margin-top: -6px;
+  margin-bottom: 16px;
+}
+.mapws__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.mapws__stat {
+  background: #fff;
+  border: 1px solid var(--arc-gray-100);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.mapws__stat-value {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--arc-black);
+  line-height: 1;
+}
+.mapws__stat-value.is-accent {
+  color: var(--arc-red);
+}
+.mapws__stat-label {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--arc-gray-500);
+}
+
+.mapws__foot {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--arc-gray-300);
+}
+
+/* Loading + responsive --------------------------------------------------*/
+
+.mapws__loading {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 5;
+  font-family: var(--font-data);
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--arc-gray-700);
+  background: rgba(247, 245, 242, 0.9);
+  border: 1px solid var(--arc-gray-100);
+  padding: 8px 14px;
+  border-radius: 999px;
+}
+
+@media (max-width: 860px) {
+  .mapws {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  .mapws__map {
+    min-height: 50vh;
+  }
+  .mapws__panel {
+    border-left: none;
+    border-top: 1px solid var(--arc-gray-100);
+    max-height: 50vh;
+    padding-top: 24px;
+  }
+}

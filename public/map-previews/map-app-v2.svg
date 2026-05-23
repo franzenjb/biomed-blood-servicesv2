@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Map App V2 preview</title>
+  <desc id="desc">Live BioMed atlas preview with docked sidebars, ArcGIS layer controls, and national data layers.</desc>
+  <defs>
+    <linearGradient id="land" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f4f7f9"/>
+      <stop offset=".55" stop-color="#dfe9ed"/>
+      <stop offset="1" stop-color="#f4f0ea"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="#242a32"/>
+  <rect x="298" y="0" width="604" height="760" fill="url(#land)"/>
+  <g opacity=".6" fill="none" stroke-linecap="round">
+    <path d="M336 154 C451 134 565 170 697 136 C785 113 821 120 902 96" stroke="#cfc8ba" stroke-width="3"/>
+    <path d="M334 372 C463 334 533 381 668 338 C771 306 819 318 902 292" stroke="#d56d7d" stroke-width="3"/>
+    <path d="M410 0 C405 151 432 249 415 381 C397 525 425 632 410 760" stroke="#6f8d95" stroke-width="5"/>
+    <path d="M652 0 C631 139 663 279 641 422 C620 563 650 641 633 760" stroke="#6f8d95" stroke-width="4"/>
+    <path d="M300 220H900M300 520H900M455 0V760M720 0V760" stroke="#87929a" stroke-width="1.2"/>
+  </g>
+  <g opacity=".74">
+    <path d="M530 186 L690 136 L822 205 L807 366 L672 438 L508 374 Z" fill="#c21f32" opacity=".22" stroke="#c21f32" stroke-width="4"/>
+    <path d="M414 418 L562 364 L687 441 L638 596 L472 604 Z" fill="#2d7fc0" opacity=".22" stroke="#2d7fc0" stroke-width="4"/>
+  </g>
+  <g stroke="#fff" stroke-width="4">
+    <circle cx="580" cy="315" r="12" fill="#c21f32"/>
+    <circle cx="666" cy="385" r="12" fill="#2d7fc0"/>
+    <circle cx="742" cy="270" r="12" fill="#2b9d62"/>
+    <circle cx="515" cy="512" r="12" fill="#c21f32"/>
+    <circle cx="782" cy="548" r="12" fill="#d6a64f"/>
+  </g>
+  <g font-family="Inter, Arial, sans-serif">
+    <rect x="0" y="0" width="298" height="760" fill="#20262e"/>
+    <rect x="902" y="0" width="298" height="760" fill="#20262e"/>
+    <text x="32" y="62" fill="#95ead2" font-size="13" font-weight="850">REAL ARCGIS WEB MAP</text>
+    <text x="32" y="116" fill="#fff" font-size="34" font-weight="850">BioMed Blood</text>
+    <text x="32" y="156" fill="#fff" font-size="34" font-weight="850">Map</text>
+    <rect x="32" y="210" width="234" height="42" rx="21" fill="#fff" opacity=".14"/>
+    <rect x="32" y="280" width="234" height="44" rx="22" fill="#fff" opacity=".13"/>
+    <rect x="32" y="364" width="234" height="56" rx="10" fill="#fff" opacity=".1"/>
+    <rect x="32" y="434" width="234" height="56" rx="10" fill="#fff" opacity=".1"/>
+    <rect x="32" y="504" width="234" height="56" rx="10" fill="#fff" opacity=".1"/>
+    <text x="934" y="62" fill="#ffb2bd" font-size="13" font-weight="850">LIVE MAP</text>
+    <text x="934" y="116" fill="#fff" font-size="34" font-weight="850">Layer Detail</text>
+    <rect x="934" y="166" width="76" height="56" rx="9" fill="#fff" opacity=".13"/>
+    <rect x="1022" y="166" width="76" height="56" rx="9" fill="#fff" opacity=".13"/>
+    <rect x="934" y="284" width="234" height="134" rx="12" fill="#fff" opacity=".1"/>
+    <rect x="934" y="454" width="234" height="180" rx="12" fill="#fff" opacity=".1"/>
+  </g>
+</svg>

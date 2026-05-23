@@ -1,0 +1,153 @@
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import type { Section } from "../data/sections";
+import Slide from "./Slide";
+import "./SlideDeck.css";
+
+type Props = {
+  section: Section;
+  present?: boolean;
+  /** Label for the chained next step (e.g. next section title). */
+  nextLabel?: string;
+  /** Called when the user advances past the final slide. */
+  onAdvancePastEnd?: () => void;
+};
+
+export default function SlideDeck({
+  section,
+  present = false,
+  nextLabel,
+  onAdvancePastEnd,
+}: Props) {
+  const [index, setIndex] = useState(0);
+  const count = section.slides.length;
+  const atEnd = index === count - 1;
+
+  // Reset to first slide whenever the section changes.
+  useEffect(() => {
+    setIndex(0);
+  }, [section.id]);
+
+  const goNext = useCallback(() => {
+    setIndex((i) => {
+      if (i < count - 1) return i + 1;
+      onAdvancePastEnd?.();
+      return i;
+    });
+  }, [count, onAdvancePastEnd]);
+
+  const goPrev = useCallback(() => setIndex((i) => Math.max(0, i - 1)), []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowRight":
+        case "PageDown":
+        case " ":
+          e.preventDefault();
+          goNext();
+          break;
+        case "ArrowLeft":
+        case "PageUp":
+          e.preventDefault();
+          goPrev();
+          break;
+        case "Home":
+          setIndex(0);
+          break;
+        case "End":
+          setIndex(count - 1);
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [goNext, goPrev, count]);
+
+  const current = section.slides[index];
+
+  return (
+    <section className="deck" data-testid="deck" data-section={section.id}>
+      {/* Top bar */}
+      <header className="deck__bar">
+        <Link to="/" className="deck__home" aria-label="Back to home">
+          ✕
+        </Link>
+        <div className="deck__title">
+          <span className="mono deck__index">{section.index}</span>
+          <span className="deck__name">{section.title}</span>
+        </div>
+        <div className="deck__counter mono" data-testid="deck-counter">
+          {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+        </div>
+      </header>
+
+      {/* Slide stage — click anywhere to advance */}
+      <div
+        className="deck__stage"
+        onClick={goNext}
+        data-testid="deck-stage"
+        role="presentation"
+      >
+        <Slide section={section} slide={current} active />
+      </div>
+
+      {/* Controls */}
+      <footer className="deck__controls" onClick={(e) => e.stopPropagation()}>
+        <button
+          type="button"
+          className="deck__arrow"
+          onClick={goPrev}
+          disabled={index === 0}
+          aria-label="Previous slide"
+          data-testid="deck-prev"
+        >
+          ←
+        </button>
+
+        <div className="deck__dots" role="tablist" aria-label="Slides">
+          {section.slides.map((s, i) => (
+            <button
+              key={s.id}
+              type="button"
+              className={`deck__dot ${i === index ? "is-active" : ""}`}
+              onClick={() => setIndex(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              aria-selected={i === index}
+              role="tab"
+            />
+          ))}
+        </div>
+
+        {atEnd && present && nextLabel ? (
+          <button
+            type="button"
+            className="deck__arrow deck__arrow--next"
+            onClick={() => onAdvancePastEnd?.()}
+            data-testid="deck-next-section"
+          >
+            {nextLabel} →
+          </button>
+        ) : atEnd ? (
+          <Link
+            to="/map"
+            className="deck__arrow deck__arrow--next"
+            data-testid="deck-to-map"
+          >
+            Map →
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="deck__arrow"
+            onClick={goNext}
+            aria-label="Next slide"
+            data-testid="deck-next"
+          >
+            →
+          </button>
+        )}
+      </footer>
+    </section>
+  );
+}

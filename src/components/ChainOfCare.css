@@ -1,0 +1,73 @@
+.chain {
+  position: relative;
+  width: min(380px, 80vw);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.chain__rings {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.chain__rings circle {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+}
+
+.chain__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 84px;
+  height: 84px;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  background: rgba(237, 27, 46, 0.12);
+  border: 1px solid rgba(237, 27, 46, 0.5);
+  border-radius: 999px;
+  z-index: 2;
+  box-shadow: 0 0 60px rgba(237, 27, 46, 0.25);
+}
+
+.chain__node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 120px;
+  transform: translate(-50%, -50%);
+}
+.chain__label {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 16px;
+  color: #fff;
+}
+.chain__sub {
+  margin-top: 2px;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  color: var(--ink-soft);
+}
+
+.chain__node--donors {
+  top: 4%;
+  left: 50%;
+}
+.chain__node--readiness {
+  top: 50%;
+  left: 8%;
+}
+.chain__node--access {
+  top: 50%;
+  left: 92%;
+}
+.chain__node--care {
+  top: 96%;
+  left: 50%;
+}
