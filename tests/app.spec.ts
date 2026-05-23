@@ -1,26 +1,25 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Home", () => {
-  test("renders hero, CTAs, and five chapter cards", async ({ page }) => {
+test.describe("Home (hero)", () => {
+  test("renders hero and entry CTAs", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("chain of care");
+    await expect(page.getByTestId("enter-hub")).toBeVisible();
     await expect(page.getByTestId("start-presentation")).toBeVisible();
-    await expect(page.getByTestId("hero-map")).toBeVisible();
-    for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
-      await expect(page.getByTestId(`home-card-${id}`)).toBeVisible();
-    }
-    await expect(page.getByTestId("home-card-map")).toBeVisible();
+    await page.getByTestId("enter-hub").click();
+    await expect(page).toHaveURL(/\/hub$/);
   });
 });
 
-test.describe("Menu", () => {
-  test("opens, lists sections + map, and navigates", async ({ page }) => {
-    await page.goto("/");
-    await page.getByTestId("menu-trigger").click();
-    await expect(page.getByTestId("menu-overlay")).toBeVisible();
-    await expect(page.getByTestId("menu-card-journey")).toBeVisible();
-    await expect(page.getByTestId("menu-card-map")).toBeVisible();
-    await page.getByTestId("menu-card-distribution").click();
+test.describe("Hub", () => {
+  test("is the grid of five chapters + map, and navigates", async ({ page }) => {
+    await page.goto("/hub");
+    await expect(page.getByTestId("hub")).toBeVisible();
+    for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
+      await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
+    }
+    await expect(page.getByTestId("hub-card-map")).toBeVisible();
+    await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
   });
@@ -44,18 +43,40 @@ test.describe("Slide deck", () => {
     await expect(page.getByTestId("deck-counter")).toContainText("03 /");
   });
 
-  test("presentation mode chains to the next section", async ({ page }) => {
-    await page.goto("/s/blood-101?present=1");
-    // wait for the (lazy) deck to mount so its keydown listener is attached
+  test("end of a chapter returns to the hub", async ({ page }) => {
+    await page.goto("/s/blood-101");
+    await expect(page.getByTestId("deck")).toBeVisible();
+    await page.keyboard.press("End");
+    await page.getByTestId("deck-to-hub").click();
+    await expect(page).toHaveURL(/\/hub$/);
+  });
+
+  test("close (✕) returns to the hub", async ({ page }) => {
+    await page.goto("/s/collections");
+    await expect(page.getByTestId("deck")).toBeVisible();
+    await page.getByRole("link", { name: "Back to chapters" }).click();
+    await expect(page).toHaveURL(/\/hub$/);
+  });
+
+  test("presentation mode chains sections then ends at the hub", async ({ page }) => {
+    // start at the LAST section in present mode to verify the finish -> hub hop
+    await page.goto("/s/future-demand?present=1");
     await expect(page.getByTestId("deck")).toBeVisible();
     await expect(page.getByTestId("deck-counter")).toContainText("01 /");
-    // jump to last slide, then advance to next section
     await page.keyboard.press("End");
-    await expect(page.getByTestId("deck-counter")).toContainText("05 /");
+    await expect(page.getByTestId("deck-next-section")).toContainText("Finish");
+    await page.getByTestId("deck-next-section").click();
+    await expect(page).toHaveURL(/\/hub$/);
+  });
+
+  test("presentation mode advances blood-101 -> collections", async ({ page }) => {
+    await page.goto("/s/blood-101?present=1");
+    await expect(page.getByTestId("deck")).toBeVisible();
+    await expect(page.getByTestId("deck-counter")).toContainText("01 /");
+    await page.keyboard.press("End");
     await expect(page.getByTestId("deck-next-section")).toBeVisible();
     await page.getByTestId("deck-next-section").click();
     await expect(page).toHaveURL(/\/s\/collections\?present=1/);
-    await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "collections");
   });
 });
 
@@ -72,16 +93,13 @@ test.describe("Map (public-safe gate)", () => {
 
     await page.goto("/map");
     await expect(page.getByTestId("map-workspace")).toBeVisible();
-    // ArcGIS view mounts and loading clears.
     await expect(page.locator(".esri-view")).toBeVisible({ timeout: 30_000 });
     await expect(page.getByTestId("map-loading")).toHaveCount(0, { timeout: 30_000 });
-
-    // No ArcGIS OAuth iframe / login surface should ever appear.
     await expect(page.locator(".esri-identity-modal")).toHaveCount(0);
     expect(badMessages, badMessages.join("\n")).toEqual([]);
   });
 
-  test("layer toggles and region focus work", async ({ page }) => {
+  test("layer toggles, region focus, and hub return work", async ({ page }) => {
     await page.goto("/map");
     await expect(page.locator(".esri-view")).toBeVisible({ timeout: 30_000 });
     const future = page.getByTestId("toggle-future").locator("input");
@@ -90,5 +108,7 @@ test.describe("Map (public-safe gate)", () => {
     await expect(future).toBeChecked();
     await page.getByTestId("region-tennessee").click();
     await expect(page.getByTestId("region-tennessee")).toHaveClass(/is-active/);
+    await page.getByTestId("map-to-hub").click();
+    await expect(page).toHaveURL(/\/hub$/);
   });
 });

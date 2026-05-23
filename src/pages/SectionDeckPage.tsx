@@ -17,7 +17,7 @@ export default function SectionDeckPage() {
   const onAdvancePastEnd = present
     ? () => {
         if (nextId) navigate(`/s/${nextId}?present=1`);
-        else navigate("/map");
+        else navigate("/hub");
       }
     : undefined;
 

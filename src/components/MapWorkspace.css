@@ -22,10 +22,21 @@
   overflow-y: auto;
   background: var(--arc-cream);
   border-left: 1px solid var(--arc-gray-100);
-  padding: 72px 26px 24px;
+  padding: 24px 26px 24px;
   display: flex;
   flex-direction: column;
   gap: 26px;
+}
+
+.mapws__back {
+  display: inline-block;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--arc-gray-500);
+}
+.mapws__back:hover {
+  color: var(--arc-black);
 }
 
 .mapws__head h1 {

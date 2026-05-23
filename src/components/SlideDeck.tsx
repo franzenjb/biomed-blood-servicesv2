@@ -70,7 +70,7 @@ export default function SlideDeck({
     <section className="deck" data-testid="deck" data-section={section.id}>
       {/* Top bar */}
       <header className="deck__bar">
-        <Link to="/" className="deck__home" aria-label="Back to home">
+        <Link to="/hub" className="deck__home" aria-label="Back to chapters">
           ✕
         </Link>
         <div className="deck__title">
@@ -130,11 +130,11 @@ export default function SlideDeck({
           </button>
         ) : atEnd ? (
           <Link
-            to="/map"
+            to="/hub"
             className="deck__arrow deck__arrow--next"
-            data-testid="deck-to-map"
+            data-testid="deck-to-hub"
           >
-            Map →
+            ↩ Chapters
           </Link>
         ) : (
           <button

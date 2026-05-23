@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import Map from "@arcgis/core/Map";
 import MapView from "@arcgis/core/views/MapView";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
@@ -244,6 +245,9 @@ export default function MapWorkspace() {
 
       <aside className="mapws__panel">
         <div className="mapws__head">
+          <Link to="/hub" className="mapws__back" data-testid="map-to-hub">
+            ← All chapters
+          </Link>
           <p className="eyebrow">Map &amp; Data</p>
           <h1>Collection reach &amp; hospital distribution</h1>
           <p className="mapws__lede">

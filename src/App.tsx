@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import AppMenu from "./components/AppMenu";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
+const HubPage = lazy(() => import("./pages/HubPage"));
 const SectionDeckPage = lazy(() => import("./pages/SectionDeckPage"));
 const MapPage = lazy(() => import("./pages/MapPage"));
 
@@ -15,16 +15,12 @@ function Fallback() {
 }
 
 export default function App() {
-  const location = useLocation();
-  // Decks have their own chrome; keep the floating Explore trigger off them.
-  const showMenu = !location.pathname.startsWith("/s/");
-
   return (
     <div className="app-shell">
-      {showMenu && <AppMenu />}
       <Suspense fallback={<Fallback />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/hub" element={<HubPage />} />
           <Route path="/s/:sectionId" element={<SectionDeckPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
