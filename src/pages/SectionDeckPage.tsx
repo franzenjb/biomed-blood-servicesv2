@@ -14,12 +14,12 @@ export default function SectionDeckPage() {
   const nextId = nextSectionId(section.id);
   const next = nextId ? getSection(nextId) : undefined;
 
-  const onAdvancePastEnd = present
-    ? () => {
-        if (nextId) navigate(`/s/${nextId}?present=1`);
-        else navigate("/hub");
-      }
-    : undefined;
+  // Advancing past the final slide always leaves the deck: present mode chains
+  // to the next section (then the hub); normal mode returns to the hub.
+  const onAdvancePastEnd = () => {
+    if (present && nextId) navigate(`/s/${nextId}?present=1`);
+    else navigate("/hub");
+  };
 
   return (
     <SlideDeck

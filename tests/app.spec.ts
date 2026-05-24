@@ -57,7 +57,15 @@ test.describe("Slide deck", () => {
     await expect(page).toHaveURL(/\/hub$/);
   });
 
-  test("close (✕) returns to the hub", async ({ page }) => {
+  test("advancing past the final slide goes to the hub", async ({ page }) => {
+    await page.goto("/s/blood-101");
+    await expect(page.getByTestId("deck")).toBeVisible();
+    await page.keyboard.press("End");
+    await page.keyboard.press("ArrowRight");
+    await expect(page).toHaveURL(/\/hub$/);
+  });
+
+  test("home icon returns to the hub", async ({ page }) => {
     await page.goto("/s/collections");
     await expect(page.getByTestId("deck")).toBeVisible();
     await page.getByRole("link", { name: "Back to chapters" }).click();
