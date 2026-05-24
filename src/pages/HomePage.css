@@ -4,37 +4,52 @@
   flex-direction: column;
 }
 
-/* Hero ------------------------------------------------------------------*/
+/* Hero — cinematic full-bleed -------------------------------------------*/
 
 .home-hero {
   position: relative;
   flex: 1;
+  min-height: 92vh;
   display: flex;
-  align-items: center;
-  background: var(--ink-900);
-  color: #fff;
   overflow: hidden;
+  background: var(--ink-900);
+  isolation: isolate;
 }
 
-.home-hero__bg {
+.home-hero__photo {
+  position: absolute;
+  inset: 0;
+  background-image: url("/covers/blood-101.png");
+  background-size: cover;
+  background-position: center right;
+  transform: scale(1.04);
+  animation: hero-drift 18s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift {
+  from { transform: scale(1.04) translateX(0); }
+  to { transform: scale(1.1) translateX(-1.5%); }
+}
+
+.home-hero__scrim {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(1100px 600px at 78% 18%, rgba(237, 27, 46, 0.16), transparent 60%),
-    radial-gradient(900px 700px at 10% 90%, rgba(30, 74, 109, 0.18), transparent 55%),
-    var(--ink-900);
+    linear-gradient(100deg, rgba(10, 12, 15, 0.96) 0%, rgba(10, 12, 15, 0.86) 38%, rgba(10, 12, 15, 0.5) 66%, rgba(10, 12, 15, 0.25) 100%),
+    linear-gradient(0deg, rgba(10, 12, 15, 0.75) 0%, rgba(10, 12, 15, 0) 42%);
 }
 
-.home-hero__grid {
+.home-hero__inner {
   position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: clamp(40px, 6vh, 72px) clamp(20px, 5vw, 56px);
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  align-items: center;
-  gap: clamp(32px, 5vw, 72px);
+  padding: clamp(40px, 7vh, 88px) clamp(20px, 5vw, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
 }
 
 .home-brand {
@@ -43,73 +58,67 @@
   gap: 12px;
   font-size: 14px;
   letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.78);
-  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 26px;
 }
 .home-brand strong {
   color: #fff;
 }
 
 .home-hero__title {
-  margin-top: 14px;
   color: #fff;
-  font-size: clamp(38px, 5.4vw, 68px);
-  line-height: 1.04;
-  letter-spacing: -1px;
+  font-size: clamp(44px, 7vw, 92px);
+  line-height: 1.0;
+  letter-spacing: -1.5px;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.4);
 }
 .home-hero__title em {
   font-style: italic;
-  color: #ff5d6c;
+  color: #ff4d5e;
 }
 
 .home-hero__lede {
-  margin-top: 16px;
-  max-width: 52ch;
-  font-size: clamp(15px, 1.4vw, 18px);
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.home-hero__cta {
   margin-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
+  max-width: 46ch;
+  font-size: clamp(17px, 1.7vw, 22px);
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.85);
 }
-
 .home-hero__lede strong {
   color: #fff;
   font-weight: 700;
 }
 
-.home-hero__stats {
+.home-hero__cta {
   margin-top: 30px;
+  align-self: flex-start;
+  font-size: 16px;
+  padding: 14px 26px;
+}
+
+.home-hero__stats {
+  margin-top: 40px;
   display: flex;
   flex-wrap: wrap;
-  gap: 24px 44px;
+  gap: 22px 46px;
   padding-top: 24px;
-  border-top: 1px solid var(--ink-line);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 .home-stat__value {
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 600;
   line-height: 1;
   color: #fff;
 }
 .home-stat:first-child .home-stat__value {
-  color: #ff5d6c;
+  color: #ff4d5e;
 }
 .home-stat__label {
-  margin-top: 7px;
+  margin-top: 8px;
   font-size: 12px;
   letter-spacing: 0.3px;
-  color: var(--ink-soft);
+  color: rgba(255, 255, 255, 0.62);
   max-width: 20ch;
-}
-
-.home-hero__art {
-  display: grid;
-  place-items: center;
 }
 
 /* Footer ----------------------------------------------------------------*/
@@ -121,7 +130,7 @@
 .home-foot__inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 32px clamp(20px, 5vw, 56px);
+  padding: 28px clamp(20px, 5vw, 64px);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -140,20 +149,11 @@
   max-width: 60ch;
 }
 
-/* Responsive ------------------------------------------------------------*/
-
-@media (max-width: 920px) {
-  .home-hero__grid {
-    grid-template-columns: 1fr;
-  }
-  .home-hero__art {
-    order: -1;
-  }
-}
-
 @media (max-width: 640px) {
-  .home-hero__art {
-    max-width: 280px;
-    margin: 0 auto;
+  .home-hero__photo {
+    background-position: center;
+  }
+  .home-hero__stats {
+    gap: 18px 28px;
   }
 }
