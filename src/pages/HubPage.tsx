@@ -13,9 +13,6 @@ export default function HubPage() {
             Red Cross <strong>Blood Services</strong>
           </span>
         </Link>
-        <Link to="/" className="hub__home" data-testid="hub-home">
-          Home ✕
-        </Link>
       </header>
 
       <nav className="hub__grid" aria-label="Sections">
