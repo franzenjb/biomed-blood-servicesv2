@@ -217,7 +217,7 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
       </div>
 
       <Link to="/hub" className="map-shell__back" data-testid="map-back">
-        ← Maps
+        ← Hub
       </Link>
 
       <MapPanel
