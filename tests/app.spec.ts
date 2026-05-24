@@ -18,8 +18,12 @@ test.describe("Hub", () => {
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    for (const id of ["map", "map-v3", "dashboard", "map-tool", "ops", "layers", "maps-menu"]) {
+    for (const id of ["map", "dashboard"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
+    }
+    // retired map tools are gone
+    for (const id of ["map-v3", "map-tool", "ops", "layers", "maps-menu"]) {
+      await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
@@ -82,27 +86,30 @@ test.describe("Slide deck", () => {
   });
 });
 
-test.describe("Real maps (OAuth)", () => {
-  for (const path of ["/map", "/dashboard", "/map-v3"]) {
-    test(`${path} renders the ArcGIS sign-in gate (not crash)`, async ({ page }) => {
+test.describe("Maps (shared shell)", () => {
+  for (const path of ["/map", "/dashboard"]) {
+    test(`${path} renders the shared shell + sign-in gate`, async ({ page }) => {
       await page.goto(path);
-      await expect(page.getByText(/sign in/i).first()).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId("map-shell")).toBeVisible();
+      await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId("map-signin")).toBeVisible();
+      // light panel with Layers/Details tabs is present
+      await expect(page.getByTestId("map-tab-layers")).toBeVisible();
+      await expect(page.getByTestId("map-tab-details")).toBeVisible();
     });
   }
 
   test("map back link returns to hub", async ({ page }) => {
     await page.goto("/map");
-    await page.locator("a.biomed-live-back").click();
+    await page.getByTestId("map-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
 
-  // The remaining lifted tools — verify each route mounts (does not fall through
-  // to the home redirect). Dragon will weed out the ones he doesn't want.
-  for (const path of ["/map-tool", "/ops", "/layers", "/maps-menu"]) {
-    test(`${path} mounts`, async ({ page }) => {
+  // Retired routes fall through to the home redirect.
+  for (const path of ["/map-v3", "/map-tool", "/ops", "/layers", "/maps-menu"]) {
+    test(`${path} redirects home`, async ({ page }) => {
       await page.goto(path);
-      await expect(page).toHaveURL(new RegExp(path.replace(/\//g, "\\/") + "$"));
-      await expect(page.locator(".route-loading")).toHaveCount(0, { timeout: 15_000 });
+      await expect(page).toHaveURL(/\/$/);
     });
   }
 });

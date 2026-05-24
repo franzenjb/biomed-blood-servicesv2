@@ -44,51 +44,11 @@ export default function HubPage() {
           </span>
         </Link>
 
-        <Link to="/map-v3" className="hub__card hub__card--map" data-testid="hub-card-map-v3">
+        <Link to="/dashboard" className="hub__card hub__card--map" data-testid="hub-card-dashboard">
           <span className="hub__index mono">07</span>
           <span className="hub__body">
-            <span className="hub__title">Master Map</span>
-            <span className="hub__q">FY25 jurisdiction map with presenter modes. Sign-in required.</span>
-          </span>
-        </Link>
-
-        <Link to="/dashboard" className="hub__card hub__card--map" data-testid="hub-card-dashboard">
-          <span className="hub__index mono">08</span>
-          <span className="hub__body">
             <span className="hub__title">Hospital Dashboard</span>
-            <span className="hub__q">Hospital network reach, tiers, and distribution. Sign-in required.</span>
-          </span>
-        </Link>
-
-        <Link to="/map-tool" className="hub__card hub__card--map" data-testid="hub-card-map-tool">
-          <span className="hub__index mono">09</span>
-          <span className="hub__body">
-            <span className="hub__title">Map App V1</span>
-            <span className="hub__q">Earlier site-map tool. Candidate to keep or cut.</span>
-          </span>
-        </Link>
-
-        <Link to="/ops" className="hub__card hub__card--map" data-testid="hub-card-ops">
-          <span className="hub__index mono">10</span>
-          <span className="hub__body">
-            <span className="hub__title">Ops Workbench</span>
-            <span className="hub__q">Operations workbench view. Candidate to keep or cut.</span>
-          </span>
-        </Link>
-
-        <Link to="/layers" className="hub__card hub__card--map" data-testid="hub-card-layers">
-          <span className="hub__index mono">11</span>
-          <span className="hub__body">
-            <span className="hub__title">Layer Explorer</span>
-            <span className="hub__q">Browse ArcGIS layers. Candidate to keep or cut.</span>
-          </span>
-        </Link>
-
-        <Link to="/maps-menu" className="hub__card hub__card--map" data-testid="hub-card-maps-menu">
-          <span className="hub__index mono">12</span>
-          <span className="hub__body">
-            <span className="hub__title">Maps Menu (classic)</span>
-            <span className="hub__q">The old maps landing. Candidate to keep or cut.</span>
+            <span className="hub__q">Hospital network reach &amp; distribution. Red Cross sign-in required.</span>
           </span>
         </Link>
       </nav>

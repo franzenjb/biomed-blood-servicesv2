@@ -8,6 +8,7 @@ export function loadArcgisComponents() {
       import("@arcgis/core/config"),
       import("@arcgis/core/assets/esri/themes/light/main.css"),
       import("@arcgis/map-components/components/arcgis-basemap-toggle"),
+      import("@arcgis/map-components/components/arcgis-basemap-gallery"),
       import("@arcgis/map-components/components/arcgis-expand"),
       import("@arcgis/map-components/components/arcgis-fullscreen"),
       import("@arcgis/map-components/components/arcgis-home"),
