@@ -71,7 +71,20 @@ export default function SlideDeck({
       {/* Top bar */}
       <header className="deck__bar">
         <Link to="/hub" className="deck__home" aria-label="Back to chapters">
-          ✕
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 11.5 12 4l9 7.5" />
+            <path d="M5 10v9h5v-6h4v6h5v-9" />
+          </svg>
         </Link>
         <div className="deck__title">
           <span className="mono deck__index">{section.index}</span>
