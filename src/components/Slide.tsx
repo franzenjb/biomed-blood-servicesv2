@@ -13,14 +13,20 @@ const easeOut = (p: number) => 1 - Math.pow(1 - p, 3);
 
 function CountValue({ raw, active }: { raw: string; active: boolean }) {
   const match = raw.match(/^([~<+\-−$]?)([\d,]+(?:\.\d+)?)([%+]?)$/);
+  const hasMatch = !!match;
+  const prefix = match ? match[1] : "";
+  const suffix = match ? match[3] : "";
+  const decimals = match ? (match[2].split(".")[1] || "").length : 0;
   const target = match ? parseFloat(match[2].replace(/,/g, "")) : 0;
-  const [value, setValue] = useState(active && match ? 0 : target);
+  const [value, setValue] = useState(target);
+
   useEffect(() => {
-    if (!active || !match) {
+    if (!active || !hasMatch) {
       setValue(target);
       return;
     }
     let raf = 0;
+    setValue(0);
     const start = performance.now();
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / 900);
@@ -29,14 +35,14 @@ function CountValue({ raw, active }: { raw: string; active: boolean }) {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target, active, match]);
-  if (!match) return <>{raw}</>;
-  const decimals = (match[2].split(".")[1] || "").length;
+  }, [target, active, hasMatch]);
+
+  if (!hasMatch) return <>{raw}</>;
   return (
     <>
-      {match[1]}
+      {prefix}
       {value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
-      {match[3]}
+      {suffix}
     </>
   );
 }
