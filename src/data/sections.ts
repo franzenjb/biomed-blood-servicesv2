@@ -89,6 +89,20 @@ const blood101: Section = {
       },
     },
     {
+      id: "every-day",
+      kind: "content",
+      title: "What it takes, every single day",
+      body: "The need never pauses. In the U.S. someone needs a transfusion every two seconds, and the system has to refill constantly.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "13,000", label: "whole blood donations needed every day", accent: true },
+          { value: "3,000", label: "platelet donations needed every day" },
+          { value: "~29,000", label: "units of red cells needed daily" },
+        ],
+      },
+    },
+    {
       id: "ways-to-give",
       kind: "content",
       title: "Ways to give",
@@ -109,6 +123,20 @@ const blood101: Section = {
       block: {
         kind: "list",
         items: componentBasics.map((c) => ({ title: c.title, detail: `${c.detail} ${c.storage}` })),
+      },
+    },
+    {
+      id: "lifesaving-math",
+      kind: "content",
+      title: "Rare gift, enormous reach",
+      body: "Despite the constant need, only a small slice of eligible people give — and each one goes a long way.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "3%", label: "of eligible Americans donate in a given year", accent: true },
+          { value: "1 → 3", label: "a single donation can save up to three lives" },
+          { value: "100", label: "units a single car-accident trauma patient can require" },
+        ],
       },
     },
     {
@@ -209,6 +237,34 @@ const collections: Section = {
       },
     },
     {
+      id: "precision",
+      kind: "content",
+      title: "Precision collection",
+      body: "Automated apheresis lets a machine collect exactly the component the supply needs that day — separating it in real time and safely returning the rest to the donor.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Whole blood", detail: "~1 hour. Flexible; separated into red cells, platelets, and plasma after collection." },
+          { title: "Power Red", detail: "~45 minutes. Collects a concentrated double dose of red cells — highly efficient for trauma supply." },
+          { title: "Platelets (apheresis)", detail: "~2.5 hours. Yields several transfusable units from one donor — crucial for cancer patients." },
+        ],
+      },
+    },
+    {
+      id: "digital-donor",
+      kind: "content",
+      title: "A frictionless digital front door",
+      body: "Technology is shrinking the intake funnel and keeping donors coming back.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Clara AI", detail: "An intelligent scheduling assistant that handles eligibility questions and streamlines booking." },
+          { title: "RapidPass", detail: "A digital pre-donation health questionnaire completed on mobile, cutting on-site check-in time." },
+          { title: "Digital tracking", detail: "Donors can follow their blood's journey to the hospital — which drives repeat donation." },
+        ],
+      },
+    },
+    {
       id: "inclusive",
       kind: "content",
       title: "Inclusive engagement as supply strategy",
@@ -248,6 +304,34 @@ const journey: Section = {
       title: `${i + 1}. ${stage.title}`,
       body: stage.detail,
     })),
+    {
+      id: "ticking-clock",
+      kind: "content",
+      title: "The logistics ticking clock",
+      body: "Blood can't be stockpiled — every unit is manufactured and screened within hours of collection to beat strict expiration limits.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Hour 0 — Collection", detail: "Donations gathered via mobile drives and fixed sites." },
+          { title: "Hour 4 — Processing", detail: "Centrifuges separate whole blood into red cells, platelets, and plasma." },
+          { title: "Hour 8 — Testing", detail: "Tubes routed to reference labs for a dozen infectious-disease tests and blood typing." },
+          { title: "Hour 16 — Last mile", detail: "Algorithms allocate components to ~2,500 hospitals by immediate need." },
+        ],
+      },
+    },
+    {
+      id: "safety-gauntlet",
+      kind: "content",
+      title: "A gauntlet of safety",
+      body: "Every donation runs a multi-layer screening gauntlet — donor history, enzyme immunoassays (Hep B, Chagas, syphilis), and molecular Nucleic Acid Testing for HIV, HCV, and HBV.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "<1 in 1M", label: "estimated HBV transmission risk after screening", accent: true },
+          { value: "1.6M", label: "Babesia tests run yearly in endemic regions" },
+        ],
+      },
+    },
     {
       id: "ten-minute-window",
       kind: "content",
@@ -330,6 +414,20 @@ const distribution: Section = {
       },
     },
     {
+      id: "zero-margin",
+      kind: "content",
+      title: "Zero margin for error",
+      body: "Demand is relentless and lumpy. The network has to hold a steady supply against sudden, massive spikes.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "every 2s", label: "someone in the U.S. needs a transfusion", accent: true },
+          { value: "~29,000", label: "units of red cells needed every day" },
+          { value: "<2 days", label: "regional inventories often drop to this 'critical' level" },
+        ],
+      },
+    },
+    {
       id: "ripple",
       kind: "content",
       title: "When the chain is tested",
@@ -339,6 +437,20 @@ const distribution: Section = {
         items: [
           { value: "1,500", label: "blood drives cancelled by extreme weather in FY25", accent: true },
           { value: "40,000", label: "donations uncollected in a single year — directly threatening patient readiness" },
+        ],
+      },
+    },
+    {
+      id: "drones",
+      kind: "content",
+      title: "Closing the last mile",
+      body: "Autonomous drone delivery (the Zipline model) is collapsing the time and waste between the shelf and the bedside — with real, measured results.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "51%", label: "reduction in maternal mortality from postpartum hemorrhage", accent: true },
+          { value: "63%", label: "reduction in on-site hospital inventory requirements" },
+          { value: "40%", label: "reduction in blood-product wastage" },
         ],
       },
     },
@@ -460,6 +572,33 @@ const futureDemand: Section = {
         kind: "quote",
         text: "We have a unique ability to raise awareness about the devastating impacts of chronic illness while advancing the health of our communities.",
         cite: "Dr. Pampee Young",
+      },
+    },
+    {
+      id: "predictive",
+      kind: "content",
+      title: "From reactive to predictive",
+      body: "AI/ML demand forecasting reads weather, epidemiological trends, scheduled surgeries, and hospital admissions to collect the right components before shortages hit — replacing paper tracking and retrospective ordering.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "+11%", label: "increase in overall collected blood volume", accent: true },
+          { value: "−20%", label: "decrease in inventory wastage" },
+        ],
+      },
+    },
+    {
+      id: "economics",
+      kind: "content",
+      title: "Where the money goes",
+      body: "Hospital fees only cover basic cost-recovery; philanthropy funds the innovation and resilience — predictive algorithms, automated apheresis, and disaster response.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "90.7%", label: "programmatic allocation ratio (FY25)", accent: true },
+          { value: "$3.96B", label: "total operating budget; Biomedical Services is 63%" },
+          { value: "4★", label: "Charity Navigator · Candid Platinum · BBB Wise Giving" },
+        ],
       },
     },
     {
