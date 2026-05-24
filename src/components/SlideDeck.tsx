@@ -102,7 +102,7 @@ export default function SlideDeck({
         data-testid="deck-stage"
         role="presentation"
       >
-        <Slide section={section} slide={current} active />
+        <Slide key={current.id} section={section} slide={current} active />
       </div>
 
       {/* Controls */}
