@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { sections } from "../data/sections";
 import RcMark from "../components/RcMark";
+import ThemeToggle from "../components/ThemeToggle";
 import "./HubPage.css";
 
 export default function HubPage() {
@@ -13,6 +14,7 @@ export default function HubPage() {
             Red Cross <strong>Blood Services</strong>
           </span>
         </Link>
+        <ThemeToggle />
       </header>
 
       <nav className="hub__grid" aria-label="Sections">

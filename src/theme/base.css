@@ -168,6 +168,27 @@ h3 {
   }
 }
 
+/* Theme toggle ---------------------------------------------------------- */
+
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1px solid var(--d-line, rgba(255, 255, 255, 0.14));
+  background: transparent;
+  color: var(--d-soft, rgba(255, 255, 255, 0.8));
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.theme-toggle:hover {
+  color: var(--d-text, #fff);
+  border-color: var(--d-text, #fff);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

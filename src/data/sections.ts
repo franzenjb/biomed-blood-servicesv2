@@ -35,7 +35,7 @@ const blood101: Section = {
   title: "Blood 101",
   tagline: "The quiet backbone of modern medicine.",
   question: "Why does blood donation matter?",
-  cover: "/ai/blood-101.png",
+  cover: "/covers/blood-101.png",
   slides: [
     {
       id: "hero",
@@ -121,7 +121,7 @@ const collections: Section = {
   title: "Biomed Collections",
   tagline: "Meeting donors where they already are.",
   question: "Where does blood donation happen?",
-  cover: "/ai/biomed-collections.png",
+  cover: "/covers/biomed-collections.png",
   slides: [
     {
       id: "hero",
@@ -223,7 +223,7 @@ const journey: Section = {
   title: "Blood Journey",
   tagline: "Fifty-six days, and ten minutes.",
   question: "How does blood move from donor to patient?",
-  cover: "/ai/blood-journey.png",
+  cover: "/covers/blood-journey.png",
   slides: [
     {
       id: "hero",
@@ -295,7 +295,7 @@ const distribution: Section = {
   title: "Hospital Distribution",
   tagline: "Getting the right unit to the right bedside, in time.",
   question: "Which communities and hospitals are supported?",
-  cover: "/ai/hospital-distribution.png",
+  cover: "/covers/hospital-distribution.png",
   slides: [
     {
       id: "hero",
@@ -372,7 +372,7 @@ const futureDemand: Section = {
   title: "Future Demand",
   tagline: "Averting the demographic collapse of the blood supply.",
   question: "What pressures make donors matter more over time?",
-  cover: "/ai/future-demand.png",
+  cover: "/covers/future-demand.png",
   slides: [
     {
       id: "hero",

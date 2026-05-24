@@ -1,7 +1,7 @@
 .hub {
   min-height: 100vh;
-  background: var(--ink-900);
-  color: #fff;
+  background: var(--d-bg);
+  color: var(--d-text);
   display: flex;
   flex-direction: column;
   padding: 24px clamp(20px, 5vw, 64px) 28px;
@@ -12,14 +12,14 @@
   align-items: center;
   justify-content: space-between;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--ink-line);
+  border-bottom: 1px solid var(--d-line);
 }
 
 .hub__brand {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  color: #fff;
+  color: var(--d-text);
   font-size: 15px;
   letter-spacing: 0.3px;
 }
@@ -31,9 +31,9 @@
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: var(--ink-soft);
+  color: var(--d-soft);
   padding: 8px 14px;
-  border: 1px solid var(--ink-line);
+  border: 1px solid var(--d-line);
   border-radius: 999px;
 }
 .hub__home:hover {
@@ -66,7 +66,7 @@
   background-size: cover;
   background-position: center;
   color: #fff;
-  border: 1px solid var(--ink-line);
+  border: 1px solid var(--d-line);
   transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 .hub__card:hover {
@@ -115,7 +115,7 @@
   display: block;
   margin-top: 6px;
   font-size: 14px;
-  color: var(--ink-soft);
+  color: rgba(255, 255, 255, 0.74);
   max-width: 30ch;
 }
 
@@ -126,13 +126,13 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 18px;
-  border-top: 1px solid var(--ink-line);
+  border-top: 1px solid var(--d-line);
 }
 
 .hub__foot-link {
   font-size: 14px;
   font-weight: 600;
-  color: var(--ink-soft);
+  color: var(--d-soft);
 }
 .hub__foot-link:hover {
   color: #fff;
@@ -141,7 +141,7 @@
 .hub__tag {
   font-size: 11px;
   letter-spacing: 1.5px;
-  color: var(--ink-faint);
+  color: var(--d-faint);
 }
 
 /* Responsive ------------------------------------------------------------*/

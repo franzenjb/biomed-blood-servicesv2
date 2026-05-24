@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import type { Section } from "../data/sections";
 import Slide from "./Slide";
+import ThemeToggle from "./ThemeToggle";
 import "./SlideDeck.css";
 
 type Props = {
@@ -90,8 +91,11 @@ export default function SlideDeck({
           <span className="mono deck__index">{section.index}</span>
           <span className="deck__name">{section.title}</span>
         </div>
-        <div className="deck__counter mono" data-testid="deck-counter">
-          {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+        <div className="deck__right">
+          <ThemeToggle />
+          <div className="deck__counter mono" data-testid="deck-counter">
+            {String(index + 1).padStart(2, "0")} / {String(count).padStart(2, "0")}
+          </div>
         </div>
       </header>
 

@@ -45,3 +45,37 @@
   /* Motion */
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
+
+/* Presentation (deck/hub) theme — Light is the default ----------------- */
+:root,
+html[data-theme="light"] {
+  --d-bg: #f1efea;
+  --d-text: #1a1a1a;
+  --d-soft: #4a4a4a;
+  --d-faint: #737373;
+  --d-line: rgba(26, 26, 26, 0.16);
+  --d-scrim: linear-gradient(
+    100deg,
+    rgba(247, 245, 242, 0.93) 0%,
+    rgba(247, 245, 242, 0.8) 44%,
+    rgba(247, 245, 242, 0.44) 78%,
+    rgba(247, 245, 242, 0.12) 100%
+  );
+  --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.06), transparent 62%);
+}
+
+html[data-theme="dark"] {
+  --d-bg: #0d0f12;
+  --d-text: #ffffff;
+  --d-soft: rgba(255, 255, 255, 0.82);
+  --d-faint: rgba(255, 255, 255, 0.6);
+  --d-line: rgba(255, 255, 255, 0.14);
+  --d-scrim: linear-gradient(
+    100deg,
+    rgba(10, 12, 15, 0.94) 0%,
+    rgba(10, 12, 15, 0.82) 42%,
+    rgba(10, 12, 15, 0.45) 78%,
+    rgba(10, 12, 15, 0.25) 100%
+  );
+  --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.1), transparent 62%);
+}
