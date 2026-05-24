@@ -7,14 +7,14 @@ import {
   regions,
   mobileMarkets,
   hospitalDistribution,
-  futureDemandLenses,
 } from "./mockData";
 
 export type Stat = { value: string; label: string; accent?: boolean };
 
 export type SlideBlock =
   | { kind: "stats"; items: Stat[] }
-  | { kind: "list"; items: { title: string; detail: string }[] };
+  | { kind: "list"; items: { title: string; detail: string }[] }
+  | { kind: "quote"; text: string; cite?: string };
 
 export type Slide = {
   id: string;
@@ -30,7 +30,6 @@ export type Section = {
   title: string;
   tagline: string;
   cover: string;
-  /** Donor-friendly framing question shown on the menu + hero. */
   question: string;
   slides: Slide[];
 };
@@ -56,6 +55,17 @@ const blood101: Section = {
       body: "Blood cannot be manufactured. Every unit a patient receives starts with a volunteer donor — which is why a steady community of donors is the whole system.",
     },
     {
+      id: "at-its-limit",
+      kind: "content",
+      title: "A system at its limit",
+      body: "The need is constant, and the margin is thin. The American Red Cross provides roughly 40% of the nation's blood to about 2,500 hospitals.",
+      block: {
+        kind: "quote",
+        text: "The U.S. blood supply is at its lowest level in over a decade.",
+        cite: "Dr. Ruchika Goel, AABB 2025",
+      },
+    },
+    {
       id: "why-donors",
       kind: "content",
       title: "Why donors matter",
@@ -75,18 +85,14 @@ const blood101: Section = {
       body: "The American Red Cross is the backbone of the national blood supply.",
       block: {
         kind: "stats",
-        items: bloodSystemMetrics.map((m, i) => ({
-          value: m.value,
-          label: m.label,
-          accent: i === 0,
-        })),
+        items: bloodSystemMetrics.map((m, i) => ({ value: m.value, label: m.label, accent: i === 0 })),
       },
     },
     {
       id: "ways-to-give",
       kind: "content",
       title: "Ways to give",
-      body: "Different donation types serve different patient needs. Donors can choose the one that fits their schedule and blood type.",
+      body: "Different donation types serve different patient needs. Donors choose the one that fits their schedule and blood type.",
       block: {
         kind: "list",
         items: donationMethods.map((m) => ({
@@ -102,10 +108,20 @@ const blood101: Section = {
       body: "One whole-blood donation is often separated into components, so a single visit can help more than one patient.",
       block: {
         kind: "list",
-        items: componentBasics.map((c) => ({
-          title: c.title,
-          detail: `${c.detail} ${c.storage}`,
-        })),
+        items: componentBasics.map((c) => ({ title: c.title, detail: `${c.detail} ${c.storage}` })),
+      },
+    },
+    {
+      id: "universal-type",
+      kind: "content",
+      title: "Why a diverse donor base matters",
+      body: "Some patients need closely matched blood. A broad, diverse donor base is a clinical asset, not just a goal.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "~50%", label: "of Latino & African American donors have Type O — the universal type ERs rely on", accent: true },
+          { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021" },
+        ],
       },
     },
   ],
@@ -149,11 +165,7 @@ const collections: Section = {
       body: "Sample regions show how annual products and active donors scale with the communities served.",
       block: {
         kind: "stats",
-        items: regions.map((r, i) => ({
-          value: `${fmt(r.annualProducts)}`,
-          label: `${r.name} — annual products`,
-          accent: i === 0,
-        })),
+        items: regions.map((r, i) => ({ value: `${fmt(r.annualProducts)}`, label: `${r.name} — annual products`, accent: i === 0 })),
       },
     },
     {
@@ -165,22 +177,47 @@ const collections: Section = {
         kind: "list",
         items: mobileMarkets.map((m) => ({
           title: m.chapter,
-          detail: `${fmt(m.drives)} drives · ${fmt(m.products)} products · ${m.partners} community partners. ${m.narrative}`,
+          detail: `${fmt(m.drives)} drives · ${fmt(m.products)} products · ${m.partners} community partners.`,
         })),
       },
     },
     {
-      id: "market",
+      id: "seasonal",
       kind: "content",
-      title: "Who each market serves",
-      body: "A market snapshot pairs collection activity with the community behind it — population, age, and diversity all shape donor strategy.",
+      title: "A fragile recruitment base",
+      body: "The current supply leans heavily on a narrow, seasonal donor pool — which is exactly why recruitment has to broaden.",
       block: {
         kind: "stats",
         items: [
-          { value: fmt(regions[0].demographics.population), label: `${regions[0].name} population`, accent: true },
-          { value: `${regions[0].demographics.medianAge}`, label: "Median age" },
-          { value: `${regions[0].demographics.age65PlusPct}%`, label: "Age 65+" },
-          { value: `${regions[0].activeDonors.toLocaleString()}`, label: "Active donors" },
+          { value: "30%", label: "of the supply relies on high-school & college students — summer breaks cause major lulls", accent: true },
+          { value: "35%", label: "drop in national supply seen in a single recent month" },
+        ],
+      },
+    },
+    {
+      id: "generations",
+      kind: "content",
+      title: "Recruiting every generation",
+      body: "Each generation gives for different reasons and answers to different channels. One playbook no longer works.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Baby Boomers", detail: "Motivated by altruism & institutional trust. Reached through local blood drives and faith-based outreach. Routine, community-driven loyalty." },
+          { title: "Millennials", detail: "Motivated by social impact & corporate responsibility. Reached through corporate giving and social media. Convenience-driven, digital-first." },
+          { title: "Gen Z", detail: "Motivated by personal identity & peer social proof. Reached through mobile apps and influencer campaigns. Gamified, transparent, cause-specific." },
+        ],
+      },
+    },
+    {
+      id: "inclusive",
+      kind: "content",
+      title: "Inclusive engagement as supply strategy",
+      body: "Reaching diverse communities is how the system stays ready for patients who need closely matched blood — including sickle cell patients.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "290,000+", label: "donors self-identifying as Black, African American, or multiracial screened for sickle cell trait since 2021", accent: true },
+          { value: "Partners", label: "like Alpha Phi Alpha bridge community trust and medical need" },
         ],
       },
     },
@@ -211,6 +248,23 @@ const journey: Section = {
       title: `${i + 1}. ${stage.title}`,
       body: stage.detail,
     })),
+    {
+      id: "ten-minute-window",
+      kind: "content",
+      title: "The 10-minute window",
+      body: "Reihaneh Hajbeigi, a first-time mother, suffered a postpartum hemorrhage — a leading cause of maternal death — losing 40% of her blood volume.",
+      block: {
+        kind: "quote",
+        text: "It was about 10 minutes from the time I started to feel faint until they had the blood in my system.",
+        cite: "Reihaneh Hajbeigi, transfusion recipient",
+      },
+    },
+    {
+      id: "why-it-holds",
+      kind: "content",
+      title: "Why the chain matters",
+      body: "Her survival hinged entirely on whether a stranger had donated 56 days earlier — and whether the whole logistical chain held. That is what every step of this journey protects.",
+    },
   ],
 };
 
@@ -222,7 +276,7 @@ const distribution: Section = {
   id: "distribution",
   index: "04",
   title: "Hospital Distribution",
-  tagline: "Community impact, without exposing sensitive operations.",
+  tagline: "Community impact, and the resilience behind it.",
   question: "Which communities and hospitals are supported?",
   cover: "/covers/hospital-distribution.png",
   slides: [
@@ -271,7 +325,20 @@ const distribution: Section = {
           { title: "Trauma & emergency", detail: "Accident, injury, and major blood loss where minutes matter." },
           { title: "Surgery & transplant", detail: "Planned procedures that depend on a ready, reliable supply." },
           { title: "Cancer care", detail: "Treatment that frequently needs platelets and red cells over time." },
-          { title: "Childbirth & chronic illness", detail: "Maternal care complications and conditions like sickle cell disease." },
+          { title: "Childbirth & chronic illness", detail: "Maternal complications and conditions like sickle cell disease." },
+        ],
+      },
+    },
+    {
+      id: "ripple",
+      kind: "content",
+      title: "When the chain is tested",
+      body: "Readiness is fragile. When Hurricane Helene knocked out power and water at the Asheville Blood Center, 150 lifesaving units were saved only by a 4-hour hazardous drive from a Charlotte team.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "1,500", label: "blood drives cancelled by extreme weather in FY25", accent: true },
+          { value: "40,000", label: "donations uncollected in a single year — directly threatening patient readiness" },
         ],
       },
     },
@@ -279,74 +346,139 @@ const distribution: Section = {
 };
 
 /* -------------------------------------------------------------------- */
-/* 05 — Future Demand                                                    */
+/* 05 — Future Demand (The Future Blood Debt)                            */
 /* -------------------------------------------------------------------- */
 
 const futureDemand: Section = {
   id: "future-demand",
   index: "05",
   title: "Future Demand",
-  tagline: "Why today's donor relationships shape tomorrow's readiness.",
+  tagline: "Averting the demographic collapse of the blood supply.",
   question: "What pressures make donors matter more over time?",
   cover: "/covers/future-demand.png",
   slides: [
     {
       id: "hero",
       kind: "hero",
-      title: "The demand ahead",
-      body: "An aging population needs more care while the donor base thins. These are directional planning scenarios — not forecasts — that show why donor relationships built today matter for tomorrow.",
+      title: "The Future Blood Debt",
+      body: "An aging population needs more care while the eligible donor base shrinks. On current models, the system trends toward roughly half the capacity it needs. These are directional planning scenarios — and a call to act.",
     },
     {
-      id: "gap",
+      id: "two-people",
       kind: "content",
-      title: "A widening gap",
-      body: "In a stress scenario, supply contracts while clinical demand rises — narrowing how much patient need can be covered.",
+      title: "Two people, one supply",
+      body: "Demand for blood rises rapidly as populations age — peak demand sits with patients over 70 — while the eligible youth donor pool shrinks at the same time. That is a structural, mathematical impossibility.",
       block: {
         kind: "stats",
         items: [
-          { value: "100", label: "Coverage today (baseline)" },
-          { value: "~50", label: "Modeled coverage by 2045", accent: true },
-          { value: "+30%", label: "Modeled demand growth" },
+          { value: "2 → 1", label: "in ~20 years, two people will rely on a supply sized for one", accent: true },
+          { value: "70+", label: "age group driving peak demand" },
         ],
       },
     },
     {
-      id: "lenses",
+      id: "hourglass",
       kind: "content",
-      title: "Four ways to read the pressure",
-      body: "Future demand isn't one number. These lenses each tell part of the story.",
+      title: "The demographic hourglass",
+      body: "A population pyramid reshaping into an extreme thumbtack form cannot sustain an altruism-based healthcare model. The leading indicator is already here: the Korean Red Cross saw annual donations fall 10% in five years (2.7M → 2.4M).",
       block: {
-        kind: "list",
-        items: futureDemandLenses.map((l) => ({
-          title: l.label,
-          detail: l.summary,
-        })),
+        kind: "stats",
+        items: [
+          { value: "+29.5%", label: "projected demand by 2045", accent: true },
+          { value: "−35.5%", label: "projected supply by 2045" },
+        ],
       },
     },
     {
-      id: "action",
+      id: "symptoms",
       kind: "content",
-      title: "What keeps the system ready",
-      body: "The response is the same across every scenario: more committed donors, a more diverse donor base, and collection that holds up when weather and illness disrupt it.",
+      title: "Symptoms vs. root cause",
+      body: "Short-term shocks grab headlines, but the structural threat is demographic.",
       block: {
         kind: "list",
         items: [
-          { title: "Convert new donors", detail: "Turn first-time and youth donors into lifelong, repeat donors." },
-          { title: "Broaden the base", detail: "Diverse donors improve readiness for rare matches and sickle cell patients." },
-          { title: "Build resilience", detail: "Protect collection against weather, seasonal illness, and drive cancellations." },
+          { title: "Recent crisis", detail: "A 35% drop in national supply in a single month." },
+          { title: "Seasonal volatility", detail: "30% of supply relies on high-school and college students; summer breaks cause major lulls." },
+          { title: "Demographic squeeze", detail: "Declining birth rates mean fewer young, healthy donors to replace aging adults." },
+          { title: "Age limits", detail: "Caps (e.g. age 70) disqualify the fastest-growing demographic — the group that consumes the most." },
+        ],
+      },
+    },
+    {
+      id: "aging-altruism",
+      kind: "content",
+      title: "A system reliant on aging altruism",
+      body: "Donation is shaped by generational attitudes toward institutional trust and altruism. Older generations donate at significantly higher rates; younger engagement is steadily declining.",
+      block: {
+        kind: "quote",
+        text: "The U.S. blood supply is at its lowest level in over a decade.",
+        cite: "Dr. Ruchika Goel, AABB 2025",
+      },
+    },
+    {
+      id: "integration",
+      kind: "content",
+      title: "From altruism to integration",
+      body: "The old model — one-way charitable donation relying on pure altruism — is mathematically unsustainable. The new paradigm treats blood donation as a population-health tool, turning donors into active participants in their own preventative healthcare.",
+    },
+    {
+      id: "ecosystem",
+      kind: "content",
+      title: "The digital donor ecosystem",
+      body: "Make giving frictionless, and give something back every visit.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "1. Book", detail: "Frictionless scheduling via app." },
+          { title: "2. Assess", detail: "Pre-donation vitals check — blood pressure and pulse." },
+          { title: "3. Draw", detail: "A standard 56-day whole blood or platelet donation." },
+          { title: "4. Analyze", detail: "Post-donation lab testing — sickle cell trait, infectious disease, A1C." },
+          { title: "5. Deliver", detail: "Secure delivery of health trends straight to the donor's phone." },
+        ],
+      },
+    },
+    {
+      id: "dashboard",
+      kind: "content",
+      title: "A free health screening every visit",
+      body: "Every donation becomes an ongoing, longitudinal health record — tracking blood pressure, hemoglobin, pulse, and periodic A1C for prediabetes.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "80,000", label: "donors alerted to concerning A1C levels since March 2025", accent: true },
+          { value: "69,000", label: "notified of Stage 2 hypertension — many improved by their next visit" },
+          { value: "290,000", label: "screened for sickle cell trait" },
+        ],
+      },
+    },
+    {
+      id: "young-quote",
+      kind: "content",
+      title: "Health and supply, together",
+      body: "Population-scale diagnostics turn the donor relationship into a public-health asset.",
+      block: {
+        kind: "quote",
+        text: "We have a unique ability to raise awareness about the devastating impacts of chronic illness while advancing the health of our communities.",
+        cite: "Dr. Pampee Young",
+      },
+    },
+    {
+      id: "invest-now",
+      kind: "content",
+      title: "Invest now",
+      body: "The Future Blood Debt is mathematically guaranteed if we rely on outdated recruitment models. Averting it takes digital infrastructure, targeted generational recruitment, and population-health integration. Blood is not a charity — it is the logistical baseline of the healthcare system.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "16,000", label: "donations a day needed to secure the supply for 2045", accent: true },
+          { value: "2045", label: "the deadline we are planning against" },
         ],
       },
     },
   ],
 };
 
-export const sections: Section[] = [
-  blood101,
-  collections,
-  journey,
-  distribution,
-  futureDemand,
-];
+export const sections: Section[] = [blood101, collections, journey, distribution, futureDemand];
 
 export const getSection = (id: string | undefined): Section | undefined =>
   sections.find((s) => s.id === id);

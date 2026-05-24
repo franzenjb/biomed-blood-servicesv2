@@ -38,6 +38,13 @@ export default function Slide({ section, slide, active }: Props) {
           </div>
         )}
 
+        {slide.block?.kind === "quote" && (
+          <blockquote className="slide__quote">
+            <p className="slide__quote-text">“{slide.block.text}”</p>
+            {slide.block.cite && <cite className="slide__quote-cite mono">— {slide.block.cite}</cite>}
+          </blockquote>
+        )}
+
         {slide.block?.kind === "list" && (
           <ul className="slide__list">
             {slide.block.items.map((item, i) => (
