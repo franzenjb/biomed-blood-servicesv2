@@ -1,13 +1,4 @@
-import {
-  bloodSystemMetrics,
-  blood101Facts,
-  componentBasics,
-  donationMethods,
-  journeyStages,
-  regions,
-  mobileMarkets,
-  hospitalDistribution,
-} from "./mockData";
+import { componentBasics, donationMethods, journeyStages } from "./mockData";
 
 export type Stat = { value: string; label: string; accent?: boolean };
 
@@ -34,31 +25,29 @@ export type Section = {
   slides: Slide[];
 };
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-/* -------------------------------------------------------------------- */
-/* 01 — Blood 101                                                         */
-/* -------------------------------------------------------------------- */
+/* ==================================================================== */
+/* 01 — Blood 101 :: "Blood can't be made"                               */
+/* ==================================================================== */
 
 const blood101: Section = {
   id: "blood-101",
   index: "01",
   title: "Blood 101",
-  tagline: "Who we are, and why every appointment matters.",
+  tagline: "The quiet backbone of modern medicine.",
   question: "Why does blood donation matter?",
   cover: "/covers/blood-101.png",
   slides: [
     {
       id: "hero",
       kind: "hero",
-      title: "Blood 101",
-      body: "Blood cannot be manufactured. Every unit a patient receives starts with a volunteer donor — which is why a steady community of donors is the whole system.",
+      title: "Blood can't be made.",
+      body: "There is no factory and no substitute. Every unit a patient receives began in another person's arm. The entire system — trauma, surgery, cancer, childbirth — runs on volunteers.",
     },
     {
-      id: "at-its-limit",
+      id: "backbone",
       kind: "content",
-      title: "A system at its limit",
-      body: "The need is constant, and the margin is thin. The American Red Cross provides roughly 40% of the nation's blood to about 2,500 hospitals.",
+      title: "Medicine's quiet backbone",
+      body: "Behind nearly every dramatic rescue is something undramatic: a bag of blood someone donated weeks before it was needed. When that backstock thins, everything downstream gets harder.",
       block: {
         kind: "quote",
         text: "The U.S. blood supply is at its lowest level in over a decade.",
@@ -66,237 +55,192 @@ const blood101: Section = {
       },
     },
     {
-      id: "why-donors",
+      id: "the-clock",
       kind: "content",
-      title: "Why donors matter",
-      body: "A few fundamentals shape everything else about how blood works.",
-      block: {
-        kind: "list",
-        items: blood101Facts.map((fact, i) => ({
-          title: ["No substitute", "One donation, many patients", "Always running low", "Match readiness"][i] ?? "Fact",
-          detail: fact,
-        })),
-      },
-    },
-    {
-      id: "system",
-      kind: "content",
-      title: "The system at a glance",
-      body: "The American Red Cross is the backbone of the national blood supply.",
-      block: {
-        kind: "stats",
-        items: bloodSystemMetrics.map((m, i) => ({ value: m.value, label: m.label, accent: i === 0 })),
-      },
-    },
-    {
-      id: "every-day",
-      kind: "content",
-      title: "What it takes, every single day",
-      body: "The need never pauses. In the U.S. someone needs a transfusion every two seconds, and the system has to refill constantly.",
+      title: "A clock that never stops",
+      body: "Demand doesn't pause for nights, weekends, or storms. The shelf has to be refilled every single day.",
       block: {
         kind: "stats",
         items: [
-          { value: "13,000", label: "whole blood donations needed every day", accent: true },
-          { value: "3,000", label: "platelet donations needed every day" },
+          { value: "every 2s", label: "someone in the U.S. needs blood", accent: true },
+          { value: "13,000", label: "whole-blood donations needed daily" },
           { value: "~29,000", label: "units of red cells needed daily" },
         ],
       },
     },
     {
-      id: "ways-to-give",
+      id: "one-gift",
       kind: "content",
-      title: "Ways to give",
-      body: "Different donation types serve different patient needs. Donors choose the one that fits their schedule and blood type.",
+      title: "One gift, up to three lives",
+      body: "A single whole-blood donation is separated into its components — so one visit can reach three different patients.",
       block: {
         kind: "list",
-        items: donationMethods.map((m) => ({
-          title: m.title,
-          detail: `${m.duration} · ${m.frequency} · best for ${m.idealTypes}. ${m.description}`,
-        })),
+        items: componentBasics.map((c) => ({ title: c.title, detail: `${c.patientUse} ${c.storage}` })),
       },
     },
     {
-      id: "components",
+      id: "ways",
       kind: "content",
-      title: "What's in a single donation",
-      body: "One whole-blood donation is often separated into components, so a single visit can help more than one patient.",
+      title: "Choose how you give",
+      body: "Different donations serve different patients. The right one depends on your schedule and your blood type.",
       block: {
         kind: "list",
-        items: componentBasics.map((c) => ({ title: c.title, detail: `${c.detail} ${c.storage}` })),
+        items: donationMethods.map((m) => ({ title: m.title, detail: `${m.duration} · every ${m.frequency.replace(/^Every\s*/i, "")} · ${m.description}` })),
       },
     },
     {
-      id: "lifesaving-math",
+      id: "the-few",
       kind: "content",
-      title: "Rare gift, enormous reach",
-      body: "Despite the constant need, only a small slice of eligible people give — and each one goes a long way.",
+      title: "The rarest resource is the donor",
+      body: "Only about 3% of eligible Americans give in a year — and the supply needs all of us. Half of Latino and Black donors carry the universal Type O that emergency rooms reach for first.",
       block: {
         kind: "stats",
         items: [
           { value: "3%", label: "of eligible Americans donate in a given year", accent: true },
-          { value: "1 → 3", label: "a single donation can save up to three lives" },
-          { value: "100", label: "units a single car-accident trauma patient can require" },
+          { value: "~50%", label: "of Latino & Black donors carry universal Type O" },
+          { value: "1 → 3", label: "patients helped by a single donation" },
         ],
       },
     },
     {
-      id: "universal-type",
+      id: "carry-the-cure",
       kind: "content",
-      title: "Why a diverse donor base matters",
-      body: "Some patients need closely matched blood. A broad, diverse donor base is a clinical asset, not just a goal.",
-      block: {
-        kind: "stats",
-        items: [
-          { value: "~50%", label: "of Latino & African American donors have Type O — the universal type ERs rely on", accent: true },
-          { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021" },
-        ],
-      },
+      title: "You already carry the cure",
+      body: "No lab can manufacture what's in your veins. That's why one ordinary hour can be the most extraordinary thing you do all year.",
     },
   ],
 };
 
-/* -------------------------------------------------------------------- */
-/* 02 — Biomed Collections                                               */
-/* -------------------------------------------------------------------- */
+/* ==================================================================== */
+/* 02 — Biomed Collections :: "We bring the chair to you"                */
+/* ==================================================================== */
 
 const collections: Section = {
   id: "collections",
   index: "02",
   title: "Biomed Collections",
-  tagline: "Where donors meet the system: fixed sites and mobile drives.",
+  tagline: "Meeting donors where they already are.",
   question: "Where does blood donation happen?",
   cover: "/covers/biomed-collections.png",
   slides: [
     {
       id: "hero",
       kind: "hero",
-      title: "Biomed Collections",
-      body: "Collections happen two ways: at fixed donation centers, and through mobile blood drives that bring donation into the community.",
+      title: "We bring the chair to you.",
+      body: "Most donors never walk into a center. The blood drive comes to them — a workplace lobby, a school gym, a church basement, a bus in a parking lot.",
     },
     {
-      id: "two-channels",
+      id: "two-doors",
       kind: "content",
-      title: "Two ways to reach donors",
-      body: "Fixed sites anchor donation in a metro and support time-intensive donations like platelets. Mobile drives extend reach into workplaces, campuses, and rural counties.",
+      title: "Two front doors",
+      body: "The system meets people two ways — and needs both.",
       block: {
         kind: "list",
         items: [
-          { title: "Fixed sites", detail: "Permanent donation centers with a stable schedule and a defined trade area that draws donors from surrounding communities." },
-          { title: "Mobile drives", detail: "Pop-up drives hosted by partners — employers, schools, faith groups — that rotate through counties to extend collection reach." },
+          { title: "Fixed sites", detail: "Permanent donor centers that anchor a community and support time-intensive donations like platelets." },
+          { title: "Mobile drives", detail: "Pop-up drives hosted by employers, schools, and faith groups that carry donation into every county." },
         ],
       },
     },
     {
-      id: "reach",
+      id: "engine",
       kind: "content",
-      title: "Reach by region",
-      body: "Sample regions show how annual products and active donors scale with the communities served.",
-      block: {
-        kind: "stats",
-        items: regions.map((r, i) => ({ value: `${fmt(r.annualProducts)}`, label: `${r.name} — annual products`, accent: i === 0 })),
-      },
-    },
-    {
-      id: "mobile",
-      kind: "content",
-      title: "Mobile collections at work",
-      body: "Mobile programs run hundreds of drives a year with local partners across each chapter.",
-      block: {
-        kind: "list",
-        items: mobileMarkets.map((m) => ({
-          title: m.chapter,
-          detail: `${fmt(m.drives)} drives · ${fmt(m.products)} products · ${m.partners} community partners.`,
-        })),
-      },
-    },
-    {
-      id: "seasonal",
-      kind: "content",
-      title: "A fragile recruitment base",
-      body: "The current supply leans heavily on a narrow, seasonal donor pool — which is exactly why recruitment has to broaden.",
+      title: "A nationwide collection engine",
+      body: "Keeping shelves full takes a relentless, year-round cadence — millions of donations, one appointment at a time.",
       block: {
         kind: "stats",
         items: [
-          { value: "30%", label: "of the supply relies on high-school & college students — summer breaks cause major lulls", accent: true },
-          { value: "35%", label: "drop in national supply seen in a single recent month" },
+          { value: "4.6M", label: "whole-blood donations collected a year", accent: true },
+          { value: "1.1M", label: "platelet donations collected a year" },
+          { value: "6.4M", label: "blood products delivered to patients a year" },
         ],
       },
     },
     {
-      id: "generations",
+      id: "built-on-summer",
       kind: "content",
-      title: "Recruiting every generation",
-      body: "Each generation gives for different reasons and answers to different channels. One playbook no longer works.",
-      block: {
-        kind: "list",
-        items: [
-          { title: "Baby Boomers", detail: "Motivated by altruism & institutional trust. Reached through local blood drives and faith-based outreach. Routine, community-driven loyalty." },
-          { title: "Millennials", detail: "Motivated by social impact & corporate responsibility. Reached through corporate giving and social media. Convenience-driven, digital-first." },
-          { title: "Gen Z", detail: "Motivated by personal identity & peer social proof. Reached through mobile apps and influencer campaigns. Gamified, transparent, cause-specific." },
-        ],
-      },
-    },
-    {
-      id: "precision",
-      kind: "content",
-      title: "Precision collection",
-      body: "Automated apheresis lets a machine collect exactly the component the supply needs that day — separating it in real time and safely returning the rest to the donor.",
-      block: {
-        kind: "list",
-        items: [
-          { title: "Whole blood", detail: "~1 hour. Flexible; separated into red cells, platelets, and plasma after collection." },
-          { title: "Power Red", detail: "~45 minutes. Collects a concentrated double dose of red cells — highly efficient for trauma supply." },
-          { title: "Platelets (apheresis)", detail: "~2.5 hours. Yields several transfusable units from one donor — crucial for cancer patients." },
-        ],
-      },
-    },
-    {
-      id: "digital-donor",
-      kind: "content",
-      title: "A frictionless digital front door",
-      body: "Technology is shrinking the intake funnel and keeping donors coming back.",
-      block: {
-        kind: "list",
-        items: [
-          { title: "Clara AI", detail: "An intelligent scheduling assistant that handles eligibility questions and streamlines booking." },
-          { title: "RapidPass", detail: "A digital pre-donation health questionnaire completed on mobile, cutting on-site check-in time." },
-          { title: "Digital tracking", detail: "Donors can follow their blood's journey to the hospital — which drives repeat donation." },
-        ],
-      },
-    },
-    {
-      id: "inclusive",
-      kind: "content",
-      title: "Inclusive engagement as supply strategy",
-      body: "Reaching diverse communities is how the system stays ready for patients who need closely matched blood — including sickle cell patients.",
+      title: "A supply built on summer break",
+      body: "Nearly a third of donations come from high-school and college students. When campuses empty for summer, the supply thins — exactly when travel and accidents climb.",
       block: {
         kind: "stats",
         items: [
-          { value: "290,000+", label: "donors self-identifying as Black, African American, or multiracial screened for sickle cell trait since 2021", accent: true },
-          { value: "Partners", label: "like Alpha Phi Alpha bridge community trust and medical need" },
+          { value: "30%", label: "of the supply relies on student donors", accent: true },
+          { value: "35%", label: "drop in national supply seen in a single month" },
+        ],
+      },
+    },
+    {
+      id: "every-generation",
+      kind: "content",
+      title: "Every generation needs a different ask",
+      body: "Why people give — and how to reach them — has changed. One playbook no longer works.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Baby Boomers", detail: "Give out of altruism and institutional trust. Reached through local drives and faith communities." },
+          { title: "Millennials", detail: "Give for social impact. Reached through workplaces and social media — convenience-first." },
+          { title: "Gen Z", detail: "Give around identity and peer proof. Reached through mobile apps and creators — gamified and transparent." },
+        ],
+      },
+    },
+    {
+      id: "frictionless",
+      kind: "content",
+      title: "A frictionless front door",
+      body: "Technology is shrinking the friction between intention and donation — and turning first-timers into regulars.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Clara AI", detail: "An assistant that answers eligibility questions and books the appointment." },
+          { title: "RapidPass", detail: "A digital health questionnaire done on your phone — less time in the chair." },
+          { title: "Track your blood", detail: "Donors can follow their unit to the hospital that receives it." },
+        ],
+      },
+    },
+    {
+      id: "your-type",
+      kind: "content",
+      title: "Whoever you are, a patient shares your type",
+      body: "Broadening the donor base isn't optics — it's medicine. The closest-matched blood is what keeps sickle cell patients alive, and that match comes from donors who look like them.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021", accent: true },
+          { value: "100,000", label: "Americans live with sickle cell disease today" },
         ],
       },
     },
   ],
 };
 
-/* -------------------------------------------------------------------- */
-/* 03 — Blood Journey                                                    */
-/* -------------------------------------------------------------------- */
+/* ==================================================================== */
+/* 03 — Blood Journey :: "Ten minutes"                                   */
+/* ==================================================================== */
 
 const journey: Section = {
   id: "journey",
   index: "03",
   title: "Blood Journey",
-  tagline: "The path from donor chair to a hospital-ready product.",
+  tagline: "Fifty-six days, and ten minutes.",
   question: "How does blood move from donor to patient?",
   cover: "/covers/blood-journey.png",
   slides: [
     {
       id: "hero",
       kind: "hero",
-      title: "The journey of a donation",
-      body: "From the moment a donor sits down, every donation follows the same careful path to a patient who needs it.",
+      title: "Ten minutes.",
+      body: "A first-time mother began hemorrhaging after birth and lost 40% of her blood. What saved her wasn't luck — it was a stranger who had donated 56 days earlier, and a chain that held.",
+      block: {
+        kind: "quote",
+        text: "It was about 10 minutes from the time I started to feel faint until they had the blood in my system.",
+        cite: "Reihaneh Hajbeigi, transfusion recipient",
+      },
+    },
+    {
+      id: "how-ready",
+      kind: "content",
+      title: "How the blood was ready in time",
+      body: "Her transfusion looked instant. It was actually the end of a long, exacting journey that started weeks earlier in someone else's arm. Here is that path.",
     },
     ...journeyStages.map((stage, i) => ({
       id: `stage-${i + 1}`,
@@ -308,14 +252,14 @@ const journey: Section = {
       id: "ticking-clock",
       kind: "content",
       title: "The logistics ticking clock",
-      body: "Blood can't be stockpiled — every unit is manufactured and screened within hours of collection to beat strict expiration limits.",
+      body: "Blood can't be stockpiled. Every unit is manufactured and screened within hours of collection to beat strict expiration limits.",
       block: {
         kind: "list",
         items: [
-          { title: "Hour 0 — Collection", detail: "Donations gathered via mobile drives and fixed sites." },
-          { title: "Hour 4 — Processing", detail: "Centrifuges separate whole blood into red cells, platelets, and plasma." },
-          { title: "Hour 8 — Testing", detail: "Tubes routed to reference labs for a dozen infectious-disease tests and blood typing." },
-          { title: "Hour 16 — Last mile", detail: "Algorithms allocate components to ~2,500 hospitals by immediate need." },
+          { title: "Hour 0 — Collection", detail: "The donation is gathered at a drive or fixed site." },
+          { title: "Hour 4 — Processing", detail: "Centrifuges separate it into red cells, platelets, and plasma." },
+          { title: "Hour 8 — Testing", detail: "Samples run a dozen infectious-disease tests and blood typing." },
+          { title: "Hour 16 — Last mile", detail: "Components are matched and routed to the hospitals that need them most." },
         ],
       },
     },
@@ -323,143 +267,104 @@ const journey: Section = {
       id: "safety-gauntlet",
       kind: "content",
       title: "A gauntlet of safety",
-      body: "Every donation runs a multi-layer screening gauntlet — donor history, enzyme immunoassays (Hep B, Chagas, syphilis), and molecular Nucleic Acid Testing for HIV, HCV, and HBV.",
+      body: "Before a unit reaches a patient it survives a multi-layer screen — donor history, enzyme immunoassays, and molecular testing for HIV, HCV, and HBV.",
       block: {
         kind: "stats",
         items: [
           { value: "<1 in 1M", label: "estimated HBV transmission risk after screening", accent: true },
-          { value: "1.6M", label: "Babesia tests run yearly in endemic regions" },
+          { value: "1.6M", label: "Babesia tests run each year in endemic regions" },
         ],
       },
     },
     {
-      id: "ten-minute-window",
+      id: "she-went-home",
       kind: "content",
-      title: "The 10-minute window",
-      body: "Reihaneh Hajbeigi, a first-time mother, suffered a postpartum hemorrhage — a leading cause of maternal death — losing 40% of her blood volume.",
-      block: {
-        kind: "quote",
-        text: "It was about 10 minutes from the time I started to feel faint until they had the blood in my system.",
-        cite: "Reihaneh Hajbeigi, transfusion recipient",
-      },
-    },
-    {
-      id: "why-it-holds",
-      kind: "content",
-      title: "Why the chain matters",
-      body: "Her survival hinged entirely on whether a stranger had donated 56 days earlier — and whether the whole logistical chain held. That is what every step of this journey protects.",
+      title: "Then she went home",
+      body: "She walked out of the hospital with her newborn. Multiply that single moment by millions — that is what every careful step of this journey is for.",
     },
   ],
 };
 
-/* -------------------------------------------------------------------- */
-/* 04 — Hospital Distribution                                            */
-/* -------------------------------------------------------------------- */
+/* ==================================================================== */
+/* 04 — Hospital Distribution :: "The hard half"                         */
+/* ==================================================================== */
 
 const distribution: Section = {
   id: "distribution",
   index: "04",
   title: "Hospital Distribution",
-  tagline: "Community impact, and the resilience behind it.",
+  tagline: "Getting the right unit to the right bedside, in time.",
   question: "Which communities and hospitals are supported?",
   cover: "/covers/hospital-distribution.png",
   slides: [
     {
       id: "hero",
       kind: "hero",
-      title: "From our shelves to the bedside",
-      body: "Donated blood reaches roughly 2,500 hospitals and transfusion centers nationwide — supporting trauma, surgery, cancer care, childbirth, and chronic illness.",
+      title: "Blood only saves a life where the patient is.",
+      body: "Collecting the blood is half the job. The harder half is moving the right unit to the right bedside before the clock runs out — across roughly 2,500 hospitals, every day.",
     },
     {
-      id: "reach",
+      id: "relentless",
       kind: "content",
-      title: "Regional hospital reach",
-      body: "Each region delivers across multiple zones to a network of partner hospitals.",
-      block: {
-        kind: "stats",
-        items: hospitalDistribution.map((h, i) => ({
-          value: `${h.hospitalsServed}`,
-          label: `${h.title.replace(" Hospital Distribution", "")} — hospitals served`,
-          accent: i === 0,
-        })),
-      },
-    },
-    {
-      id: "product-mix",
-      kind: "content",
-      title: "What hospitals receive",
-      body: "The product mix reflects how patient care actually uses blood — red cells lead, with platelets and plasma close behind.",
+      title: "Demand is relentless — and lumpy",
+      body: "Need doesn't arrive evenly. A quiet week can break in a single afternoon: one highway crash can consume an entire shelf.",
       block: {
         kind: "stats",
         items: [
-          { value: `${hospitalDistribution[0].productMix.redCells}%`, label: "Red blood cells", accent: true },
-          { value: `${hospitalDistribution[0].productMix.platelets}%`, label: "Platelets" },
-          { value: `${hospitalDistribution[0].productMix.plasma}%`, label: "Plasma" },
+          { value: "up to 100", label: "units a single car-crash patient can require", accent: true },
+          { value: "~29,000", label: "units of red cells needed every day" },
+          { value: "< 2 days", label: "supply that regional inventories routinely fall to" },
         ],
       },
     },
     {
-      id: "impact",
+      id: "what-it-supports",
       kind: "content",
       title: "What a donation makes possible",
-      body: "Behind every delivered unit is a patient and a care team counting on it.",
+      body: "Every delivered unit is a person and a care team counting on it.",
       block: {
         kind: "list",
         items: [
-          { title: "Trauma & emergency", detail: "Accident, injury, and major blood loss where minutes matter." },
-          { title: "Surgery & transplant", detail: "Planned procedures that depend on a ready, reliable supply." },
-          { title: "Cancer care", detail: "Treatment that frequently needs platelets and red cells over time." },
-          { title: "Childbirth & chronic illness", detail: "Maternal complications and conditions like sickle cell disease." },
+          { title: "Trauma & emergency", detail: "Accidents, injury, and major blood loss where minutes decide everything." },
+          { title: "Surgery & transplant", detail: "Planned procedures that can't begin without a ready supply on hand." },
+          { title: "Cancer care", detail: "Chemotherapy that depends on steady platelets and red cells over months." },
+          { title: "Childbirth", detail: "Maternal hemorrhage — a leading, survivable cause of death when blood is there." },
         ],
       },
     },
     {
-      id: "zero-margin",
-      kind: "content",
-      title: "Zero margin for error",
-      body: "Demand is relentless and lumpy. The network has to hold a steady supply against sudden, massive spikes.",
-      block: {
-        kind: "stats",
-        items: [
-          { value: "every 2s", label: "someone in the U.S. needs a transfusion", accent: true },
-          { value: "~29,000", label: "units of red cells needed every day" },
-          { value: "<2 days", label: "regional inventories often drop to this 'critical' level" },
-        ],
-      },
-    },
-    {
-      id: "ripple",
+      id: "when-tested",
       kind: "content",
       title: "When the chain is tested",
-      body: "Readiness is fragile. When Hurricane Helene knocked out power and water at the Asheville Blood Center, 150 lifesaving units were saved only by a 4-hour hazardous drive from a Charlotte team.",
+      body: "Hurricane Helene knocked out power and water at the Asheville Blood Center. A Red Cross team drove four hours through hazardous flooding to rescue 150 lifesaving units — and lost none.",
       block: {
         kind: "stats",
         items: [
           { value: "1,500", label: "blood drives cancelled by extreme weather in FY25", accent: true },
-          { value: "40,000", label: "donations uncollected in a single year — directly threatening patient readiness" },
+          { value: "40,000", label: "donations uncollected in a single year" },
         ],
       },
     },
     {
-      id: "drones",
+      id: "last-mile",
       kind: "content",
       title: "Closing the last mile",
-      body: "Autonomous drone delivery (the Zipline model) is collapsing the time and waste between the shelf and the bedside — with real, measured results.",
+      body: "Autonomous drone delivery is collapsing the distance — and the wastage — between the shelf and the bedside, with results measured in lives.",
       block: {
         kind: "stats",
         items: [
-          { value: "51%", label: "reduction in maternal mortality from postpartum hemorrhage", accent: true },
-          { value: "63%", label: "reduction in on-site hospital inventory requirements" },
-          { value: "40%", label: "reduction in blood-product wastage" },
+          { value: "51%", label: "reduction in maternal mortality from hemorrhage", accent: true },
+          { value: "63%", label: "reduction in on-site hospital inventory needs" },
+          { value: "40%", label: "reduction in blood wasted" },
         ],
       },
     },
   ],
 };
 
-/* -------------------------------------------------------------------- */
-/* 05 — Future Demand (The Future Blood Debt)                            */
-/* -------------------------------------------------------------------- */
+/* ==================================================================== */
+/* 05 — Future Demand :: "The Future Blood Debt"                         */
+/* ==================================================================== */
 
 const futureDemand: Section = {
   id: "future-demand",
@@ -473,18 +378,18 @@ const futureDemand: Section = {
       id: "hero",
       kind: "hero",
       title: "The Future Blood Debt",
-      body: "An aging population needs more care while the eligible donor base shrinks. On current models, the system trends toward roughly half the capacity it needs. These are directional planning scenarios — and a call to act.",
+      body: "An aging population needs more blood while the eligible donor base shrinks. Left on today's model, the math doesn't balance — and the gap arrives faster than most people think.",
     },
     {
       id: "two-people",
       kind: "content",
       title: "Two people, one supply",
-      body: "Demand for blood rises rapidly as populations age — peak demand sits with patients over 70 — while the eligible youth donor pool shrinks at the same time. That is a structural, mathematical impossibility.",
+      body: "Demand rises sharply as populations age — peak need sits with patients over 70 — while the youth donor pool shrinks at the same time. That is a structural impossibility, not a bad year.",
       block: {
         kind: "stats",
         items: [
           { value: "2 → 1", label: "in ~20 years, two people will rely on a supply sized for one", accent: true },
-          { value: "70+", label: "age group driving peak demand" },
+          { value: "70+", label: "the age group driving peak demand" },
         ],
       },
     },
@@ -492,7 +397,7 @@ const futureDemand: Section = {
       id: "hourglass",
       kind: "content",
       title: "The demographic hourglass",
-      body: "A population pyramid reshaping into an extreme thumbtack form cannot sustain an altruism-based healthcare model. The leading indicator is already here: the Korean Red Cross saw annual donations fall 10% in five years (2.7M → 2.4M).",
+      body: "A population reshaping into a top-heavy hourglass can't sustain a model built on youthful altruism. The warning sign is already abroad: Korea's donations fell 10% in five years.",
       block: {
         kind: "stats",
         items: [
@@ -504,70 +409,54 @@ const futureDemand: Section = {
     {
       id: "symptoms",
       kind: "content",
-      title: "Symptoms vs. root cause",
-      body: "Short-term shocks grab headlines, but the structural threat is demographic.",
+      title: "Symptoms vs. the real disease",
+      body: "Shortages make headlines as one-off shocks. The deeper cause is demographic — and it doesn't pass.",
       block: {
         kind: "list",
         items: [
-          { title: "Recent crisis", detail: "A 35% drop in national supply in a single month." },
-          { title: "Seasonal volatility", detail: "30% of supply relies on high-school and college students; summer breaks cause major lulls." },
-          { title: "Demographic squeeze", detail: "Declining birth rates mean fewer young, healthy donors to replace aging adults." },
-          { title: "Age limits", detail: "Caps (e.g. age 70) disqualify the fastest-growing demographic — the group that consumes the most." },
+          { title: "The shocks", detail: "A 35% drop in a single month; summer lulls; flu seasons that sideline donors." },
+          { title: "The squeeze", detail: "Falling birth rates mean fewer young, healthy donors to replace aging ones." },
+          { title: "The cap", detail: "Age limits sideline the fastest-growing group — the one that consumes the most blood." },
         ],
-      },
-    },
-    {
-      id: "aging-altruism",
-      kind: "content",
-      title: "A system reliant on aging altruism",
-      body: "Donation is shaped by generational attitudes toward institutional trust and altruism. Older generations donate at significantly higher rates; younger engagement is steadily declining.",
-      block: {
-        kind: "quote",
-        text: "The U.S. blood supply is at its lowest level in over a decade.",
-        cite: "Dr. Ruchika Goel, AABB 2025",
       },
     },
     {
       id: "integration",
       kind: "content",
-      title: "From altruism to integration",
-      body: "The old model — one-way charitable donation relying on pure altruism — is mathematically unsustainable. The new paradigm treats blood donation as a population-health tool, turning donors into active participants in their own preventative healthcare.",
-    },
-    {
-      id: "ecosystem",
-      kind: "content",
-      title: "The digital donor ecosystem",
-      body: "Make giving frictionless, and give something back every visit.",
-      block: {
-        kind: "list",
-        items: [
-          { title: "1. Book", detail: "Frictionless scheduling via app." },
-          { title: "2. Assess", detail: "Pre-donation vitals check — blood pressure and pulse." },
-          { title: "3. Draw", detail: "A standard 56-day whole blood or platelet donation." },
-          { title: "4. Analyze", detail: "Post-donation lab testing — sickle cell trait, infectious disease, A1C." },
-          { title: "5. Deliver", detail: "Secure delivery of health trends straight to the donor's phone." },
-        ],
-      },
+      title: "From charity to integration",
+      body: "The old model — one-way charity on pure altruism — is mathematically unsustainable. The answer is to make donation a two-way relationship: give blood, get back your own health data.",
     },
     {
       id: "dashboard",
       kind: "content",
-      title: "A free health screening every visit",
-      body: "Every donation becomes an ongoing, longitudinal health record — tracking blood pressure, hemoglobin, pulse, and periodic A1C for prediabetes.",
+      title: "A free health screening, every visit",
+      body: "Turn each donation into an ongoing health record — blood pressure, hemoglobin, pulse, and periodic A1C — and donors gain a reason to keep coming back.",
       block: {
         kind: "stats",
         items: [
-          { value: "80,000", label: "donors alerted to concerning A1C levels since March 2025", accent: true },
+          { value: "80,000", label: "donors alerted to concerning A1C levels in a year", accent: true },
           { value: "69,000", label: "notified of Stage 2 hypertension — many improved by their next visit" },
-          { value: "290,000", label: "screened for sickle cell trait" },
+        ],
+      },
+    },
+    {
+      id: "predictive",
+      kind: "content",
+      title: "From reactive to predictive",
+      body: "AI forecasting reads weather, illness trends, and scheduled surgeries to collect the right components before shortages hit — replacing paper tracking and guesswork.",
+      block: {
+        kind: "stats",
+        items: [
+          { value: "+11%", label: "more blood collected", accent: true },
+          { value: "−20%", label: "less inventory wasted" },
         ],
       },
     },
     {
       id: "young-quote",
       kind: "content",
-      title: "Health and supply, together",
-      body: "Population-scale diagnostics turn the donor relationship into a public-health asset.",
+      title: "Supply and health, together",
+      body: "Done right, the blood system becomes a public-health asset — not just a collection agency.",
       block: {
         kind: "quote",
         text: "We have a unique ability to raise awareness about the devastating impacts of chronic illness while advancing the health of our communities.",
@@ -575,42 +464,15 @@ const futureDemand: Section = {
       },
     },
     {
-      id: "predictive",
-      kind: "content",
-      title: "From reactive to predictive",
-      body: "AI/ML demand forecasting reads weather, epidemiological trends, scheduled surgeries, and hospital admissions to collect the right components before shortages hit — replacing paper tracking and retrospective ordering.",
-      block: {
-        kind: "stats",
-        items: [
-          { value: "+11%", label: "increase in overall collected blood volume", accent: true },
-          { value: "−20%", label: "decrease in inventory wastage" },
-        ],
-      },
-    },
-    {
-      id: "economics",
-      kind: "content",
-      title: "Where the money goes",
-      body: "Hospital fees only cover basic cost-recovery; philanthropy funds the innovation and resilience — predictive algorithms, automated apheresis, and disaster response.",
-      block: {
-        kind: "stats",
-        items: [
-          { value: "90.7%", label: "programmatic allocation ratio (FY25)", accent: true },
-          { value: "$3.96B", label: "total operating budget; Biomedical Services is 63%" },
-          { value: "4★", label: "Charity Navigator · Candid Platinum · BBB Wise Giving" },
-        ],
-      },
-    },
-    {
       id: "invest-now",
       kind: "content",
-      title: "Invest now",
-      body: "The Future Blood Debt is mathematically guaranteed if we rely on outdated recruitment models. Averting it takes digital infrastructure, targeted generational recruitment, and population-health integration. Blood is not a charity — it is the logistical baseline of the healthcare system.",
+      title: "Blood is not a charity — it's infrastructure",
+      body: "The Future Blood Debt is guaranteed if we rely on outdated recruitment. Averting it takes investment now: digital infrastructure, every-generation recruitment, and health integration.",
       block: {
         kind: "stats",
         items: [
-          { value: "16,000", label: "donations a day needed to secure the supply for 2045", accent: true },
-          { value: "2045", label: "the deadline we are planning against" },
+          { value: "16,000", label: "donations a day to secure the supply for 2045", accent: true },
+          { value: "2045", label: "the deadline we're planning against" },
         ],
       },
     },
