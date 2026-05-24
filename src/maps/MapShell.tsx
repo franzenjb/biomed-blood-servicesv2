@@ -205,7 +205,6 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
           [
             createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
             createElement("arcgis-home", { key: "home", slot: "top-left" }),
-            createElement("arcgis-search", { key: "search", slot: "top-right" }),
             createElement("arcgis-scale-bar", { key: "scale", slot: "bottom-left", unit: "dual" }),
             createElement(
               "arcgis-expand",
