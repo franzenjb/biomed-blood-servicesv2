@@ -6,7 +6,17 @@ export default function HomePage() {
   return (
     <div className="home">
       <section className="home-hero">
-        <div className="home-hero__photo" aria-hidden="true" />
+        <video
+          className="home-hero__video"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/covers/blood-101.png"
+          aria-hidden="true"
+        >
+          <source src="/video/hero.mp4" type="video/mp4" />
+        </video>
         <div className="home-hero__scrim" aria-hidden="true" />
 
         <div className="home-hero__inner">
