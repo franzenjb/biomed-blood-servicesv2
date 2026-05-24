@@ -69,12 +69,8 @@ function sectionFromGraphic(graphic: Graphic): FeatureSection | null {
     return fi?.label || aliasFor(name);
   };
 
-  const keys =
-    Array.isArray(fieldInfos) && fieldInfos.length
-      ? fieldInfos.filter((f) => f.visible !== false && f.fieldName).map((f) => f.fieldName as string)
-      : Object.keys(attributes);
-
-  const rows = keys
+  // Show every real attribute (junk hidden), labeled with the layer's aliases.
+  const rows = Object.keys(attributes)
     .filter((key) => !isJunkField(key))
     .map((key) => ({ label: labelFor(key), value: prettyValue(attributes[key]) }))
     .filter((row) => row.value !== "");

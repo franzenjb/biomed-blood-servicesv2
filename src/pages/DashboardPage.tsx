@@ -5,7 +5,7 @@ export default function DashboardPage() {
   return (
     <MapShell
       eyebrow="Hospital Network"
-      title="Hospital reach & distribution"
+      title="Hospital Reach & Distribution"
       webMapItemId={hospitalPortfolioMapSource.webMapItemId}
     />
   );

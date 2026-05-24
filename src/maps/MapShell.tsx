@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { Link } from "react-router-dom";
+import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Layer from "@arcgis/core/layers/Layer";
 import type MapView from "@arcgis/core/views/MapView";
@@ -17,6 +18,7 @@ import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
   getMapElementMap,
+  safeLayerTitle,
   type ArcgisMapElement,
   type BioMedLayerSnapshot,
 } from "../utils/biomedMapSuite";
@@ -37,6 +39,33 @@ type WatchHandle = { remove?: () => void };
 
 const CENTER: [number, number] = [-96, 38.5];
 const ZOOM = 4;
+
+type QueryableLayer = Layer & {
+  objectIdField?: string;
+  queryFeatures?: (query: {
+    objectIds: number[];
+    outFields: string[];
+    returnGeometry: boolean;
+  }) => Promise<{ features?: Array<{ attributes?: Record<string, unknown> }> }>;
+};
+
+// The hit-test graphic only carries render/popup fields. Re-query the source
+// feature for the COMPLETE attribute record.
+async function enrichGraphic(graphic: Graphic): Promise<Graphic> {
+  const layer = graphic.layer as QueryableLayer | undefined;
+  const oidField = layer?.objectIdField;
+  const oidRaw = oidField ? (graphic.attributes ?? {})[oidField] : undefined;
+  const oid = Number(oidRaw);
+  if (!layer?.queryFeatures || !Number.isFinite(oid)) return graphic;
+  try {
+    const result = await layer.queryFeatures({ objectIds: [oid], outFields: ["*"], returnGeometry: false });
+    const full = result?.features?.[0]?.attributes;
+    if (full) graphic.attributes = { ...graphic.attributes, ...full };
+  } catch {
+    // keep the original attributes
+  }
+  return graphic;
+}
 
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : `${error}`;
@@ -97,6 +126,14 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
       await addMasterMapSupplementalLayers(getMapElementMap(mapElement));
       if (cancelled) return;
 
+      // Manufacturing belongs on the bottom Z so points/geography draw above it.
+      const baseMap = getMapElementMap(mapElement) as (ArcGISMap & { reorder?: (layer: Layer, index: number) => void }) | undefined;
+      if (baseMap) {
+        collectArcJurisdictionLayers(baseMap)
+          .filter((layer) => safeLayerTitle(layer).toLowerCase().includes("manufacturing"))
+          .forEach((layer) => baseMap.reorder?.(layer, 0));
+      }
+
       const view = mapElement.view as MapView | undefined;
       viewRef.current = view ?? null;
       if (view) {
@@ -109,7 +146,8 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
             const graphics = results
               .filter((result) => result.type === "graphic" && result.graphic?.layer)
               .map((result) => result.graphic as Graphic);
-            const info = buildFeatureInfo(graphics);
+            const enriched = await Promise.all(graphics.map(enrichGraphic));
+            const info = buildFeatureInfo(enriched);
             setActiveFeature(info);
             if (info) setActiveTab("details");
           } catch {

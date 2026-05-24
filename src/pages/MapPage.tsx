@@ -5,7 +5,7 @@ export default function MapPage() {
   return (
     <MapShell
       eyebrow="BioMed Blood Map"
-      title="Collections, drives & geography"
+      title="Collections, Drives & Geography"
       webMapItemId={standaloneBiomedMapSource.webMapItemId}
     />
   );
