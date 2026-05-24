@@ -34,6 +34,11 @@ export function prettyLabel(key: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Codes/identifiers must never be comma-formatted (ZIP 43952, not 43,952).
+function isCodeLikeField(key: string): boolean {
+  return /zip|postal|fips|geoid|(^|_)id$|^id|code|phone|fax/i.test(key);
+}
+
 export function prettyValue(value: unknown): string {
   if (value == null) return "";
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -50,9 +55,11 @@ export function prettyValue(value: unknown): string {
   return raw;
 }
 
+// Named features win over geography: feature the hospital/site, not the ZIP polygon.
 const TITLE_KEYS = [
-  "zip", "zip_code", "zipcode", "name", "facility", "facilityname", "sitename", "site_name",
-  "chapter", "region", "county", "city", "division", "district", "label"
+  "hospital", "facility", "facilityname", "sitename", "site_name", "name", "label",
+  "city", "chapter", "county", "district", "division", "region",
+  "zip", "zip_code", "zipcode"
 ];
 
 function sectionFromGraphic(graphic: Graphic): FeatureSection | null {
@@ -72,7 +79,10 @@ function sectionFromGraphic(graphic: Graphic): FeatureSection | null {
   // Show every real attribute (junk hidden), labeled with the layer's aliases.
   const rows = Object.keys(attributes)
     .filter((key) => !isJunkField(key))
-    .map((key) => ({ label: labelFor(key), value: prettyValue(attributes[key]) }))
+    .map((key) => ({
+      label: labelFor(key),
+      value: isCodeLikeField(key) ? `${attributes[key] ?? ""}`.trim() : prettyValue(attributes[key]),
+    }))
     .filter((row) => row.value !== "");
 
   return rows.length ? { layerTitle, rows } : null;
