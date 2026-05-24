@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { Section, Slide as SlideData, SlideBlock } from "../data/sections";
 
 type Props = {
@@ -7,52 +6,9 @@ type Props = {
   active: boolean;
 };
 
-/* Count-up ------------------------------------------------------------- */
-
-const easeOut = (p: number) => 1 - Math.pow(1 - p, 3);
-
-function useCountUp(target: number, run: boolean, duration = 1000) {
-  const [value, setValue] = useState(run ? 0 : target);
-  useEffect(() => {
-    if (!run) {
-      setValue(target);
-      return;
-    }
-    let raf = 0;
-    const start = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / duration);
-      setValue(target * easeOut(p));
-      if (p < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [target, run, duration]);
-  return value;
-}
-
-function CountValue({ raw, active }: { raw: string; active: boolean }) {
-  const match = raw.match(/^([~<+\-−$]?)([\d,]+(?:\.\d+)?)([%+]?)$/);
-  const target = match ? parseFloat(match[2].replace(/,/g, "")) : 0;
-  const value = useCountUp(target, active && !!match);
-  if (!match) return <>{raw}</>;
-  const decimals = (match[2].split(".")[1] || "").length;
-  const shown = value.toLocaleString(undefined, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-  return (
-    <>
-      {match[1]}
-      {shown}
-      {match[3]}
-    </>
-  );
-}
-
 /* Visuals -------------------------------------------------------------- */
 
-function StatsViz({ items, active }: { items: Extract<SlideBlock, { kind: "stats" }>["items"]; active: boolean }) {
+function StatsViz({ items }: { items: Extract<SlideBlock, { kind: "stats" }>["items"] }) {
   const nums = items.map((i) => {
     const m = i.value.match(/[\d,]+(?:\.\d+)?/);
     return m ? parseFloat(m[0].replace(/,/g, "")) : NaN;
@@ -64,13 +20,11 @@ function StatsViz({ items, active }: { items: Extract<SlideBlock, { kind: "stats
         const n = nums[i];
         const pct = max > 0 && !Number.isNaN(n) ? Math.max(8, (n / max) * 100) : 0;
         return (
-          <div className={`vstat ${s.accent ? "is-accent" : ""}`} key={i} style={{ animationDelay: `${i * 90}ms` }}>
-            <div className="vstat__value mono">
-              <CountValue raw={s.value} active={active} />
-            </div>
+          <div className={`vstat ${s.accent ? "is-accent" : ""}`} key={i} style={{ animationDelay: `${i * 100}ms` }}>
+            <div className="vstat__value mono">{s.value}</div>
             {pct > 0 && (
               <div className="vstat__bar">
-                <span style={{ width: `${pct}%`, animationDelay: `${i * 90 + 200}ms` }} />
+                <span style={{ width: `${pct}%`, animationDelay: `${i * 100 + 150}ms` }} />
               </div>
             )}
             <div className="vstat__label">{s.label}</div>
@@ -97,66 +51,70 @@ function ListViz({ items }: { items: Extract<SlideBlock, { kind: "list" }>["item
   );
 }
 
-function QuoteViz({ text, cite }: { text: string; cite?: string }) {
-  return (
-    <figure className="viz viz--quote">
-      <blockquote className="vquote">{text}</blockquote>
-      {cite && <figcaption className="vquote__cite mono">— {cite}</figcaption>}
-    </figure>
-  );
-}
-
-function Visual({ block, active }: { block: SlideBlock | undefined; active: boolean }) {
-  if (!block) return null;
-  if (block.kind === "stats") return <StatsViz items={block.items} active={active} />;
-  if (block.kind === "list") return <ListViz items={block.items} />;
-  return <QuoteViz text={block.text} cite={block.cite} />;
-}
-
 /* Slide ---------------------------------------------------------------- */
 
 export default function Slide({ section, slide, active }: Props) {
+  const eyebrow = (
+    <p className="eyebrow eyebrow--light slide__eyebrow">
+      {section.index} · {section.title}
+    </p>
+  );
+
   const isHero = slide.kind === "hero";
-  const hasViz = Boolean(slide.block);
+  const block = slide.block;
+  const variant = isHero
+    ? "hero"
+    : block?.kind === "quote"
+    ? "quote"
+    : block?.kind === "stats" || block?.kind === "list"
+    ? "content"
+    : "statement";
 
   return (
     <article
-      className={`slide ${isHero ? "slide--hero" : hasViz ? "slide--content" : "slide--statement"} ${
-        active ? "is-active" : ""
-      }`}
+      className={`slide slide--${variant} ${active ? "is-active" : ""}`}
       style={{ backgroundImage: `url(${section.cover})` }}
       aria-hidden={!active}
     >
       <span className="slide__scrim" />
 
-      {isHero ? (
+      {variant === "hero" && (
         <div className="slide__inner">
-          <p className="eyebrow eyebrow--light slide__eyebrow">
-            {section.index} · {section.title}
-          </p>
+          {eyebrow}
           <h2 className="slide__title">{slide.title}</h2>
           <p className="slide__body">{slide.body}</p>
-          {slide.block?.kind === "quote" && <QuoteViz text={slide.block.text} cite={slide.block.cite} />}
           <p className="slide__hint mono">Use → or click to advance</p>
         </div>
-      ) : hasViz ? (
+      )}
+
+      {variant === "quote" && block?.kind === "quote" && (
+        <div className="slide__inner slide__inner--quote">
+          {eyebrow}
+          <h2 className="slide__kicker">{slide.title}</h2>
+          <figure className="viz viz--quote">
+            <blockquote className="vquote">{block.text}</blockquote>
+            {block.cite && <figcaption className="vquote__cite mono">— {block.cite}</figcaption>}
+          </figure>
+        </div>
+      )}
+
+      {variant === "content" && (
         <div className="slide__layout">
           <header className="slide__copy">
-            <p className="eyebrow eyebrow--light slide__eyebrow">
-              {section.index} · {section.title}
-            </p>
+            {eyebrow}
             <h2 className="slide__title slide__title--sm">{slide.title}</h2>
             <p className="slide__body">{slide.body}</p>
           </header>
           <div className="slide__viz">
-            <Visual block={slide.block} active={active} />
+            {block?.kind === "stats" && <StatsViz items={block.items} />}
+            {block?.kind === "list" && <ListViz items={block.items} />}
           </div>
         </div>
-      ) : (
+      )}
+
+      {variant === "statement" && (
         <div className="slide__inner slide__inner--statement">
-          <p className="eyebrow eyebrow--light slide__eyebrow">
-            {section.index} · {section.title}
-          </p>
+          {eyebrow}
           <h2 className="slide__title">{slide.title}</h2>
           <p className="slide__body slide__body--lg">{slide.body}</p>
         </div>

@@ -345,19 +345,25 @@
   color: rgba(255, 255, 255, 0.74);
 }
 
-/* Quote visual */
+/* Quote-led slides */
+.slide__inner--quote {
+  width: min(820px, 100%);
+}
+.slide__kicker {
+  margin: 10px 0 18px;
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: clamp(18px, 2.2vw, 28px);
+  color: rgba(255, 255, 255, 0.78);
+}
 .viz--quote {
   width: 100%;
-  max-width: 26ch;
-}
-.slide--content .viz--quote {
-  max-width: 22ch;
 }
 .vquote {
   font-family: var(--font-headline);
   font-style: italic;
-  font-size: clamp(26px, 4vw, 52px);
-  line-height: 1.22;
+  font-size: clamp(24px, 3.3vw, 44px);
+  line-height: 1.24;
   color: #fff;
 }
 .vquote::before {
