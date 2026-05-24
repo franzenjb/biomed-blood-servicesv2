@@ -31,9 +31,6 @@ export default function HomePage() {
               <Link to="/hub" className="btn btn--primary" data-testid="enter-hub">
                 Explore the experience
               </Link>
-              <Link to="/s/blood-101?present=1" className="btn btn--ghost" data-testid="start-presentation">
-                ▶ Start presentation
-              </Link>
             </div>
             <p className="home-hero__note mono">
               Self-guided for donors · presentation-ready for fundraisers

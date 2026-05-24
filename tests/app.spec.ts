@@ -5,7 +5,7 @@ test.describe("Home (hero)", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("chain of care");
     await expect(page.getByTestId("enter-hub")).toBeVisible();
-    await expect(page.getByTestId("start-presentation")).toBeVisible();
+    await expect(page.getByTestId("start-presentation")).toHaveCount(0);
     await page.getByTestId("enter-hub").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
