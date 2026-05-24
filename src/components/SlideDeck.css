@@ -68,6 +68,7 @@
 .slide {
   position: absolute;
   inset: 0;
+  background-color: var(--ink-900);
   background-size: cover;
   background-position: center;
   display: flex;
@@ -77,6 +78,53 @@
 }
 .slide.is-active {
   opacity: 1;
+}
+
+/* Non-hero slides: clean dark canvas with a faint brand wash + vector art */
+.slide--content,
+.slide--quote,
+.slide--statement {
+  background-image: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.1), transparent 62%);
+}
+
+.slide__art {
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(72vh, 660px);
+  height: min(72vh, 660px);
+  color: #ed1b2e;
+  opacity: 0.16;
+  z-index: 0;
+  pointer-events: none;
+  animation: art-in 0.8s var(--ease) both;
+}
+.slide--quote .slide__art,
+.slide--statement .slide__art {
+  opacity: 0.24;
+}
+@keyframes art-in {
+  from { opacity: 0; transform: translateY(-50%) scale(0.94) rotate(-3deg); }
+}
+
+.slide__heroquote {
+  margin-top: 22px;
+  max-width: 54ch;
+  padding-left: 16px;
+  border-left: 3px solid var(--arc-red);
+  font-family: var(--font-headline);
+  font-style: italic;
+  font-size: clamp(16px, 1.6vw, 20px);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.82);
+}
+.slide__heroquote .mono {
+  display: block;
+  margin-top: 6px;
+  font-style: normal;
+  font-size: 12px;
+  color: #ff8a96;
 }
 
 .slide__scrim {
@@ -93,6 +141,7 @@
 
 .slide__inner {
   position: relative;
+  z-index: 1;
   width: min(760px, 100%);
   padding: clamp(24px, 5vw, 72px);
   animation: slide-rise 0.5s var(--ease);
