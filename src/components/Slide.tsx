@@ -19,7 +19,6 @@ function CountValue({ raw, active }: { raw: string; active: boolean }) {
   const decimals = match ? (match[2].split(".")[1] || "").length : 0;
   const target = match ? parseFloat(match[2].replace(/,/g, "")) : 0;
   const [value, setValue] = useState(target);
-
   useEffect(() => {
     if (!active || !hasMatch) {
       setValue(target);
@@ -36,7 +35,6 @@ function CountValue({ raw, active }: { raw: string; active: boolean }) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [target, active, hasMatch]);
-
   if (!hasMatch) return <>{raw}</>;
   return (
     <>
@@ -47,7 +45,7 @@ function CountValue({ raw, active }: { raw: string; active: boolean }) {
   );
 }
 
-/* Vector artwork motifs ------------------------------------------------ */
+/* Atmospheric motif (quote/statement only) ---------------------------- */
 
 const MOTIFS: Record<string, ReactElement> = {
   rings: (
@@ -55,60 +53,43 @@ const MOTIFS: Record<string, ReactElement> = {
       <circle cx="300" cy="200" r="150" />
       <circle cx="300" cy="200" r="104" />
       <circle cx="300" cy="200" r="58" />
-      <circle cx="300" cy="200" r="14" fill="currentColor" stroke="none" />
     </>
   ),
-  pulse: (
-    <polyline points="20,210 150,210 185,120 225,300 265,180 300,210 380,210" />
-  ),
-  drop: (
-    <>
-      <path d="M300 70 C360 160 392 210 392 252 a92 92 0 1 1 -184 0 C208 210 240 160 300 70 Z" />
-      <circle cx="300" cy="256" r="150" opacity="0.5" />
-    </>
-  ),
-  grid: (
-    <>
-      <path d="M120 60 V340 M210 60 V340 M300 60 V340 M390 60 V340 M60 120 H440 M60 210 H440 M60 300 H440" opacity="0.5" />
-      <circle cx="300" cy="210" r="16" fill="currentColor" stroke="none" />
-      <circle cx="210" cy="120" r="9" fill="currentColor" stroke="none" />
-      <circle cx="390" cy="300" r="9" fill="currentColor" stroke="none" />
-    </>
-  ),
+  drop: <path d="M300 70 C360 160 392 210 392 252 a92 92 0 1 1 -184 0 C208 210 240 160 300 70 Z" />,
+  pulse: <polyline points="20,210 150,210 185,120 225,300 265,180 300,210 440,210" />,
 };
-const MOTIF_KEYS = Object.keys(MOTIFS);
-const pickMotif = (id: string) => MOTIF_KEYS[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % MOTIF_KEYS.length];
-
+const MK = Object.keys(MOTIFS);
 function ArtMotif({ id }: { id: string }) {
+  const k = MK[[...id].reduce((a, c) => a + c.charCodeAt(0), 0) % MK.length];
   return (
     <svg className="slide__art" viewBox="0 0 460 400" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-      {MOTIFS[pickMotif(id)]}
+      {MOTIFS[k]}
     </svg>
   );
 }
 
-/* Visuals -------------------------------------------------------------- */
+/* Infographics -------------------------------------------------------- */
 
-function StatsViz({ items, active }: { items: Extract<SlideBlock, { kind: "stats" }>["items"]; active: boolean }) {
+function StatCards({ items, active }: { items: Extract<SlideBlock, { kind: "stats" }>["items"]; active: boolean }) {
   const nums = items.map((i) => {
     const m = i.value.match(/[\d,]+(?:\.\d+)?/);
     return m ? parseFloat(m[0].replace(/,/g, "")) : NaN;
   });
   const max = Math.max(0, ...nums.filter((n) => !Number.isNaN(n)));
   return (
-    <div className="viz viz--stats">
+    <div className="info-stats">
       {items.map((s, i) => {
         const n = nums[i];
-        const pct = max > 0 && !Number.isNaN(n) ? Math.max(8, (n / max) * 100) : 0;
+        const pct = max > 0 && !Number.isNaN(n) ? Math.max(6, (n / max) * 100) : 0;
         return (
-          <div className={`vstat ${s.accent ? "is-accent" : ""}`} key={i} style={{ animationDelay: `${i * 100}ms` }}>
-            <div className="vstat__value mono">{s.accent ? <CountValue raw={s.value} active={active} /> : s.value}</div>
+          <div className={`info-card ${s.accent ? "is-accent" : ""}`} key={i} style={{ animationDelay: `${i * 110}ms` }}>
+            <div className="info-card__value mono">{s.accent ? <CountValue raw={s.value} active={active} /> : s.value}</div>
+            <div className="info-card__label">{s.label}</div>
             {pct > 0 && (
-              <div className="vstat__bar">
-                <span style={{ width: `${pct}%`, animationDelay: `${i * 100 + 150}ms` }} />
+              <div className="info-card__bar">
+                <span style={{ width: `${pct}%`, animationDelay: `${i * 110 + 160}ms` }} />
               </div>
             )}
-            <div className="vstat__label">{s.label}</div>
           </div>
         );
       })}
@@ -116,19 +97,19 @@ function StatsViz({ items, active }: { items: Extract<SlideBlock, { kind: "stats
   );
 }
 
-function ListViz({ items }: { items: Extract<SlideBlock, { kind: "list" }>["items"] }) {
+function StepCards({ items }: { items: Extract<SlideBlock, { kind: "list" }>["items"] }) {
   return (
-    <ul className="viz viz--flow">
+    <ol className="info-steps">
       {items.map((it, i) => (
-        <li className="vflow" key={i} style={{ animationDelay: `${i * 80}ms` }}>
-          <span className="vflow__node" aria-hidden="true" />
-          <div className="vflow__text">
-            <span className="vflow__title">{it.title}</span>
-            <span className="vflow__detail">{it.detail}</span>
+        <li className="step" key={i} style={{ animationDelay: `${i * 90}ms` }}>
+          <span className="step__num mono">{i + 1}</span>
+          <div className="step__body">
+            <span className="step__title">{it.title}</span>
+            <span className="step__detail">{it.detail}</span>
           </div>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }
 
@@ -151,13 +132,12 @@ export default function Slide({ section, slide, active }: Props) {
     ? "content"
     : "statement";
 
-  // Photo only on section heroes; everything else is a clean dark canvas.
   const style = isHero ? { backgroundImage: `url(${section.cover})` } : undefined;
 
   return (
     <article className={`slide slide--${variant} ${active ? "is-active" : ""}`} style={style} aria-hidden={!active}>
       {isHero && <span className="slide__scrim" />}
-      {!isHero && <ArtMotif id={slide.id} />}
+      {(variant === "quote" || variant === "statement") && <ArtMotif id={slide.id} />}
 
       {variant === "hero" && (
         <div className="slide__inner">
@@ -173,6 +153,20 @@ export default function Slide({ section, slide, active }: Props) {
         </div>
       )}
 
+      {variant === "content" && (
+        <div className="slide__grid">
+          <header className="slide__copy">
+            {eyebrow}
+            <h2 className="slide__title slide__title--sm">{slide.title}</h2>
+            <p className="slide__body">{slide.body}</p>
+          </header>
+          <div className="slide__info">
+            {block?.kind === "stats" && <StatCards items={block.items} active={active} />}
+            {block?.kind === "list" && <StepCards items={block.items} />}
+          </div>
+        </div>
+      )}
+
       {variant === "quote" && block?.kind === "quote" && (
         <div className="slide__inner slide__inner--quote">
           {eyebrow}
@@ -181,20 +175,6 @@ export default function Slide({ section, slide, active }: Props) {
             <blockquote className="vquote">{block.text}</blockquote>
             {block.cite && <figcaption className="vquote__cite mono">— {block.cite}</figcaption>}
           </figure>
-        </div>
-      )}
-
-      {variant === "content" && (
-        <div className="slide__layout">
-          <header className="slide__copy">
-            {eyebrow}
-            <h2 className="slide__title slide__title--sm">{slide.title}</h2>
-            <p className="slide__body">{slide.body}</p>
-          </header>
-          <div className="slide__viz">
-            {block?.kind === "stats" && <StatsViz items={block.items} active={active} />}
-            {block?.kind === "list" && <ListViz items={block.items} />}
-          </div>
         </div>
       )}
 

@@ -62,6 +62,8 @@ html[data-theme="light"] {
     rgba(247, 245, 242, 0.12) 100%
   );
   --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.06), transparent 62%);
+  --d-card: #ffffff;
+  --d-card-soft: #f6f3ef;
 }
 
 html[data-theme="dark"] {
@@ -78,4 +80,6 @@ html[data-theme="dark"] {
     rgba(10, 12, 15, 0.25) 100%
   );
   --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.1), transparent 62%);
+  --d-card: rgba(255, 255, 255, 0.05);
+  --d-card-soft: rgba(255, 255, 255, 0.08);
 }
