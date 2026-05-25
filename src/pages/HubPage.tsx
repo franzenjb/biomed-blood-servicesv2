@@ -46,8 +46,8 @@ export default function HubPage() {
         <Link to="/dashboard" className="hub__card hub__card--map" data-testid="hub-card-dashboard">
           <span className="hub__index mono">07</span>
           <span className="hub__body">
-            <span className="hub__title">Hospital Dashboard</span>
-            <span className="hub__q">Hospital network reach &amp; distribution. Red Cross sign-in required.</span>
+            <span className="hub__title">Jurisdiction Dashboard</span>
+            <span className="hub__q">FY25 red cell drives, collections &amp; SDP by Biomed geography.</span>
           </span>
         </Link>
       </nav>

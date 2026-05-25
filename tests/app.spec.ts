@@ -95,17 +95,22 @@ test.describe("Slide deck", () => {
 });
 
 test.describe("Maps (shared shell)", () => {
-  for (const path of ["/map", "/dashboard"]) {
-    test(`${path} renders the shared shell + sign-in gate`, async ({ page }) => {
-      await page.goto(path);
-      await expect(page.getByTestId("map-shell")).toBeVisible();
-      await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
-      await expect(page.getByTestId("map-signin")).toBeVisible();
-      // light panel with Layers/Details tabs is present
-      await expect(page.getByTestId("map-tab-layers")).toBeVisible();
-      await expect(page.getByTestId("map-tab-details")).toBeVisible();
-    });
-  }
+  test("/map renders the shared shell + sign-in gate", async ({ page }) => {
+    await page.goto("/map");
+    await expect(page.getByTestId("map-shell")).toBeVisible();
+    await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByTestId("map-signin")).toBeVisible();
+    await expect(page.getByTestId("map-tab-layers")).toBeVisible();
+    await expect(page.getByTestId("map-tab-details")).toBeVisible();
+  });
+
+  test("/dashboard embeds the ArcGIS dashboard with a hub back link", async ({ page }) => {
+    await page.goto("/dashboard");
+    await expect(page.getByTestId("dashboard")).toBeVisible();
+    await expect(page.getByTestId("dash-frame")).toHaveAttribute("src", /arcgis\.com\/apps\/dashboards/);
+    await page.getByTestId("dash-back").click();
+    await expect(page).toHaveURL(/\/hub$/);
+  });
 
   test("map back link returns to hub", async ({ page }) => {
     await page.goto("/map");
