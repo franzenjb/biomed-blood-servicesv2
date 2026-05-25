@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
+import RcLogo from "../components/RcLogo";
 import "./HomePage.css";
 
 export default function HomePage() {
@@ -21,10 +22,8 @@ export default function HomePage() {
 
         <div className="home-hero__inner">
           <div className="home-brand">
-            <RcMark size={28} />
-            <span>
-              American Red Cross · <strong>Biomedical Services</strong>
-            </span>
+            <RcLogo size={50} />
+            <span className="home-brand__sub">Biomedical Services</span>
           </div>
 
           <h1 className="home-hero__title">

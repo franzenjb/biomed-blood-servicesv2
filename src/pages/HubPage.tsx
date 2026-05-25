@@ -56,7 +56,6 @@ export default function HubPage() {
         <Link to="/" className="hub__foot-link">
           ← Home
         </Link>
-        <span className="mono hub__tag">DONOR EDUCATION · FUNDRAISER DEMO</span>
       </footer>
     </div>
   );

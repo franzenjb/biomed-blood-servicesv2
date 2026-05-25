@@ -49,14 +49,21 @@
 .home-brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.82);
-  margin-bottom: 26px;
+  gap: 16px;
+  color: #fff;
+  margin-bottom: 30px;
 }
 .home-brand strong {
   color: #fff;
+}
+.home-brand__sub {
+  padding-left: 16px;
+  border-left: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .home-hero__title {

@@ -1,0 +1,13 @@
+.rc-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.rc-logo__word {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.02;
+  letter-spacing: -0.2px;
+  color: currentColor;
+}
