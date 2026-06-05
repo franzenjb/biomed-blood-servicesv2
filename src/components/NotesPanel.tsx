@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import "./NotesPanel.css";
 
 /* ---------- types + storage ---------- */
 
+type Kind = "note" | "question" | "answer";
 type Note = {
   id: string;
   page: string;
   author: string;
   text: string;
   ts: number;
-  kind: "question" | "answer" | "note";
+  kind: Kind;
 };
 
-const STORAGE_KEY = "biomed-notes-v1";
+const LOCAL_KEY = "biomed-notes-v1";
+const POLL_MS = 20_000;
 
-// First-load seed: existing client asks + Jeff's answers tied to their page.
+// First-load seed used only when the API isn't reachable (offline fallback).
 const SEED: Note[] = [
   {
     id: "seed-fd-q",
@@ -49,25 +51,21 @@ const SEED: Note[] = [
   },
 ];
 
-function loadNotes(): Note[] {
-  if (typeof window === "undefined") return SEED;
+function readLocal(): Note[] {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED));
-      return SEED;
-    }
+    const raw = window.localStorage.getItem(LOCAL_KEY);
+    if (!raw) return SEED;
     return JSON.parse(raw) as Note[];
   } catch {
     return SEED;
   }
 }
 
-function saveNotes(notes: Note[]) {
+function writeLocal(notes: Note[]) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    window.localStorage.setItem(LOCAL_KEY, JSON.stringify(notes));
   } catch {
-    /* ignore quota errors */
+    /* ignore */
   }
 }
 
@@ -100,13 +98,52 @@ export default function NotesPanel() {
   const location = useLocation();
   const page = location.pathname;
   const [open, setOpen] = useState(false);
-  const [notes, setNotes] = useState<Note[]>(() => loadNotes());
+  const [notes, setNotes] = useState<Note[]>(() => readLocal());
   const [author, setAuthor] = useState<string>("Jeff");
   const [text, setText] = useState("");
-  const [kind, setKind] = useState<Note["kind"]>("note");
+  const [kind, setKind] = useState<Kind>("note");
+  const [mode, setMode] = useState<"shared" | "local">("local");
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => saveNotes(notes), [notes]);
+  const refresh = useCallback(async () => {
+    try {
+      const r = await fetch("/api/notes", { cache: "no-store" });
+      if (!r.ok) {
+        if (r.status === 503) {
+          setMode("local");
+          setError(null);
+          setNotes(readLocal());
+          return;
+        }
+        throw new Error(`GET /api/notes ${r.status}`);
+      }
+      const data = (await r.json()) as Note[];
+      setNotes(Array.isArray(data) ? data : []);
+      setMode("shared");
+      setError(null);
+    } catch (e) {
+      setMode("local");
+      setError(e instanceof Error ? e.message : "Network error");
+      setNotes(readLocal());
+    }
+  }, []);
+
+  // Initial fetch + polling while the panel is open.
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(() => void refresh(), POLL_MS);
+    return () => clearInterval(t);
+  }, [open, refresh]);
+
+  // Whenever notes change AND we're in local mode, persist to localStorage.
+  useEffect(() => {
+    if (mode === "local") writeLocal(notes);
+  }, [mode, notes]);
 
   const pageNotes = useMemo(
     () => notes.filter((n) => n.page === page).sort((a, b) => a.ts - b.ts),
@@ -116,9 +153,27 @@ export default function NotesPanel() {
   const pageLabel = PAGE_LABELS[page] ?? page;
   const unreadCount = pageNotes.length;
 
-  const add = () => {
+  const add = async () => {
     const trimmed = text.trim();
     if (!trimmed) return;
+    if (mode === "shared") {
+      try {
+        const r = await fetch("/api/notes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ page, author, text: trimmed, kind }),
+        });
+        if (!r.ok) throw new Error(`POST ${r.status}`);
+        const saved = (await r.json()) as Note;
+        setNotes((all) => [...all, saved]);
+        setText("");
+        return;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Save failed");
+        setMode("local");
+        // fall through to local
+      }
+    }
     const n: Note = {
       id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       page,
@@ -131,18 +186,32 @@ export default function NotesPanel() {
     setText("");
   };
 
-  const remove = (id: string) => setNotes((all) => all.filter((n) => n.id !== id));
+  const remove = async (id: string) => {
+    if (mode === "shared") {
+      try {
+        const r = await fetch(`/api/notes?id=${encodeURIComponent(id)}`, {
+          method: "DELETE",
+        });
+        if (!r.ok) throw new Error(`DELETE ${r.status}`);
+        setNotes((all) => all.filter((n) => n.id !== id));
+        return;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Delete failed");
+        setMode("local");
+      }
+    }
+    setNotes((all) => all.filter((n) => n.id !== id));
+  };
 
   const copyPage = async () => {
     const lines = pageNotes.map(
-      (n) =>
-        `[${fmtTime(n.ts)}] ${n.author} (${n.kind}):\n${n.text}\n`,
+      (n) => `[${fmtTime(n.ts)}] ${n.author} (${n.kind}):\n${n.text}\n`,
     );
     const body = `Notes for ${pageLabel} (${page})\n\n${lines.join("\n")}`;
     try {
       await navigator.clipboard.writeText(body);
     } catch {
-      /* clipboard blocked; fall through silently */
+      /* clipboard blocked; ignore */
     }
   };
 
@@ -158,10 +227,9 @@ export default function NotesPanel() {
 
   const importAll = async (file: File) => {
     try {
-      const text = await file.text();
-      const parsed = JSON.parse(text) as Note[];
+      const raw = await file.text();
+      const parsed = JSON.parse(raw) as Note[];
       if (!Array.isArray(parsed)) return;
-      // Merge: keep both, drop dupes by id, prefer incoming.
       const byId = new Map<string, Note>();
       [...notes, ...parsed].forEach((n) => byId.set(n.id, n));
       setNotes([...byId.values()]);
@@ -192,7 +260,12 @@ export default function NotesPanel() {
           <aside className="np-panel" onClick={(e) => e.stopPropagation()}>
             <header className="np-header">
               <div>
-                <p className="np-eyebrow">Notes &amp; questions</p>
+                <p className="np-eyebrow">
+                  Notes &amp; questions
+                  <span className={`np-mode np-mode--${mode}`}>
+                    {mode === "shared" ? "shared (live)" : "local (this device)"}
+                  </span>
+                </p>
                 <h2 className="np-title">{pageLabel}</h2>
                 <p className="np-path mono">{page}</p>
               </div>
@@ -211,6 +284,9 @@ export default function NotesPanel() {
               <button type="button" className="np-btn" onClick={() => fileRef.current?.click()}>
                 Import
               </button>
+              <button type="button" className="np-btn" onClick={() => void refresh()}>
+                Refresh
+              </button>
               <input
                 ref={fileRef}
                 type="file"
@@ -223,6 +299,8 @@ export default function NotesPanel() {
                 }}
               />
             </div>
+
+            {error && <p className="np-error mono">⚠ {error}</p>}
 
             <div className="np-list">
               {pageNotes.length === 0 ? (
@@ -238,7 +316,7 @@ export default function NotesPanel() {
                         type="button"
                         className="np-note__del"
                         aria-label="Delete note"
-                        onClick={() => remove(n.id)}
+                        onClick={() => void remove(n.id)}
                       >
                         ✕
                       </button>
@@ -253,7 +331,7 @@ export default function NotesPanel() {
               className="np-form"
               onSubmit={(e) => {
                 e.preventDefault();
-                add();
+                void add();
               }}
             >
               <div className="np-form__row">
@@ -268,7 +346,7 @@ export default function NotesPanel() {
                 </label>
                 <label className="np-label">
                   Kind
-                  <select value={kind} onChange={(e) => setKind(e.target.value as Note["kind"])}>
+                  <select value={kind} onChange={(e) => setKind(e.target.value as Kind)}>
                     <option value="note">Note</option>
                     <option value="question">Question</option>
                     <option value="answer">Answer</option>

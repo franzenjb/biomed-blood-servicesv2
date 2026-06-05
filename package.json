@@ -13,6 +13,8 @@
     "@arcgis/core": "^5.0.19",
     "@arcgis/map-components": "^5.0.19",
     "@esri/calcite-components": "^5.0.2",
+    "@vercel/kv": "^3.0.0",
+    "@vercel/node": "^5.8.12",
     "lucide-react": "^0.561.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
