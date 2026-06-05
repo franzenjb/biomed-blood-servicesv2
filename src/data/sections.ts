@@ -125,7 +125,7 @@ const blood101: Section = {
 
 const collections: Section = {
   id: "collections",
-  index: "02",
+  index: "05",
   title: "Biomed Collections",
   tagline: "Meeting donors where they already are.",
   question: "Where does blood donation happen?",
@@ -227,7 +227,7 @@ const collections: Section = {
 
 const journey: Section = {
   id: "journey",
-  index: "03",
+  index: "02",
   title: "Blood Journey",
   tagline: "Fifty-six days, and ten minutes.",
   question: "How does blood move from donor to patient?",
@@ -308,7 +308,7 @@ const journey: Section = {
 
 const distribution: Section = {
   id: "distribution",
-  index: "04",
+  index: "03",
   title: "Hospital Distribution",
   tagline: "Getting the right unit to the right bedside, in time.",
   question: "Which communities and hospitals are supported?",
@@ -385,7 +385,7 @@ const distribution: Section = {
 
 const futureDemand: Section = {
   id: "future-demand",
-  index: "05",
+  index: "04",
   title: "Future Demand",
   tagline: "Averting the demographic collapse of the blood supply.",
   question: "What pressures make donors matter more over time?",
@@ -495,7 +495,7 @@ const futureDemand: Section = {
   ],
 };
 
-export const sections: Section[] = [blood101, collections, journey, distribution, futureDemand];
+export const sections: Section[] = [blood101, journey, distribution, futureDemand, collections];
 
 export const getSection = (id: string | undefined): Section | undefined =>
   sections.find((s) => s.id === id);

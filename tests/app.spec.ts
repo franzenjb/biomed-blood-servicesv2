@@ -12,17 +12,18 @@ test.describe("Home (hero)", () => {
 });
 
 test.describe("Hub", () => {
-  test("is the grid of five chapters + map, and navigates", async ({ page }) => {
+  test("is the grid of 5 chapters + 4 tool tiles, and navigates", async ({ page }) => {
     await page.goto("/hub");
     await expect(page.getByTestId("hub")).toBeVisible();
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    for (const id of ["map", "dashboard"]) {
+    // 4 tool tiles (#6-#9): merged map+dashboard, ops, hospital network, regions
+    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // retired map tools are gone
-    for (const id of ["map-v3", "map-tool", "ops", "layers", "maps-menu"]) {
+    // separated map + dashboard tiles are gone (merged into one)
+    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
     await page.getByTestId("hub-card-distribution").click();
@@ -74,7 +75,7 @@ test.describe("Slide deck", () => {
 
   test("presentation mode chains sections then ends at the hub", async ({ page }) => {
     // start at the LAST section in present mode to verify the finish -> hub hop
-    await page.goto("/s/future-demand?present=1");
+    await page.goto("/s/collections?present=1");
     await expect(page.getByTestId("deck")).toBeVisible();
     await expect(page.getByTestId("deck-counter")).toContainText("01 /");
     await page.keyboard.press("End");
@@ -83,14 +84,14 @@ test.describe("Slide deck", () => {
     await expect(page).toHaveURL(/\/hub$/);
   });
 
-  test("presentation mode advances blood-101 -> collections", async ({ page }) => {
+  test("presentation mode advances blood-101 -> journey", async ({ page }) => {
     await page.goto("/s/blood-101?present=1");
     await expect(page.getByTestId("deck")).toBeVisible();
     await expect(page.getByTestId("deck-counter")).toContainText("01 /");
     await page.keyboard.press("End");
     await expect(page.getByTestId("deck-next-section")).toBeVisible();
     await page.getByTestId("deck-next-section").click();
-    await expect(page).toHaveURL(/\/s\/collections\?present=1/);
+    await expect(page).toHaveURL(/\/s\/journey\?present=1/);
   });
 });
 

@@ -36,30 +36,16 @@ export default function HubPage() {
         ))}
 
         <a
-          href="/map"
-          target="_blank"
-          rel="noreferrer"
-          className="hub__card hub__card--map"
-          data-testid="hub-card-map"
-        >
-          <span className="hub__index mono">06</span>
-          <span className="hub__body">
-            <span className="hub__title">BioMed Blood Map</span>
-            <span className="hub__q">Live ArcGIS map of real BioMed data. Red Cross sign-in required.</span>
-          </span>
-        </a>
-
-        <a
           href="/dashboard"
           target="_blank"
           rel="noreferrer"
           className="hub__card hub__card--map"
-          data-testid="hub-card-dashboard"
+          data-testid="hub-card-map-dashboard"
         >
-          <span className="hub__index mono">07</span>
+          <span className="hub__index mono">06</span>
           <span className="hub__body">
-            <span className="hub__title">Jurisdiction Dashboard</span>
-            <span className="hub__q">FY25 red cell drives, collections &amp; SDP by Biomed geography.</span>
+            <span className="hub__title">BioMed Map &amp; Dashboard</span>
+            <span className="hub__q">Live ArcGIS map plus FY25 jurisdiction KPIs — drives, collections &amp; SDP by Biomed geography.</span>
           </span>
         </a>
 
@@ -70,7 +56,7 @@ export default function HubPage() {
           className="hub__card hub__card--map"
           data-testid="hub-card-ops-workbench"
         >
-          <span className="hub__index mono">08</span>
+          <span className="hub__index mono">07</span>
           <span className="hub__body">
             <span className="hub__title">BioMed Ops Workbench</span>
             <span className="hub__q">Internal layer toggles, feature counts, focus bookmarks.</span>
@@ -84,12 +70,20 @@ export default function HubPage() {
           className="hub__card hub__card--map"
           data-testid="hub-card-hospital-network"
         >
-          <span className="hub__index mono">09</span>
+          <span className="hub__index mono">08</span>
           <span className="hub__body">
             <span className="hub__title">Hospital Network</span>
             <span className="hub__q">Tier, distribution sites, portfolio footprint &amp; coverage.</span>
           </span>
         </a>
+
+        <Link to="/regions" className="hub__card hub__card--map" data-testid="hub-card-regions">
+          <span className="hub__index mono">09</span>
+          <span className="hub__body">
+            <span className="hub__title">Explore Regions</span>
+            <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>
+          </span>
+        </Link>
       </nav>
 
       <footer className="hub__foot">
