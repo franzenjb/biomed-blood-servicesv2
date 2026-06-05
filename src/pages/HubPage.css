@@ -89,8 +89,19 @@
   );
 }
 
+/* Tool tiles (06-09) — actual map / dashboard / GIS view as the card graphic,
+   with a stronger bottom scrim so the title + question stay readable.
+   Background fallback when the image is loading. */
 .hub__card--map {
-  background: linear-gradient(150deg, #1c2230, #0d0f12);
+  background-color: #0d0f12;
+}
+.hub__card--map .hub__scrim {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 15, 18, 0.22) 0%,
+    rgba(13, 15, 18, 0.62) 50%,
+    rgba(13, 15, 18, 0.94) 100%
+  );
 }
 
 .hub__index {
