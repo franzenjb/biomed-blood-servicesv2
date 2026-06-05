@@ -172,30 +172,31 @@ export default function NotesPanel() {
       ts: Date.now(),
       kind,
     };
+    // Optimistic: show the note immediately. The realtime subscription will
+    // reconcile shortly; if the insert fails we roll back.
+    setNotes((all) => [...all, note]);
     setText("");
     if (supabase && mode === "shared") {
       const { error } = await supabase.from(TABLE).insert(note);
       if (error) {
         setError(error.message);
         setMode("local");
-        setNotes((all) => [...all, note]);
+        // Keep the optimistic copy; local mode will persist it.
       }
-      // Realtime subscription will refresh the list; no manual setNotes on success.
-    } else {
-      setNotes((all) => [...all, note]);
     }
   };
 
   const remove = async (id: string) => {
+    // Optimistic removal — rolled back if the server delete fails.
+    const prev = notes;
+    setNotes((all) => all.filter((n) => n.id !== id));
     if (supabase && mode === "shared") {
       const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) {
         setError(error.message);
         setMode("local");
-        setNotes((all) => all.filter((n) => n.id !== id));
+        setNotes(prev);
       }
-    } else {
-      setNotes((all) => all.filter((n) => n.id !== id));
     }
   };
 
