@@ -206,29 +206,16 @@ const collections: Section = {
       },
     },
     {
-      id: "frictionless",
+      id: "volunteer",
       kind: "content",
-      title: "A frictionless front door",
-      body: "Technology is shrinking the friction between intention and donation — and turning first-timers into regulars.",
+      title: "Volunteers run the door",
+      body: "Collections is a people business at every step. Drives don't happen without volunteers planning them, hosting them, and walking donors through the experience.",
       block: {
         kind: "list",
         items: [
-          { title: "Clara AI", detail: "An assistant that answers eligibility questions and books the appointment." },
-          { title: "RapidPass", detail: "A digital health questionnaire done on your phone — less time in the chair." },
-          { title: "Track your blood", detail: "Donors can follow their unit to the hospital that receives it." },
-        ],
-      },
-    },
-    {
-      id: "your-type",
-      kind: "content",
-      title: "Whoever you are, a patient shares your type",
-      body: "Broadening the donor base isn't optics — it's medicine. The closest-matched blood is what keeps sickle cell patients alive, and that match comes from donors who look like them.",
-      block: {
-        kind: "magnitude",
-        items: [
-          { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021", accent: true },
-          { value: "100,000", label: "Americans live with sickle cell disease today" },
+          { title: "Drive coordinators", detail: "Recruit sponsors, secure venues, set goals, and rally turnout in their own community." },
+          { title: "Donor ambassadors", detail: "Greet, check in, escort donors through the visit, and run the recovery / canteen area." },
+          { title: "Mobile crew support", detail: "Help set up and break down pop-up sites — workplace lobbies, school gyms, faith communities." },
         ],
       },
     },
@@ -305,6 +292,20 @@ const journey: Section = {
         value: "<1 in 1M",
         label: "estimated HBV transmission risk after screening",
         context: "1.6M Babesia tests run each year in endemic regions",
+      },
+    },
+    {
+      id: "frictionless",
+      kind: "content",
+      title: "A frictionless front door",
+      body: "Technology is shrinking the friction between intention and donation — and turning first-timers into regulars.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Clara AI", detail: "An assistant that answers eligibility questions and books the appointment." },
+          { title: "RapidPass", detail: "A digital health questionnaire done on your phone — less time in the chair." },
+          { title: "Track your blood", detail: "Donors can follow their unit to the hospital that receives it." },
+        ],
       },
     },
     {
