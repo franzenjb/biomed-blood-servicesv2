@@ -41,6 +41,22 @@ export default function SlideDeck({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Don't steal keys while the user is typing in a form control or an
+      // open dialog (e.g. the Notes panel). Without this, Space and the
+      // arrows advance the deck while the user is composing a note.
+      const t = e.target as HTMLElement | null;
+      if (t) {
+        const tag = t.tagName;
+        if (
+          tag === "INPUT" ||
+          tag === "TEXTAREA" ||
+          tag === "SELECT" ||
+          t.isContentEditable ||
+          t.closest("[role='dialog']")
+        ) {
+          return;
+        }
+      }
       switch (e.key) {
         case "ArrowRight":
         case "PageDown":
