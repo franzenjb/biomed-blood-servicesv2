@@ -39,9 +39,10 @@ export default function HubPage() {
           href="/dashboard"
           target="_blank"
           rel="noreferrer"
-          className="hub__card hub__card--map"
+          className="hub__card hub__card--map hub__card--tilt"
           data-testid="hub-card-map-dashboard"
         >
+          <span className="hub__scrim" />
           <span className="hub__index mono">06</span>
           <span className="hub__body">
             <span className="hub__title">BioMed Map &amp; Dashboard</span>
@@ -54,8 +55,10 @@ export default function HubPage() {
           target="_blank"
           rel="noreferrer"
           className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
           data-testid="hub-card-ops-workbench"
         >
+          <span className="hub__scrim" />
           <span className="hub__index mono">07</span>
           <span className="hub__body">
             <span className="hub__title">BioMed Ops Workbench</span>
@@ -68,8 +71,10 @@ export default function HubPage() {
           target="_blank"
           rel="noreferrer"
           className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/hospital-network.jpg)" }}
           data-testid="hub-card-hospital-network"
         >
+          <span className="hub__scrim" />
           <span className="hub__index mono">08</span>
           <span className="hub__body">
             <span className="hub__title">Hospital Network</span>
@@ -77,7 +82,13 @@ export default function HubPage() {
           </span>
         </a>
 
-        <Link to="/regions" className="hub__card hub__card--map" data-testid="hub-card-regions">
+        <Link
+          to="/regions"
+          className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/regions.jpg)" }}
+          data-testid="hub-card-regions"
+        >
+          <span className="hub__scrim" />
           <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
