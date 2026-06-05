@@ -535,21 +535,6 @@ const futureDemand: Section = {
         context: "2045 — the deadline we're planning against",
       },
     },
-    {
-      id: "sources",
-      kind: "content",
-      title: "Where these numbers come from",
-      body: "Projections and figures in this chapter draw on published research, internal operating data, and named pilot programs. Marketing & Communications should validate each before the final release.",
-      block: {
-        kind: "list",
-        items: [
-          { title: "Averting the Future Blood Debt", detail: "Demographic projection through 2045 — basis for the +29.5% demand / −35.5% supply gap and the 2 → 1 supply ratio." },
-          { title: "AABB and Red Cross operating data (FY24–FY25)", detail: "Daily collection targets, the 35% single-month shock, summer dependency on student donors, and 16,000 daily donations." },
-          { title: "Red Cross AI forecasting pilot", detail: "+11% collections and −20% inventory waste from predictive collection scheduling." },
-          { title: "Donor health screening program", detail: "80,000 A1C alerts and 69,000 hypertension notifications based on returned screening results." },
-        ],
-      },
-    },
   ],
 };
 

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import NotesPanel from "./components/NotesPanel";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const HubPage = lazy(() => import("./pages/HubPage"));
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <NotesPanel />
     </div>
   );
 }
