@@ -39,8 +39,7 @@ export default function HubPage() {
           href="/dashboard"
           target="_blank"
           rel="noreferrer"
-          className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/dashboard.jpg)" }}
+          className="hub__card hub__card--map hub__card--tilt"
           data-testid="hub-card-map-dashboard"
         >
           <span className="hub__scrim" />

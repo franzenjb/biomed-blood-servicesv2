@@ -104,6 +104,35 @@
   );
 }
 
+/* Card 06 — tight-cropped, slightly tilted dashboard image, fading to black on
+   the left so the title + body read cleanly. */
+.hub__card--tilt {
+  background: #0d0f12;
+}
+.hub__card--tilt::before {
+  content: "";
+  position: absolute;
+  top: -14%;
+  right: -8%;
+  bottom: -14%;
+  left: 22%;
+  background: url(/covers/tools/dashboard.jpg) center / cover no-repeat;
+  transform: rotate(-3.5deg) scale(1.06);
+  transform-origin: 60% 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+.hub__card--tilt .hub__scrim {
+  background: linear-gradient(
+    90deg,
+    rgba(8, 10, 13, 0.98) 0%,
+    rgba(8, 10, 13, 0.88) 24%,
+    rgba(8, 10, 13, 0.55) 52%,
+    rgba(8, 10, 13, 0.2) 82%,
+    rgba(8, 10, 13, 0) 100%
+  );
+}
+
 .hub__index {
   position: absolute;
   top: 18px;
