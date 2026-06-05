@@ -116,6 +116,20 @@ const blood101: Section = {
       title: "You already carry the cure",
       body: "No lab can manufacture what's in your veins. That's why one ordinary hour can be the most extraordinary thing you do all year.",
     },
+    {
+      id: "volunteer",
+      kind: "content",
+      title: "Be the chain",
+      body: "Blood donation runs on volunteers — and the system needs you in more roles than the chair.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Donate", detail: "Whole blood, platelets, plasma, or Power Red. Schedule at RedCrossBlood.org or the Blood Donor App." },
+          { title: "Host a drive", detail: "Workplaces, schools, faith communities, and clubs anchor the calendar — one drive can collect dozens of units." },
+          { title: "Spread the word", detail: "Share your appointment, your story, and the reminders that bring first-timers back for their second visit." },
+        ],
+      },
+    },
   ],
 };
 
@@ -299,6 +313,20 @@ const journey: Section = {
       title: "Then she went home",
       body: "She walked out of the hospital with her newborn. Multiply that single moment by millions — that is what every careful step of this journey is for.",
     },
+    {
+      id: "volunteer",
+      kind: "content",
+      title: "Volunteers move the journey",
+      body: "Every step from arm to bedside leans on people who show up — paid staff and thousands of volunteers side by side.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Donor ambassadors", detail: "Greet, check in, and recover donors at fixed sites and mobile drives." },
+          { title: "Transportation specialists", detail: "Hand-deliver blood products from collection through processing to the hospitals that need them." },
+          { title: "Drive coordinators", detail: "Plan, host, and run blood drives inside their own communities." },
+        ],
+      },
+    },
   ],
 };
 
@@ -373,6 +401,20 @@ const distribution: Section = {
           { value: "51%", label: "reduction in maternal mortality from hemorrhage", accent: true },
           { value: "63%", label: "reduction in on-site hospital inventory needs" },
           { value: "40%", label: "reduction in blood wasted" },
+        ],
+      },
+    },
+    {
+      id: "volunteer",
+      kind: "content",
+      title: "Volunteers close the last mile",
+      body: "Distribution depends on people who can roll on short notice — especially when weather, surge demand, or disaster reshape the route overnight.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Transportation specialists", detail: "Hand-deliver blood products from distribution centers to hospitals, often within hours of the request." },
+          { title: "Disaster + emergency teams", detail: "Stand up alternate logistics when normal routes break — the same network that powers Red Cross disaster response." },
+          { title: "Community drive hosts", detail: "Refill the shelves at the source so the last mile has something to deliver." },
         ],
       },
     },
@@ -490,6 +532,21 @@ const futureDemand: Section = {
         value: "16,000",
         label: "donations a day to secure the supply for 2045",
         context: "2045 — the deadline we're planning against",
+      },
+    },
+    {
+      id: "sources",
+      kind: "content",
+      title: "Where these numbers come from",
+      body: "Projections and figures in this chapter draw on published research, internal operating data, and named pilot programs. Marketing & Communications should validate each before the final release.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "Averting the Future Blood Debt", detail: "Demographic projection through 2045 — basis for the +29.5% demand / −35.5% supply gap and the 2 → 1 supply ratio." },
+          { title: "AABB and Red Cross operating data (FY24–FY25)", detail: "Daily collection targets, the 35% single-month shock, summer dependency on student donors, and 16,000 daily donations." },
+          { title: "Red Cross AI forecasting pilot", detail: "+11% collections and −20% inventory waste from predictive collection scheduling." },
+          { title: "Donor health screening program", detail: "80,000 A1C alerts and 69,000 hypertension notifications based on returned screening results." },
+        ],
       },
     },
   ],
