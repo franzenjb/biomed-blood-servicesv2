@@ -66,8 +66,12 @@
   background-size: cover;
   background-position: center;
   color: #fff;
-  border: 1px solid var(--d-line);
-  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  /* Dark blood-red border — masks the pixelated photo edge */
+  border: 2px solid #7a0d1a;
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.25s var(--ease);
+}
+.hub__card:hover {
+  border-color: var(--arc-red);
 }
 .hub__card:hover {
   transform: translateY(-4px);
@@ -149,6 +153,13 @@
 @media (max-width: 900px) {
   .hub__grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Maps don't work well on phones — hide the Map + Dashboard cards there. */
+@media (max-width: 768px) {
+  .hub__card--map {
+    display: none;
   }
 }
 

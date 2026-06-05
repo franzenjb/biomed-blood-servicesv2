@@ -9,7 +9,7 @@
 .home-hero {
   position: relative;
   flex: 1;
-  min-height: 92vh;
+  min-height: 100vh;
   display: flex;
   overflow: hidden;
   background: var(--ink-900);
@@ -23,14 +23,79 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  transition: opacity 0.4s ease, filter 0.4s ease;
 }
 
 .home-hero__scrim {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(100deg, rgba(10, 12, 15, 0.96) 0%, rgba(10, 12, 15, 0.86) 38%, rgba(10, 12, 15, 0.5) 66%, rgba(10, 12, 15, 0.25) 100%),
-    linear-gradient(0deg, rgba(10, 12, 15, 0.75) 0%, rgba(10, 12, 15, 0) 42%);
+    linear-gradient(100deg, rgba(10, 12, 15, 0.74) 0%, rgba(10, 12, 15, 0.52) 32%, rgba(10, 12, 15, 0.2) 62%, rgba(10, 12, 15, 0) 100%),
+    linear-gradient(0deg, rgba(10, 12, 15, 0.55) 0%, rgba(10, 12, 15, 0) 40%);
+}
+
+/* === Video sample variants (?hero=a|b|c) ============================== */
+/* A — faded: video dimmed, even soft cover so text reads everywhere */
+.home-hero[data-hero="a"] .home-hero__video {
+  opacity: 0.42;
+}
+.home-hero[data-hero="a"] .home-hero__scrim {
+  background:
+    linear-gradient(100deg, rgba(10, 12, 15, 0.58) 0%, rgba(10, 12, 15, 0.4) 40%, rgba(10, 12, 15, 0.28) 100%);
+}
+/* B — opaque dark cover: full video, heavier even veil over it */
+.home-hero[data-hero="b"] .home-hero__scrim {
+  background:
+    linear-gradient(100deg, rgba(8, 10, 13, 0.82) 0%, rgba(8, 10, 13, 0.66) 45%, rgba(8, 10, 13, 0.5) 100%),
+    linear-gradient(0deg, rgba(8, 10, 13, 0.6) 0%, rgba(8, 10, 13, 0.15) 60%);
+}
+/* C — soft blur: gentle defocus + medium veil, dreamy */
+.home-hero[data-hero="c"] .home-hero__video {
+  opacity: 0.6;
+  filter: blur(3px);
+  transform: scale(1.04); /* hide blurred edges */
+}
+.home-hero[data-hero="c"] .home-hero__scrim {
+  background:
+    linear-gradient(100deg, rgba(10, 12, 15, 0.6) 0%, rgba(10, 12, 15, 0.42) 45%, rgba(10, 12, 15, 0.3) 100%);
+}
+
+/* Sample switcher chip (only shown with ?hero=) */
+.hero-switch {
+  position: absolute;
+  z-index: 3;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(10, 12, 15, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+}
+.hero-switch span {
+  opacity: 0.7;
+  padding-left: 4px;
+}
+.hero-switch a {
+  color: #fff;
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.hero-switch a:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.hero-switch a[data-on="true"] {
+  background: var(--arc-red, #ed1b2e);
+  border-color: var(--arc-red, #ed1b2e);
 }
 
 .home-hero__inner {
@@ -44,6 +109,7 @@
   flex-direction: column;
   justify-content: center;
   color: #fff;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .home-brand {
@@ -106,8 +172,8 @@
   border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 .home-stat__value {
-  font-size: clamp(26px, 3vw, 36px);
-  font-weight: 600;
+  font-size: clamp(32px, 3.6vw, 48px);
+  font-weight: 700;
   line-height: 1;
   color: #fff;
 }
@@ -115,11 +181,12 @@
   color: #ff4d5e;
 }
 .home-stat__label {
-  margin-top: 8px;
-  font-size: 12px;
-  letter-spacing: 0.3px;
-  color: rgba(255, 255, 255, 0.62);
-  max-width: 20ch;
+  margin-top: 11px;
+  font-size: clamp(15px, 1.3vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.86);
+  max-width: 24ch;
 }
 
 /* Footer ----------------------------------------------------------------*/
@@ -157,4 +224,122 @@
   .home-hero__stats {
     gap: 18px 28px;
   }
+}
+
+/* === Hidden easter egg (bottom-left black dot) ======================== */
+.home-egg {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 4;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.18;
+  cursor: pointer;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.home-egg:hover,
+.home-egg[aria-expanded="true"] {
+  opacity: 0.85;
+  transform: scale(1.1);
+}
+
+.egg-panel {
+  position: absolute;
+  left: 16px;
+  bottom: 48px;
+  z-index: 5;
+  width: min(280px, calc(100vw - 32px));
+  padding: 16px;
+  background: rgba(12, 14, 17, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  animation: egg-rise 0.2s var(--ease, ease) both;
+}
+@keyframes egg-rise {
+  from { opacity: 0; transform: translateY(8px); }
+}
+.egg-panel__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: 999px;
+}
+.egg-panel__close:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.egg-panel__group {
+  margin: 6px 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #ff8a96;
+}
+.egg-panel__group:not(:first-of-type) {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.egg-panel__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.egg-panel__row a {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.egg-panel__row a:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.egg-panel__row a[data-on="true"] {
+  background: var(--arc-red, #ed1b2e);
+  border-color: var(--arc-red, #ed1b2e);
+}
+.egg-panel__decks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.egg-panel__decks a {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+}
+.egg-panel__decks a:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+}
+.egg-panel__empty {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
 }

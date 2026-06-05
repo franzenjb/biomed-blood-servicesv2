@@ -1,0 +1,220 @@
+.ig {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: var(--d-bg);
+  color: var(--d-text);
+  overflow: hidden;
+}
+
+.ig__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px clamp(16px, 4vw, 36px);
+  border-bottom: 1px solid var(--d-line);
+  z-index: 2;
+}
+.ig__home {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-soft);
+  padding: 7px 13px;
+  border: 1px solid var(--d-line);
+  border-radius: 999px;
+}
+.ig__home:hover {
+  color: var(--d-text);
+}
+.ig__title {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 18px;
+}
+.ig__count {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--d-faint);
+}
+
+/* Thumbnail grid */
+.ig__grid {
+  overflow-y: auto;
+  padding: clamp(16px, 3vw, 28px);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: clamp(14px, 1.6vw, 22px);
+  align-content: start;
+}
+.ig__tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--d-card);
+  border: 1px solid var(--d-line);
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+.ig__tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--arc-red);
+  box-shadow: var(--d-shadow);
+}
+.ig__thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--d-card-soft);
+}
+.ig__name {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--d-text);
+}
+
+/* Lightbox */
+.ig__lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  flex-direction: column;
+  animation: ig-fade 0.18s ease both;
+}
+.ig__lb-stage {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: clamp(10px, 2vw, 24px);
+  box-sizing: border-box;
+}
+@keyframes ig-fade {
+  from { opacity: 0; }
+}
+.ig__lb-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px clamp(14px, 3vw, 28px);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent);
+  color: #fff;
+}
+.ig__lb-name {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 15px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ig__lb-counter {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.ig__lb-actions {
+  display: flex;
+  gap: 8px;
+}
+.ig__lb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.ig__lb-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.ig__lb-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  animation: ig-rise 0.25s var(--ease) both;
+}
+@keyframes ig-rise {
+  from { opacity: 0; transform: scale(0.985); }
+}
+
+.ig__lb-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 55;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ig__lb-nav:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.ig__lb-nav--prev {
+  left: clamp(10px, 2vw, 22px);
+}
+.ig__lb-nav--next {
+  right: clamp(10px, 2vw, 22px);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .ig__lb-bar {
+    flex-wrap: wrap;
+  }
+  .ig__lb-name {
+    width: 100%;
+    order: -1;
+  }
+  .ig__lb-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  .ig__title {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ig__lightbox,
+  .ig__lb-image {
+    animation: none;
+  }
+}

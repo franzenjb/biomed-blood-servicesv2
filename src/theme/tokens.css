@@ -64,6 +64,10 @@ html[data-theme="light"] {
   --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.06), transparent 62%);
   --d-card: #ffffff;
   --d-card-soft: #f6f3ef;
+  --d-media: 0.07;
+  --d-media-statement: 0.16;
+  --d-shadow: 0 18px 44px rgba(26, 26, 26, 0.09);
+  --d-track: rgba(26, 26, 26, 0.1);
 }
 
 html[data-theme="dark"] {
@@ -82,4 +86,8 @@ html[data-theme="dark"] {
   --d-vignette: radial-gradient(1100px 620px at 80% 28%, rgba(237, 27, 46, 0.1), transparent 62%);
   --d-card: rgba(255, 255, 255, 0.05);
   --d-card-soft: rgba(255, 255, 255, 0.08);
+  --d-media: 0.16;
+  --d-media-statement: 0.32;
+  --d-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  --d-track: rgba(255, 255, 255, 0.12);
 }

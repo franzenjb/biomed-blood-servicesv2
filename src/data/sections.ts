@@ -5,7 +5,15 @@ export type Stat = { value: string; label: string; accent?: boolean };
 export type SlideBlock =
   | { kind: "stats"; items: Stat[] }
   | { kind: "list"; items: { title: string; detail: string }[] }
-  | { kind: "quote"; text: string; cite?: string };
+  | { kind: "quote"; text: string; cite?: string }
+  | { kind: "gap"; items: { value: string; label: string; dir: "up" | "down" }[] }
+  | { kind: "ratio"; from: string; to: string; label: string; note?: string }
+  | { kind: "proportion"; items: Stat[] }
+  | { kind: "magnitude"; items: Stat[] }
+  | { kind: "bigstat"; value: string; label: string; context?: string }
+  | { kind: "timeline"; items: { time: string; title: string; detail: string }[] }
+  | { kind: "pipeline"; steps: string[]; current: number }
+  | { kind: "split"; items: { title: string; detail: string }[] };
 
 export type Slide = {
   id: string;
@@ -62,7 +70,7 @@ const blood101: Section = {
       block: {
         kind: "stats",
         items: [
-          { value: "every 2s", label: "someone in the U.S. needs blood", accent: true },
+          { value: "every 2 seconds", label: "someone in the U.S. needs blood", accent: true },
           { value: "13,000", label: "whole-blood donations needed daily" },
           { value: "~29,000", label: "units of red cells needed daily" },
         ],
@@ -94,7 +102,7 @@ const blood101: Section = {
       title: "The rarest resource is the donor",
       body: "Only about 3% of eligible Americans give in a year — and the supply needs all of us. Half of Latino and Black donors carry the universal Type O that emergency rooms reach for first.",
       block: {
-        kind: "stats",
+        kind: "proportion",
         items: [
           { value: "3%", label: "of eligible Americans donate in a given year", accent: true },
           { value: "~50%", label: "of Latino & Black donors carry universal Type O" },
@@ -135,7 +143,7 @@ const collections: Section = {
       title: "Two front doors",
       body: "The system meets people two ways — and needs both.",
       block: {
-        kind: "list",
+        kind: "split",
         items: [
           { title: "Fixed sites", detail: "Permanent donor centers that anchor a community and support time-intensive donations like platelets." },
           { title: "Mobile drives", detail: "Pop-up drives hosted by employers, schools, and faith groups that carry donation into every county." },
@@ -148,7 +156,7 @@ const collections: Section = {
       title: "A nationwide collection engine",
       body: "Keeping shelves full takes a relentless, year-round cadence — millions of donations, one appointment at a time.",
       block: {
-        kind: "stats",
+        kind: "magnitude",
         items: [
           { value: "4.6M", label: "whole-blood donations collected a year", accent: true },
           { value: "1.1M", label: "platelet donations collected a year" },
@@ -162,7 +170,7 @@ const collections: Section = {
       title: "A supply built on summer break",
       body: "Nearly a third of donations come from high-school and college students. When campuses empty for summer, the supply thins — exactly when travel and accidents climb.",
       block: {
-        kind: "stats",
+        kind: "proportion",
         items: [
           { value: "30%", label: "of the supply relies on student donors", accent: true },
           { value: "35%", label: "drop in national supply seen in a single month" },
@@ -203,7 +211,7 @@ const collections: Section = {
       title: "Whoever you are, a patient shares your type",
       body: "Broadening the donor base isn't optics — it's medicine. The closest-matched blood is what keeps sickle cell patients alive, and that match comes from donors who look like them.",
       block: {
-        kind: "stats",
+        kind: "magnitude",
         items: [
           { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021", accent: true },
           { value: "100,000", label: "Americans live with sickle cell disease today" },
@@ -241,12 +249,22 @@ const journey: Section = {
       kind: "content",
       title: "How the blood was ready in time",
       body: "Her transfusion looked instant. It was actually the end of a long, exacting journey that started weeks earlier in someone else's arm. Here is that path.",
+      block: {
+        kind: "pipeline",
+        steps: journeyStages.map((s) => s.title),
+        current: -1,
+      },
     },
     ...journeyStages.map((stage, i) => ({
       id: `stage-${i + 1}`,
       kind: "content" as const,
-      title: `${i + 1}. ${stage.title}`,
+      title: stage.title,
       body: stage.detail,
+      block: {
+        kind: "pipeline" as const,
+        steps: journeyStages.map((s) => s.title),
+        current: i,
+      },
     })),
     {
       id: "ticking-clock",
@@ -254,12 +272,12 @@ const journey: Section = {
       title: "The logistics ticking clock",
       body: "Blood can't be stockpiled. Every unit is manufactured and screened within hours of collection to beat strict expiration limits.",
       block: {
-        kind: "list",
+        kind: "timeline",
         items: [
-          { title: "Hour 0 — Collection", detail: "The donation is gathered at a drive or fixed site." },
-          { title: "Hour 4 — Processing", detail: "Centrifuges separate it into red cells, platelets, and plasma." },
-          { title: "Hour 8 — Testing", detail: "Samples run a dozen infectious-disease tests and blood typing." },
-          { title: "Hour 16 — Last mile", detail: "Components are matched and routed to the hospitals that need them most." },
+          { time: "Hour 0", title: "Collection", detail: "The donation is gathered at a drive or fixed site." },
+          { time: "Hour 4", title: "Processing", detail: "Centrifuges separate it into red cells, platelets, and plasma." },
+          { time: "Hour 8", title: "Testing", detail: "Samples run a dozen infectious-disease tests and blood typing." },
+          { time: "Hour 16", title: "Last mile", detail: "Components are matched and routed to the hospitals that need them most." },
         ],
       },
     },
@@ -269,11 +287,10 @@ const journey: Section = {
       title: "A gauntlet of safety",
       body: "Before a unit reaches a patient it survives a multi-layer screen — donor history, enzyme immunoassays, and molecular testing for HIV, HCV, and HBV.",
       block: {
-        kind: "stats",
-        items: [
-          { value: "<1 in 1M", label: "estimated HBV transmission risk after screening", accent: true },
-          { value: "1.6M", label: "Babesia tests run each year in endemic regions" },
-        ],
+        kind: "bigstat",
+        value: "<1 in 1M",
+        label: "estimated HBV transmission risk after screening",
+        context: "1.6M Babesia tests run each year in endemic regions",
       },
     },
     {
@@ -338,7 +355,7 @@ const distribution: Section = {
       title: "When the chain is tested",
       body: "Hurricane Helene knocked out power and water at the Asheville Blood Center. A Red Cross team drove four hours through hazardous flooding to rescue 150 lifesaving units — and lost none.",
       block: {
-        kind: "stats",
+        kind: "magnitude",
         items: [
           { value: "1,500", label: "blood drives cancelled by extreme weather in FY25", accent: true },
           { value: "40,000", label: "donations uncollected in a single year" },
@@ -351,7 +368,7 @@ const distribution: Section = {
       title: "Closing the last mile",
       body: "Autonomous drone delivery is collapsing the distance — and the wastage — between the shelf and the bedside, with results measured in lives.",
       block: {
-        kind: "stats",
+        kind: "proportion",
         items: [
           { value: "51%", label: "reduction in maternal mortality from hemorrhage", accent: true },
           { value: "63%", label: "reduction in on-site hospital inventory needs" },
@@ -386,11 +403,11 @@ const futureDemand: Section = {
       title: "Two people, one supply",
       body: "Demand rises sharply as populations age — peak need sits with patients over 70 — while the youth donor pool shrinks at the same time. That is a structural impossibility, not a bad year.",
       block: {
-        kind: "stats",
-        items: [
-          { value: "2 → 1", label: "in ~20 years, two people will rely on a supply sized for one", accent: true },
-          { value: "70+", label: "the age group driving peak demand" },
-        ],
+        kind: "ratio",
+        from: "2",
+        to: "1",
+        label: "in ~20 years, two people will rely on a supply sized for one",
+        note: "70+ — the age group driving peak demand",
       },
     },
     {
@@ -399,10 +416,10 @@ const futureDemand: Section = {
       title: "The demographic hourglass",
       body: "A population reshaping into a top-heavy hourglass can't sustain a model built on youthful altruism. The warning sign is already abroad: Korea's donations fell 10% in five years.",
       block: {
-        kind: "stats",
+        kind: "gap",
         items: [
-          { value: "+29.5%", label: "projected demand by 2045", accent: true },
-          { value: "−35.5%", label: "projected supply by 2045" },
+          { value: "+29.5%", label: "projected demand by 2045", dir: "up" },
+          { value: "−35.5%", label: "projected supply by 2045", dir: "down" },
         ],
       },
     },
@@ -432,7 +449,7 @@ const futureDemand: Section = {
       title: "A free health screening, every visit",
       body: "Turn each donation into an ongoing health record — blood pressure, hemoglobin, pulse, and periodic A1C — and donors gain a reason to keep coming back.",
       block: {
-        kind: "stats",
+        kind: "magnitude",
         items: [
           { value: "80,000", label: "donors alerted to concerning A1C levels in a year", accent: true },
           { value: "69,000", label: "notified of Stage 2 hypertension — many improved by their next visit" },
@@ -445,10 +462,10 @@ const futureDemand: Section = {
       title: "From reactive to predictive",
       body: "AI forecasting reads weather, illness trends, and scheduled surgeries to collect the right components before shortages hit — replacing paper tracking and guesswork.",
       block: {
-        kind: "stats",
+        kind: "gap",
         items: [
-          { value: "+11%", label: "more blood collected", accent: true },
-          { value: "−20%", label: "less inventory wasted" },
+          { value: "+11%", label: "more blood collected", dir: "up" },
+          { value: "−20%", label: "less inventory wasted", dir: "down" },
         ],
       },
     },
@@ -469,11 +486,10 @@ const futureDemand: Section = {
       title: "Blood is not a charity — it's infrastructure",
       body: "The Future Blood Debt is guaranteed if we rely on outdated recruitment. Averting it takes investment now: digital infrastructure, every-generation recruitment, and health integration.",
       block: {
-        kind: "stats",
-        items: [
-          { value: "16,000", label: "donations a day to secure the supply for 2045", accent: true },
-          { value: "2045", label: "the deadline we're planning against" },
-        ],
+        kind: "bigstat",
+        value: "16,000",
+        label: "donations a day to secure the supply for 2045",
+        context: "2045 — the deadline we're planning against",
       },
     },
   ],
