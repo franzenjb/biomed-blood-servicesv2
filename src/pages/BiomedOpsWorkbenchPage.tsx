@@ -240,10 +240,7 @@ function previewWorkbenchLayerSnapshots(supplementalLayers: ArcJurisdictionSuppl
 }
 
 function featureDisplayTitle(feature: MasterFeatureSummary) {
-  const tradeAreaZip =
-    isTradeAreaLayerTitle(feature.layerTitle) &&
-    (featureSourceFieldValue(feature, ["TradeAreaByZip", "Trade Area By Zip"]) ||
-      formatIdentifierValue(featureAttributeValue(feature, ["TradeAreaByZip", "Trade Area By Zip"])));
+  const tradeAreaZip = isTradeAreaLayerTitle(feature.layerTitle) && tradeAreaZipValue(feature);
   if (tradeAreaZip) return `ZIP ${tradeAreaZip}`;
 
   const preferredPlaceTitle = featureSourceFieldValue(feature, [
@@ -353,7 +350,7 @@ function featureDetailRow(
   if (!value) return null;
   const normalized = normalizeDisplayValue(value);
   if (options.requireNamedValue && !/[a-z]/i.test(value)) return null;
-  if (options.rejectShortCode && /^[A-Z]{0,3}\d{1,5}$/i.test(value.trim())) return null;
+  if (options.rejectShortCode && (/^[A-Z]{1,3}$/i.test(value.trim()) || /^[A-Z]{0,4}\d{1,6}$/i.test(value.replace(/,/g, "").trim()))) return null;
   if (normalized === "unitedstates" || normalized === "pointaddress") return null;
   return { label, value };
 }
@@ -396,6 +393,12 @@ function formatPercentDonorsValue(value: unknown) {
   return `${parsed.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
 }
 
+function parsePercentDonorsValue(value: unknown) {
+  if (value == null) return undefined;
+  const parsed = typeof value === "number" ? value : Number(`${value}`.replace(/[%,$]/g, ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
 function rgbaCss(color: [number, number, number, number]) {
   return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
 }
@@ -418,20 +421,49 @@ function composeFeatureAddress(feature: MasterFeatureSummary) {
   return cleanAddressPart([street, locality, zip].filter(Boolean).join(", "));
 }
 
+function tradeAreaZipValue(feature: MasterFeatureSummary) {
+  return featureDetailValue(feature, ["TradeAreaByZip", "Trade Area By Zip", "ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true });
+}
+
+function tradeAreaDonorShareRaw(feature: MasterFeatureSummary) {
+  return featureRawDetailValue(feature, ["PercentDonors", "Percent Donors", "Percent_Donors", "Donor Percent", "Donor Share"]);
+}
+
+function tradeAreaCenterName(feature: MasterFeatureSummary) {
+  const title = feature.title.trim();
+  const fieldValue = featureDetailValue(feature, ["Blood Donation Center", "Donation Center", "Facility Name", "Facility", "Site Name", "Site", "Name"]);
+  if (/blood donation center/i.test(title)) return title;
+  if (/blood donation center/i.test(fieldValue)) return fieldValue;
+  return fieldValue;
+}
+
+function tradeAreaLocality(feature: MasterFeatureSummary) {
+  const city = cleanAddressPart(featureDetailValue(feature, ["City"]));
+  const state = cleanAddressPart(featureDetailValue(feature, ["State"], { identifier: true }));
+  return [city, state].filter(Boolean).join(", ");
+}
+
+function tradeAreaBandTone(feature: MasterFeatureSummary) {
+  const activeBreak = tradeAreaBreakForDonorShare(tradeAreaDonorShareRaw(feature));
+  const index = tradeAreaDonorShareBreaks.findIndex((breakInfo) => breakInfo.label === activeBreak?.label);
+  return ["low", "moderate", "strong", "highest"][index] ?? "unknown";
+}
+
+function tradeAreaBandLabel(feature: MasterFeatureSummary) {
+  const tone = tradeAreaBandTone(feature);
+  if (tone === "highest") return "Highest donor-share band";
+  if (tone === "strong") return "Strong donor-share band";
+  if (tone === "moderate") return "Moderate donor-share band";
+  if (tone === "low") return "Baseline donor-share band";
+  return "Donor-share band";
+}
+
 function tradeAreaDetailRows(feature: MasterFeatureSummary) {
   const title = normalizeDisplayValue(featureDisplayTitle(feature));
-  const donorShare = formatPercentDonorsValue(
-    featureRawDetailValue(feature, ["PercentDonors", "Percent Donors", "Percent_Donors", "Donor Percent", "Donor Share"]),
-  );
-  const center =
-    featureDetailValue(feature, ["Donation Center", "Blood Donation Center", "Facility Name", "Facility", "Site Name", "Site", "Name"]) ||
-    (feature.title && !/^zip\s+\d/i.test(featureDisplayTitle(feature)) ? feature.title : "");
+  const center = tradeAreaCenterName(feature);
   const rows = [
-    { label: "ZIP", value: featureDetailValue(feature, ["TradeAreaByZip", "Trade Area By Zip", "ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }) },
-    { label: "Donor share", value: donorShare },
-    { label: "Donation center", value: center },
-    { label: "City", value: featureDetailValue(feature, ["City"]) },
-    { label: "State", value: featureDetailValue(feature, ["State"], { identifier: true }) },
+    { label: "ZIP", value: tradeAreaZipValue(feature) },
+    { label: "Trade area", value: center },
     { label: "Region", value: featureDetailValue(feature, ["Region"]) },
     { label: "District", value: featureDetailValue(feature, ["District"]) },
     { label: "Division", value: featureDetailValue(feature, ["Division"]) },
@@ -439,12 +471,16 @@ function tradeAreaDetailRows(feature: MasterFeatureSummary) {
   ];
 
   const seen = new Set<string>();
+  const seenValues = new Set<string>();
   return rows.filter((row) => {
     if (!row.value) return false;
     if (row.label !== "ZIP" && normalizeDisplayValue(row.value) === title) return false;
+    const normalizedValue = normalizeDisplayValue(row.value);
+    if (seenValues.has(normalizedValue) && row.label !== "ZIP") return false;
     const key = `${row.label}:${normalizeDisplayValue(row.value)}`;
     if (seen.has(key)) return false;
     seen.add(key);
+    seenValues.add(normalizedValue);
     return true;
   });
 }
@@ -464,10 +500,68 @@ function TradeAreaZipLegend({ feature }: { feature: MasterFeatureSummary }) {
           <div key={breakInfo.label} data-active={activeBreak?.label === breakInfo.label ? "true" : "false"}>
             <i style={{ backgroundColor: rgbaCss(breakInfo.color) }} />
             <span>{breakInfo.label}</span>
+            {activeBreak?.label === breakInfo.label && <b>Selected ZIP</b>}
           </div>
         ))}
       </div>
     </section>
+  );
+}
+
+function TradeAreaFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+  const zip = tradeAreaZipValue(feature);
+  const donorShareRaw = tradeAreaDonorShareRaw(feature);
+  const donorShare = formatPercentDonorsValue(donorShareRaw);
+  const donorShareNumber = parsePercentDonorsValue(donorShareRaw);
+  const center = tradeAreaCenterName(feature);
+  const locality = tradeAreaLocality(feature);
+  const rows = tradeAreaDetailRows(feature).slice(0, 5);
+  const tone = tradeAreaBandTone(feature);
+  const bandLabel = tradeAreaBandLabel(feature);
+  const title = zip ? `ZIP ${zip}` : featureDisplayTitle(feature);
+  const contextLine = [locality, center].filter(Boolean).join(" | ");
+
+  return (
+    <>
+      <header className="opsv2__feature-hero opsv2__feature-hero--trade">
+        <p className="opsv2__eyebrow">Trade-area ZIP</p>
+        <h2>{title}</h2>
+        {contextLine && <p className="opsv2__feature-kind">{contextLine}</p>}
+      </header>
+
+      <section className="opsv2__trade-insight" data-tone={tone} aria-label="Selected ZIP donor share">
+        <div className="opsv2__trade-metric">
+          <span>Donor share</span>
+          <strong>{donorShare || "No value"}</strong>
+          <em>{bandLabel}</em>
+        </div>
+        <p>
+          {donorShareNumber != null
+            ? `${donorShare} of donors in this fixed-site trade area are assigned to ${zip ? `ZIP ${zip}` : "this ZIP"}.`
+            : `This ZIP is part of the ${center || "selected"} fixed-site trade area.`}
+        </p>
+      </section>
+
+      {rows.length > 0 && (
+        <dl className="opsv2__feature-facts opsv2__feature-facts--trade">
+          {rows.map((item) => (
+            <div key={`${item.label}-${item.value}`}>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <TradeAreaZipLegend feature={feature} />
+
+      <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Selected feature source">
+        <span>
+          Layer
+          <strong>{TRADE_AREA_COMBO_TITLE}</strong>
+        </span>
+      </div>
+    </>
   );
 }
 
@@ -650,6 +744,8 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   const title = featureDisplayTitle(feature);
   const isTradeAreaFeature = isTradeAreaLayerTitle(feature.layerTitle);
 
+  if (isTradeAreaFeature) return <TradeAreaFeatureCard feature={feature} />;
+
   return (
     <>
       <header className="opsv2__feature-hero opsv2__feature-hero--compact">
@@ -783,6 +879,11 @@ function formatRollupNumber(value: number) {
   return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 }
 
+function shouldShowSecondaryText(primary: string, secondary: string) {
+  if (!secondary) return false;
+  return normalizeDisplayValue(primary) !== normalizeDisplayValue(secondary);
+}
+
 function SpatialRollupPanel({
   selectedFeature,
   rollup
@@ -848,7 +949,7 @@ function SpatialRollupPanel({
             <article key={row.id}>
               <div>
                 <strong>{row.title}</strong>
-                <span>{row.categoryLabel}</span>
+                {shouldShowSecondaryText(row.title, row.categoryLabel) && <span>{row.categoryLabel}</span>}
               </div>
               <b>{formatRollupNumber(row.count)}</b>
             </article>
@@ -866,7 +967,7 @@ function SpatialRollupPanel({
             <article key={row.id}>
               <div>
                 <strong>{row.title}</strong>
-                <span>{row.categoryLabel}</span>
+                {shouldShowSecondaryText(row.title, row.categoryLabel) && <span>{row.categoryLabel}</span>}
                 {row.metrics.length > 0 && (
                   <small>
                     {row.metrics.map((metric) => `${metric.label}: ${formatRollupNumber(metric.value)}`).join(" · ")}
@@ -1600,7 +1701,6 @@ export default function BiomedOpsWorkbenchPage({
                   <header>
                     <span>Layer group subtotals</span>
                     <b>{groupSummaries.length}</b>
-                    <ChevronDown aria-hidden="true" size={17} />
                   </header>
                   <div className="opsv2__subtotal-list">
                     {groupSummaries.map((group) => (
@@ -1640,7 +1740,6 @@ export default function BiomedOpsWorkbenchPage({
                   <header>
                     <span>Active layer stack</span>
                     <b>{activeLayers.length}</b>
-                    <ChevronDown aria-hidden="true" size={17} />
                   </header>
                   <div className="opsv2__subtotal-list">
                     {(activeLayers.length ? activeLayers : inactiveLayers.slice(0, 8)).map((layer) => (
@@ -1655,30 +1754,31 @@ export default function BiomedOpsWorkbenchPage({
                   </div>
                 </section>
 
-                <section className="opsv2__subtotal-card">
-                  <header>
-                    <span>Search results</span>
-                    <b>{searchResults.length}</b>
-                    <ChevronDown aria-hidden="true" size={17} />
-                  </header>
-                  <div className="opsv2__subtotal-list">
-                    {searchResults.length ? (
-                      searchResults.map((result) => (
-                        <article key={result.id}>
-                          <div>
-                            <strong>{result.title}</strong>
-                            <span>{result.layerTitle}</span>
-                          </div>
-                          <button type="button" onClick={() => void selectSearchResult(result)}>
-                            Zoom
-                          </button>
-                        </article>
-                      ))
-                    ) : (
-                      <p className="opsv2__empty">Search the layer controls to populate this list.</p>
-                    )}
-                  </div>
-                </section>
+                {(query.trim() || searchResults.length > 0) && (
+                  <section className="opsv2__subtotal-card">
+                    <header>
+                      <span>Search results</span>
+                      <b>{searchResults.length}</b>
+                    </header>
+                    <div className="opsv2__subtotal-list">
+                      {searchResults.length ? (
+                        searchResults.map((result) => (
+                          <article key={result.id}>
+                            <div>
+                              <strong>{result.title}</strong>
+                              <span>{result.layerTitle}</span>
+                            </div>
+                            <button type="button" onClick={() => void selectSearchResult(result)}>
+                              Zoom
+                            </button>
+                          </article>
+                        ))
+                      ) : (
+                        <p className="opsv2__empty">No feature results for this search.</p>
+                      )}
+                    </div>
+                  </section>
+                )}
               </>
             )}
           </div>

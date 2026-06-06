@@ -244,6 +244,12 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await page.getByRole("tab", { name: "Detail" }).click();
     await expect(page.getByText("No feature selected.")).toBeVisible();
+    await expect(page.getByText("Available fields")).toHaveCount(0);
+    await expect(page.getByText("Source fields")).toHaveCount(0);
+    await expect(page.getByText("Additional details")).toHaveCount(0);
+    await page.getByRole("tab", { name: "List" }).click();
+    await expect(page.getByText("Active layer stack")).toBeVisible();
+    await expect(page.getByText("Search results")).toHaveCount(0);
   });
 
   test("/biomed-layer-atlas adds the supplemental layer to the workbench stack", async ({ page }) => {
