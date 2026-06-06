@@ -32,6 +32,44 @@ test.describe("Hub", () => {
   });
 });
 
+test.describe("Notes panel", () => {
+  test("adds, resolves, filters, reopens, and removes a shared page note", async ({ page }) => {
+    const noteText = `Playwright shared notes probe ${Date.now()}`;
+
+    await page.goto("/");
+    await page.getByRole("button", { name: /Notes/i }).click();
+    await expect(page.getByText("Notes & questions")).toBeVisible();
+    await expect(page.getByText(/Shared live|Local fallback/)).toBeVisible();
+
+    await page.getByLabel("Author").selectOption("Client");
+    await page.getByLabel("Kind").selectOption("question");
+    await page.getByPlaceholder(/Add a question for Home/).fill(noteText);
+    await page.getByRole("button", { name: "Save" }).click();
+
+    const note = page.locator(".np-note").filter({ hasText: noteText });
+    await expect(note).toBeVisible({ timeout: 10_000 });
+    await expect(note.getByText("Open")).toBeVisible();
+
+    await page.getByRole("button", { name: /All pages/ }).click();
+    await expect(note).toBeVisible();
+
+    await note.getByRole("button", { name: "Resolve" }).click();
+    await expect(note.getByText("Resolved")).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole("button", { name: /Open only/ }).click();
+    await expect(page.getByRole("heading", { name: "Open items across pages" })).toBeVisible();
+    await expect(note).toHaveCount(0);
+
+    await page.getByRole("button", { name: "All statuses" }).click();
+    await expect(note).toBeVisible();
+    await note.getByRole("button", { name: "Reopen" }).click();
+    await expect(note.getByText("Open")).toBeVisible({ timeout: 10_000 });
+
+    await note.getByRole("button", { name: "Delete note" }).click();
+    await expect(note).toHaveCount(0);
+  });
+});
+
 test.describe("Slide deck", () => {
   test("loads a section and advances by keyboard", async ({ page }) => {
     await page.goto("/s/blood-101");

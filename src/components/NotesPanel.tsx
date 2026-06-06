@@ -6,6 +6,7 @@ import "./NotesPanel.css";
 /* ---------- types + storage ---------- */
 
 type Kind = "note" | "question" | "answer";
+type Status = "open" | "resolved";
 type Note = {
   id: string;
   page: string;
@@ -13,10 +14,13 @@ type Note = {
   text: string;
   ts: number;
   kind: Kind;
+  status: Status;
 };
 
 const TABLE = "biomed_notes";
 const LOCAL_KEY = "biomed-notes-v1";
+const KINDS: Kind[] = ["note", "question", "answer"];
+const STATUSES: Status[] = ["open", "resolved"];
 
 // Fallback seed used only when Supabase isn't reachable.
 const SEED: Note[] = [
@@ -27,6 +31,7 @@ const SEED: Note[] = [
     text: "Verify data accuracy and sources.",
     ts: 1717608000000,
     kind: "question",
+    status: "open",
   },
   {
     id: "seed-fd-a",
@@ -41,6 +46,7 @@ const SEED: Note[] = [
       "Marketing & Communications should review before final release.",
     ts: 1717608000001,
     kind: "answer",
+    status: "open",
   },
   {
     id: "seed-b101-q",
@@ -49,14 +55,39 @@ const SEED: Note[] = [
     text: "Validate content with Marketing & Communications.",
     ts: 1717608000002,
     kind: "question",
+    status: "open",
   },
 ];
+
+function normalizeNote(raw: Partial<Note>): Note | null {
+  if (!raw || typeof raw.id !== "string" || typeof raw.page !== "string" || typeof raw.text !== "string") {
+    return null;
+  }
+  return {
+    id: raw.id,
+    page: raw.page,
+    author: typeof raw.author === "string" && raw.author.trim() ? raw.author : "Jeff",
+    text: raw.text,
+    ts: typeof raw.ts === "number" && Number.isFinite(raw.ts) ? raw.ts : Date.now(),
+    kind: raw.kind && KINDS.includes(raw.kind) ? raw.kind : "note",
+    status: raw.status && STATUSES.includes(raw.status) ? raw.status : "open",
+  };
+}
+
+function normalizeNotes(raw: unknown): Note[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((item) => {
+    const note = normalizeNote(item as Partial<Note>);
+    return note ? [note] : [];
+  });
+}
 
 function readLocal(): Note[] {
   try {
     const raw = window.localStorage.getItem(LOCAL_KEY);
     if (!raw) return SEED;
-    return JSON.parse(raw) as Note[];
+    const parsed = normalizeNotes(JSON.parse(raw));
+    return parsed.length > 0 ? parsed : SEED;
   } catch {
     return SEED;
   }
@@ -105,6 +136,10 @@ export default function NotesPanel() {
   const [kind, setKind] = useState<Kind>("note");
   const [mode, setMode] = useState<"shared" | "local">(SUPABASE_READY ? "shared" : "local");
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [showAllPages, setShowAllPages] = useState(false);
+  const [openOnly, setOpenOnly] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Fetch from Supabase. Falls back to local on any failure.
@@ -116,7 +151,7 @@ export default function NotesPanel() {
     }
     const { data, error } = await supabase
       .from(TABLE)
-      .select("id, page, author, text, kind, ts")
+      .select("id, page, author, text, kind, ts, status")
       .order("ts", { ascending: true });
     if (error) {
       setMode("local");
@@ -124,9 +159,10 @@ export default function NotesPanel() {
       setNotes(readLocal());
       return;
     }
-    setNotes((data ?? []) as Note[]);
+    setNotes(normalizeNotes(data ?? []));
     setMode("shared");
     setError(null);
+    setLastSyncedAt(Date.now());
   }, []);
 
   // Initial fetch + realtime subscription for live updates.
@@ -157,9 +193,30 @@ export default function NotesPanel() {
     () => notes.filter((n) => n.page === page).sort((a, b) => a.ts - b.ts),
     [notes, page],
   );
+  const openNotes = useMemo(() => notes.filter((n) => n.status === "open"), [notes]);
+  const pageOpenNotes = useMemo(() => pageNotes.filter((n) => n.status === "open"), [pageNotes]);
+  const visibleNotes = useMemo(
+    () =>
+      (showAllPages ? notes : pageNotes)
+        .filter((n) => !openOnly || n.status === "open")
+        .slice()
+        .sort((a, b) => a.ts - b.ts),
+    [notes, openOnly, pageNotes, showAllPages],
+  );
 
   const pageLabel = PAGE_LABELS[page] ?? page;
-  const unreadCount = pageNotes.length;
+  const unreadCount = pageOpenNotes.length;
+  const scopeLabel = showAllPages
+    ? openOnly
+      ? "Open items across pages"
+      : "All pages"
+    : openOnly
+      ? `${pageLabel} open items`
+      : pageLabel;
+  const syncLabel =
+    mode === "shared"
+      ? `Shared live${lastSyncedAt ? ` - refreshed ${fmtTime(lastSyncedAt)}` : ""}`
+      : "Local fallback - this browser only";
 
   const add = async () => {
     const trimmed = text.trim();
@@ -171,40 +228,75 @@ export default function NotesPanel() {
       text: trimmed,
       ts: Date.now(),
       kind,
+      status: "open",
     };
     // Optimistic: show the note immediately. The realtime subscription will
     // reconcile shortly; if the insert fails we roll back.
     setNotes((all) => [...all, note]);
     setText("");
-    if (supabase && mode === "shared") {
+    setBusy(true);
+    if (supabase) {
       const { error } = await supabase.from(TABLE).insert(note);
       if (error) {
         setError(error.message);
         setMode("local");
         // Keep the optimistic copy; local mode will persist it.
+      } else {
+        setError(null);
+        setMode("shared");
+        setLastSyncedAt(Date.now());
       }
     }
+    setBusy(false);
+  };
+
+  const updateStatus = async (id: string, status: Status) => {
+    const prev = notes;
+    setNotes((all) => all.map((n) => (n.id === id ? { ...n, status } : n)));
+    setBusy(true);
+    if (supabase) {
+      const { error } = await supabase.from(TABLE).update({ status }).eq("id", id);
+      if (error) {
+        setError(error.message);
+        setMode("local");
+        setNotes(prev);
+      } else {
+        setNotes((all) => all.map((n) => (n.id === id ? { ...n, status } : n)));
+        setError(null);
+        setMode("shared");
+        setLastSyncedAt(Date.now());
+      }
+    }
+    setBusy(false);
   };
 
   const remove = async (id: string) => {
     // Optimistic removal — rolled back if the server delete fails.
     const prev = notes;
     setNotes((all) => all.filter((n) => n.id !== id));
-    if (supabase && mode === "shared") {
+    setBusy(true);
+    if (supabase) {
       const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) {
         setError(error.message);
         setMode("local");
         setNotes(prev);
+      } else {
+        setNotes((all) => all.filter((n) => n.id !== id));
+        setError(null);
+        setMode("shared");
+        setLastSyncedAt(Date.now());
       }
     }
+    setBusy(false);
   };
 
   const copyPage = async () => {
-    const lines = pageNotes.map(
-      (n) => `[${fmtTime(n.ts)}] ${n.author} (${n.kind}):\n${n.text}\n`,
+    const lines = visibleNotes.map(
+      (n) =>
+        `[${fmtTime(n.ts)}] ${PAGE_LABELS[n.page] ?? n.page} - ${n.author} (${n.kind}, ${n.status}):\n${n.text}\n`,
     );
-    const body = `Notes for ${pageLabel} (${page})\n\n${lines.join("\n")}`;
+    const body = `Notes for ${scopeLabel}${showAllPages ? "" : ` (${page})`}\n\n${lines.join("\n")}`;
     try {
       await navigator.clipboard.writeText(body);
     } catch {
@@ -225,9 +317,10 @@ export default function NotesPanel() {
   const importAll = async (file: File) => {
     try {
       const raw = await file.text();
-      const parsed = JSON.parse(raw) as Note[];
-      if (!Array.isArray(parsed)) return;
-      if (supabase && mode === "shared") {
+      const parsed = normalizeNotes(JSON.parse(raw));
+      if (parsed.length === 0) return;
+      setBusy(true);
+      if (supabase) {
         // Upsert each — server is the source of truth.
         const { error } = await supabase.from(TABLE).upsert(parsed);
         if (error) setError(error.message);
@@ -237,6 +330,7 @@ export default function NotesPanel() {
         [...notes, ...parsed].forEach((n) => byId.set(n.id, n));
         setNotes([...byId.values()]);
       }
+      setBusy(false);
     } catch {
       /* invalid file — ignore */
     }
@@ -248,7 +342,10 @@ export default function NotesPanel() {
         type="button"
         className="np-fab"
         aria-label={`Notes — ${pageLabel}`}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          void refresh();
+        }}
       >
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
@@ -270,8 +367,9 @@ export default function NotesPanel() {
                     {mode === "shared" ? "shared (live)" : "local (this device)"}
                   </span>
                 </p>
-                <h2 className="np-title">{pageLabel}</h2>
+                <h2 className="np-title">{scopeLabel}</h2>
                 <p className="np-path mono">{page}</p>
+                <p className="np-sync mono">{syncLabel}</p>
               </div>
               <button type="button" className="np-close" aria-label="Close" onClick={() => setOpen(false)}>
                 ✕
@@ -280,7 +378,24 @@ export default function NotesPanel() {
 
             <div className="np-actions">
               <button type="button" className="np-btn" onClick={copyPage}>
-                Copy page notes
+                {showAllPages ? "Copy all notes" : "Copy page notes"}
+              </button>
+              <button type="button" className="np-btn" onClick={() => setShowAllPages((value) => !value)}>
+                {showAllPages ? "This page" : `All pages (${notes.length})`}
+              </button>
+              <button
+                type="button"
+                className={`np-btn ${openOnly ? "np-btn--active" : ""}`}
+                onClick={() => {
+                  if (openOnly) {
+                    setOpenOnly(false);
+                  } else {
+                    setShowAllPages(true);
+                    setOpenOnly(true);
+                  }
+                }}
+              >
+                {openOnly ? "All statuses" : `Open only (${openNotes.length})`}
               </button>
               <button type="button" className="np-btn" onClick={exportAll}>
                 Export all
@@ -288,8 +403,8 @@ export default function NotesPanel() {
               <button type="button" className="np-btn" onClick={() => fileRef.current?.click()}>
                 Import
               </button>
-              <button type="button" className="np-btn" onClick={() => void refresh()}>
-                Refresh
+              <button type="button" className="np-btn" onClick={() => void refresh()} disabled={busy}>
+                {busy ? "Working..." : "Refresh"}
               </button>
               <input
                 ref={fileRef}
@@ -307,23 +422,47 @@ export default function NotesPanel() {
             {error && <p className="np-error mono">⚠ {error}</p>}
 
             <div className="np-list">
-              {pageNotes.length === 0 ? (
-                <p className="np-empty">No notes yet for this page. Add the first one below.</p>
+              {visibleNotes.length === 0 ? (
+                <p className="np-empty">
+                  {openOnly && showAllPages
+                    ? "No open notes across any page."
+                    : openOnly
+                      ? "No open notes for this page."
+                      : showAllPages
+                    ? "No shared notes yet. Add the first one below."
+                    : "No notes yet for this page. Add the first one below."}
+                </p>
               ) : (
-                pageNotes.map((n) => (
-                  <article className={`np-note np-note--${n.kind}`} key={n.id}>
+                visibleNotes.map((n) => (
+                  <article className={`np-note np-note--${n.kind} np-note--${n.status}`} key={n.id}>
                     <header className="np-note__head">
                       <span className="np-note__author">{n.author}</span>
                       <span className="np-note__kind">{n.kind}</span>
+                      <span className={`np-note__status np-note__status--${n.status}`}>
+                        {n.status === "open" ? "Open" : "Resolved"}
+                      </span>
+                      {showAllPages && <span className="np-note__page">{PAGE_LABELS[n.page] ?? n.page}</span>}
                       <span className="np-note__ts mono">{fmtTime(n.ts)}</span>
-                      <button
-                        type="button"
-                        className="np-note__del"
-                        aria-label="Delete note"
-                        onClick={() => void remove(n.id)}
-                      >
-                        ✕
-                      </button>
+                      <span className="np-note__actions">
+                        <button
+                          type="button"
+                          className="np-note__resolve"
+                          aria-label={n.status === "open" ? "Resolve note" : "Reopen note"}
+                          onClick={() => void updateStatus(n.id, n.status === "open" ? "resolved" : "open")}
+                          disabled={busy}
+                        >
+                          {n.status === "open" ? "Resolve" : "Reopen"}
+                        </button>
+                        <button
+                          type="button"
+                          className="np-note__del"
+                          aria-label="Delete note"
+                          onClick={() => void remove(n.id)}
+                          disabled={busy}
+                        >
+                          ✕
+                        </button>
+                      </span>
                     </header>
                     <p className="np-note__text">{n.text}</p>
                   </article>
@@ -365,7 +504,7 @@ export default function NotesPanel() {
                 placeholder={`Add a ${kind} for ${pageLabel}…`}
               />
               <button type="submit" className="np-submit" disabled={!text.trim()}>
-                Save
+                {busy ? "Saving..." : "Save"}
               </button>
             </form>
           </aside>
