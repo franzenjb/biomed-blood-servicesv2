@@ -48,10 +48,10 @@ const QUIET_BASEMAP = "gray-vector";
 const NO_FILL: Rgba = [255, 255, 255, 0];
 const ZIP_OUTLINE: Rgba = [15, 18, 23, 0.9];
 export const tradeAreaDonorShareBreaks: TradeAreaDonorShareBreak[] = [
-  { minValue: 0, maxValue: 3.178484, color: [188, 229, 247, 0.82], label: "0.00 - 3.18%" },
-  { minValue: 3.178485, maxValue: 8.873239, color: [47, 169, 0, 0.86], label: "3.18 - 8.87%" },
-  { minValue: 8.87324, maxValue: 21.209741, color: [255, 244, 31, 0.88], label: "8.87 - 21.21%" },
-  { minValue: 21.209742, maxValue: 63.323782, color: [255, 24, 18, 0.9], label: "21.21 - 63.32%" }
+  { minValue: 0, maxValue: 3.178484, color: [201, 230, 239, 0.84], label: "0.00 - 3.18%" },
+  { minValue: 3.178485, maxValue: 8.873239, color: [137, 203, 194, 0.86], label: "3.18 - 8.87%" },
+  { minValue: 8.87324, maxValue: 21.209741, color: [64, 157, 139, 0.88], label: "8.87 - 21.21%" },
+  { minValue: 21.209742, maxValue: 63.323782, color: [24, 98, 132, 0.9], label: "21.21 - 63.32%" }
 ];
 
 const layerStyles = {

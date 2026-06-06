@@ -903,23 +903,23 @@
 }
 
 .opsv2__trade-insight[data-tone="low"] {
-  border-color: #8ab7ca;
-  background: linear-gradient(90deg, rgba(188, 229, 247, 0.28), #fff 62%);
+  border-color: #8bb9c8;
+  background: linear-gradient(90deg, rgba(201, 230, 239, 0.34), #fff 62%);
 }
 
 .opsv2__trade-insight[data-tone="moderate"] {
-  border-color: #2f8d26;
-  background: linear-gradient(90deg, rgba(47, 169, 0, 0.14), #fff 62%);
+  border-color: #4f9f91;
+  background: linear-gradient(90deg, rgba(137, 203, 194, 0.26), #fff 62%);
 }
 
 .opsv2__trade-insight[data-tone="strong"] {
-  border-color: #b29d00;
-  background: linear-gradient(90deg, rgba(255, 244, 31, 0.22), #fff 62%);
+  border-color: #2f8676;
+  background: linear-gradient(90deg, rgba(64, 157, 139, 0.2), #fff 62%);
 }
 
 .opsv2__trade-insight[data-tone="highest"] {
-  border-color: #b42318;
-  background: linear-gradient(90deg, rgba(255, 24, 18, 0.12), #fff 62%);
+  border-color: #186284;
+  background: linear-gradient(90deg, rgba(24, 98, 132, 0.16), #fff 62%);
 }
 
 .opsv2__trade-metric {
