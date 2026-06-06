@@ -202,16 +202,17 @@ test.describe("Maps (shared shell)", () => {
         .map((child) => child.tagName.toLowerCase()),
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "topo-vector");
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
+    await expect(page.locator(".opsv2__layer-group").first()).toContainText("Hospitals & Patient Care");
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
     const hospitalLayer = page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" });
-    await expect(hospitalLayer).toContainText("Hospital location layer for patient-care reach and network context.");
+    await expect(hospitalLayer).toContainText("Hospitals receiving Red Cross blood products.");
     await expect(hospitalLayer.locator('[data-testid="ops-layer-legend-marker"]')).toHaveAttribute(
       "data-kind",
       "hospital",
@@ -238,7 +239,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
     await expect(page.getByRole("link", { name: /BioMed Layer Atlas/i })).toHaveAttribute("href", "/hub");
     await expect(page.getByText("Sign in to inspect the full layer atlas")).toBeVisible();
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "topo-vector");
     await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-zoom[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
@@ -246,7 +247,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
-      "Hospital location layer for patient-care reach and network context.",
+      "Hospitals receiving Red Cross blood products.",
     );
     await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
     await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(

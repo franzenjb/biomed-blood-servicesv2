@@ -271,7 +271,7 @@ export const hospitalLocationsLayerSource = {
   title: "Hospital Locations",
   itemId: "87e9189c3b284ecb900749eecfb64a05",
   category: "hospitals",
-  role: "Private hospital location layer added to the BioMed maps.",
+  role: "Hospitals receiving Red Cross blood products.",
   defaultVisible: true,
   itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=87e9189c3b284ecb900749eecfb64a05",
   mapViewerUrl:

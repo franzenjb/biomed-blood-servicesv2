@@ -40,11 +40,11 @@ const categoryLabels: Record<MasterLayerCategory, string> = {
   geography: "Jurisdictions & Regions",
   operations: "Distribution & Operations",
   reference: "Reference",
-  hospitals: "Hospitals",
+  hospitals: "Hospitals & Patient Care",
   manufacturing: "Manufacturing"
 };
 
-const categorySortOrder: MasterLayerCategory[] = ["sites", "manufacturing", "operations", "geography", "hospitals", "reference"];
+const categorySortOrder: MasterLayerCategory[] = ["hospitals", "sites", "manufacturing", "operations", "geography", "reference"];
 
 const numericFieldTypes = new Set(["small-integer", "integer", "single", "double", "long", "big-integer"]);
 

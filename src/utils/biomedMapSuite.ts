@@ -80,9 +80,9 @@ export const presenterModes: Array<{
     id: "hospital-readiness",
     label: "Hospital Readiness",
     shortLabel: "Hospitals",
-    description: "Distribution and portfolio context for patient-care readiness.",
+    description: "Hospitals receiving Red Cross blood products.",
     icon: Hospital,
-    briefing: "Connect the BioMed operating map to hospital support without overloading the audience with raw partner detail.",
+    briefing: "Connect the BioMed operating map to the hospitals that receive Red Cross blood products.",
     talkingPoint: "The donor story is strongest when it reaches the patient-care endpoint."
   },
   {
@@ -103,6 +103,12 @@ export const sourceGroups: Array<{
   icon: LucideIcon;
 }> = [
   {
+    id: "hospitals",
+    label: "Hospitals & Patient Care",
+    description: "Hospitals receiving Red Cross blood products.",
+    icon: Hospital
+  },
+  {
     id: "sites",
     label: "Facilities & Sites",
     description: "Fixed donor access, staging, manufacturing, logistics, and distribution anchors.",
@@ -119,12 +125,6 @@ export const sourceGroups: Array<{
     label: "Distribution & Operations",
     description: "FY25 ZIP, collection, and recruitment portfolio context.",
     icon: Activity
-  },
-  {
-    id: "hospitals",
-    label: "Hospitals & Patient Care",
-    description: "Hospital locations and patient-care demand context.",
-    icon: Hospital
   },
   {
     id: "manufacturing",
@@ -210,8 +210,8 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
     useCase: "Use for detailed data checks after the boundary story is clear."
   },
   "Hospital Locations": {
-    summary: "Hospital location layer for patient-care reach and network context.",
-    useCase: "Use when connecting the BioMed operating footprint to patient-care demand."
+    summary: "Hospitals receiving Red Cross blood products.",
+    useCase: "Use when explaining patient-care reach and blood product support."
   },
   "Supplemental BioMed source layer": {
     summary: "Additional private BioMed source layer loaded with the Workbench layer stack.",

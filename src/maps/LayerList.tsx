@@ -12,12 +12,12 @@ const CATEGORY_LABELS: Record<MasterLayerCategory, string> = {
   geography: "Jurisdictions & geography",
   operations: "Operations & distribution",
   manufacturing: "Manufacturing",
-  hospitals: "Hospitals",
+  hospitals: "Hospitals & patient care",
   reference: "Reference",
 };
 
 const CATEGORY_ORDER: MasterLayerCategory[] = [
-  "sites", "geography", "operations", "manufacturing", "hospitals", "reference",
+  "hospitals", "sites", "geography", "operations", "manufacturing", "reference",
 ];
 
 export default function LayerList({ snapshots, onToggle }: Props) {

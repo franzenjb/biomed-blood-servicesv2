@@ -314,7 +314,7 @@ export function getMasterLayerImpact(layerTitle: string, category: MasterLayerCa
   if (category === "sites") return "Shows the physical access points and logistics anchors that make collection and distribution possible.";
   if (category === "operations") return "Connects FY25 collection activity to the geography and teams responsible for donor reach.";
   if (category === "geography") return "Frames the jurisdiction story so a donor audience can understand local reach without raw operational clutter.";
-  if (category === "hospitals") return "Connects the BioMed network to patient care and hospital readiness.";
+  if (category === "hospitals") return "Connects the BioMed network to hospitals receiving Red Cross blood products.";
   return "Adds source context for the BioMed operating map.";
 }
 
@@ -323,7 +323,7 @@ export function getMasterTalkingPoint(category: MasterLayerCategory, layerTitle:
   if (category === "sites") return "Collection access, staging, logistics, and distribution infrastructure.";
   if (category === "operations") return "Collection activity and accountable operating geography.";
   if (category === "geography") return "BioMed scale, stewardship, and local ownership.";
-  if (category === "hospitals") return "Hospital and patient-care readiness context.";
+  if (category === "hospitals") return "Hospitals receiving Red Cross blood products.";
   return `${layerTitle} source context.`;
 }
 

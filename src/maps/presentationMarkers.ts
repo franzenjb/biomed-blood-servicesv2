@@ -26,6 +26,32 @@ type RenderableFeatureLayer = FeatureLayer & {
   blendMode?: string;
   effect?: string;
   opacity?: number;
+  refresh?: () => void;
+};
+
+type HospitalTierMarker = "tier1" | "tier2" | "tier3" | "unknown";
+
+const HOSPITAL_TIER_STYLES: Record<HospitalTierMarker, { fill: string; stroke: string; label: string }> = {
+  tier1: {
+    fill: "#d71920",
+    stroke: "#7f0d13",
+    label: "Tier 1"
+  },
+  tier2: {
+    fill: "#1f6fbf",
+    stroke: "#0f3f7c",
+    label: "Tier 2"
+  },
+  tier3: {
+    fill: "#2f8f3e",
+    stroke: "#1f5d2b",
+    label: "Tier 3"
+  },
+  unknown: {
+    fill: "#6b7280",
+    stroke: "#374151",
+    label: "Hospital"
+  }
 };
 
 const MARKER_STYLES: Record<PresentationMarkerKind, { fill: string; stroke: string; label: string; glyph: string }> = {
@@ -163,6 +189,8 @@ export function markerKindForLayer(title: string, category?: BioMedLayerSnapshot
 }
 
 export function markerUrl(kind: PresentationMarkerKind) {
+  if (kind === "hospital") return hospitalTierMarkerUrl("tier1");
+
   const style = MARKER_STYLES[kind];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 48 48">
 <defs><filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="2.5" flood-color="#111827" flood-opacity=".46"/></filter></defs>
@@ -171,6 +199,84 @@ export function markerUrl(kind: PresentationMarkerKind) {
 ${style.glyph}
 </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function hospitalTierMarkerUrl(tier: HospitalTierMarker) {
+  const style = HOSPITAL_TIER_STYLES[tier];
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 48 48" role="img" aria-label="${style.label} hospital">
+<defs>
+  <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#111827" flood-opacity=".42"/>
+  </filter>
+</defs>
+<circle cx="24" cy="24" r="20" fill="#f8fafc" filter="url(#shadow)"/>
+<circle cx="24" cy="24" r="16.5" fill="${style.fill}" stroke="#111827" stroke-opacity=".75" stroke-width="2"/>
+<path d="M16 36V19c0-2 1.6-3.6 3.6-3.6h8.8c2 0 3.6 1.6 3.6 3.6v17" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+<path d="M24 19.5v10M19 24.5h10" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3.4"/>
+<path d="M20.5 36v-6.5h7V36" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+<path d="M16 36h16" stroke="#fff" stroke-linecap="round" stroke-width="3"/>
+<circle cx="24" cy="24" r="16.5" fill="none" stroke="${style.stroke}" stroke-width="1.4"/>
+</svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function hospitalTierSymbol(tier: HospitalTierMarker) {
+  return {
+    type: "picture-marker" as const,
+    url: hospitalTierMarkerUrl(tier),
+    width: "30px",
+    height: "30px",
+    yoffset: "2px"
+  };
+}
+
+function findHospitalTierField(layer: FeatureLayer) {
+  return layer.fields?.find((field) => field.name.toLowerCase() === "final_tier")?.name;
+}
+
+function arcadeFieldName(fieldName: string) {
+  return fieldName.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function applyHospitalTierRenderer(featureLayer: RenderableFeatureLayer) {
+  const tierField = findHospitalTierField(featureLayer);
+  if (!tierField) {
+    featureLayer.renderer = {
+      type: "simple",
+      symbol: hospitalTierSymbol("unknown")
+    };
+    return;
+  }
+
+  const fieldName = arcadeFieldName(tierField);
+  featureLayer.renderer = {
+    type: "unique-value",
+    valueExpression: `var tier = Lower(Text($feature["${fieldName}"]));
+if (Find("1", tier) > -1) { return "tier1"; }
+if (Find("2", tier) > -1) { return "tier2"; }
+if (Find("3", tier) > -1) { return "tier3"; }
+return "unknown";`,
+    valueExpressionTitle: "Hospital tier",
+    defaultLabel: "Hospital",
+    defaultSymbol: hospitalTierSymbol("unknown"),
+    uniqueValueInfos: [
+      {
+        value: "tier1",
+        label: HOSPITAL_TIER_STYLES.tier1.label,
+        symbol: hospitalTierSymbol("tier1")
+      },
+      {
+        value: "tier2",
+        label: HOSPITAL_TIER_STYLES.tier2.label,
+        symbol: hospitalTierSymbol("tier2")
+      },
+      {
+        value: "tier3",
+        label: HOSPITAL_TIER_STYLES.tier3.label,
+        symbol: hospitalTierSymbol("tier3")
+      }
+    ]
+  };
 }
 
 export function legendMarkerForLayer(title: string, category?: BioMedLayerSnapshot["category"]) {
@@ -195,19 +301,24 @@ async function applyMarker(layer: Layer) {
 
   if (featureLayer.geometryType && featureLayer.geometryType !== "point") return;
 
-  featureLayer.renderer = {
-    type: "simple",
-    symbol: {
-      type: "picture-marker",
-      url: markerUrl(kind),
-      width: kind === "hospital" ? "28px" : "25px",
-      height: kind === "hospital" ? "28px" : "25px",
-      yoffset: "2px"
-    }
-  };
+  if (kind === "hospital") {
+    applyHospitalTierRenderer(featureLayer);
+  } else {
+    featureLayer.renderer = {
+      type: "simple",
+      symbol: {
+        type: "picture-marker",
+        url: markerUrl(kind),
+        width: "25px",
+        height: "25px",
+        yoffset: "2px"
+      }
+    };
+  }
   featureLayer.effect = "drop-shadow(0 2px 3px rgba(17, 24, 39, 0.45))";
   featureLayer.blendMode = "normal";
   featureLayer.opacity = 1;
+  featureLayer.refresh?.();
 }
 
 export async function applyPresentationMarkers(map?: ArcGISMap) {

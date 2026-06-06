@@ -28,7 +28,7 @@ type PresentationLayerStyle = {
   labelMaxScale?: number;
 };
 
-const QUIET_BASEMAP = "gray-vector";
+const QUIET_BASEMAP = "topo-vector";
 
 const NO_FILL: Rgba = [255, 255, 255, 0];
 
@@ -211,7 +211,7 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
 
   map.basemap = QUIET_BASEMAP;
   if (view) {
-    view.background = { color: [246, 247, 246, 1] };
+    view.background = { color: [238, 242, 240, 1] };
     (view as MapView & { highlightOptions?: unknown }).highlightOptions = {
       color: [215, 48, 65, 1],
       fillOpacity: 0.08,
