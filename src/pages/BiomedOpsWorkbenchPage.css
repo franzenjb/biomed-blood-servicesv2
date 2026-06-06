@@ -610,7 +610,7 @@
 .opsv2__layer {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 11px;
+  gap: 12px;
   align-items: start;
   width: 100%;
   border: 1px solid #e1e5ea;
@@ -627,31 +627,24 @@
 
 .opsv2__layer:disabled {
   cursor: not-allowed;
-  opacity: 0.58;
+  opacity: 1;
 }
 
-.opsv2__swatch {
-  width: 11px;
-  height: 11px;
-  margin-top: 3px;
+.opsv2__legend-marker {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-top: -2px;
   border-radius: 999px;
-  background: #9b6ec8;
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(18, 22, 28, 0.08);
 }
 
-.opsv2__swatch--sites {
-  background: #276fbf;
-}
-
-.opsv2__swatch--operations {
-  background: #319b55;
-}
-
-.opsv2__swatch--manufacturing {
-  background: #ed1b2e;
-}
-
-.opsv2__swatch--hospitals {
-  background: #f0a202;
+.opsv2__legend-marker img {
+  display: block;
+  width: 32px;
+  height: 32px;
 }
 
 .opsv2__layer-title-row {
@@ -678,12 +671,6 @@
 .opsv2__layer[aria-pressed="true"] .opsv2__layer-title-row em {
   background: #ed1b2e;
   color: #fff;
-}
-
-.opsv2__layer-use {
-  margin-top: 4px;
-  color: #35404b !important;
-  font-weight: 800;
 }
 
 .opsv2__selected-card {

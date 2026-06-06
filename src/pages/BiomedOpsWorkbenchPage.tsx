@@ -26,7 +26,7 @@ import RcMark from "../components/RcMark";
 import { arcJurisdictionMapSource } from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
-import { applyPresentationMarkers } from "../maps/presentationMarkers";
+import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
 import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
@@ -659,26 +659,35 @@ export default function BiomedOpsWorkbenchPage() {
                   </header>
                   {isExpanded && (
                     <div className="opsv2__layer-list">
-                      {groupLayers.map((layer) => (
-                        <button
-                          key={layer.id}
-                          type="button"
-                          className="opsv2__layer"
-                          aria-pressed={layer.visible}
-                          disabled={!isAuthenticated}
-                          onClick={() => toggleLayer(layer.id)}
-                        >
-                          <span className={`opsv2__swatch opsv2__swatch--${layer.category}`} />
-                          <span>
-                            <span className="opsv2__layer-title-row">
-                              <strong>{layer.title}</strong>
-                              <em>{layer.visible ? "On" : "Off"}</em>
+                      {groupLayers.map((layer) => {
+                        const legendMarker = legendMarkerForLayer(layer.title, layer.category);
+                        return (
+                          <button
+                            key={layer.id}
+                            type="button"
+                            className="opsv2__layer"
+                            aria-pressed={layer.visible}
+                            disabled={!isAuthenticated}
+                            onClick={() => toggleLayer(layer.id)}
+                          >
+                            <span
+                              className="opsv2__legend-marker"
+                              data-kind={legendMarker.kind}
+                              data-testid="ops-layer-legend-marker"
+                              title={legendMarker.label}
+                            >
+                              <img src={legendMarker.url} alt="" aria-hidden="true" />
                             </span>
-                            <small>{layer.summary}</small>
-                            <small className="opsv2__layer-use">{layer.useCase}</small>
-                          </span>
-                        </button>
-                      ))}
+                            <span>
+                              <span className="opsv2__layer-title-row">
+                                <strong>{layer.title}</strong>
+                                <em>{layer.visible ? "On" : "Off"}</em>
+                              </span>
+                              <small>{layer.summary}</small>
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </section>

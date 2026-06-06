@@ -199,6 +199,10 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
+    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(17);
+    await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
+    await expect(page.getByText("Use for local donor access.")).toHaveCount(0);
+    await expect(page.getByText("Use for distribution and patient-care readiness.")).toHaveCount(0);
     await expect(page.getByRole("tab", { name: "Current" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "List" })).toBeVisible();
@@ -206,7 +210,10 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("button", { name: "Jurisdictions & Regions" })).toContainText(
       "BioMed ownership first; HS boundaries only for alignment comparison.",
     );
-    await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("Start here for the national leadership view.");
+    await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("BioMed division boundaries.");
+    await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
+      "Start here for the national leadership view.",
+    );
     await page.getByRole("tab", { name: "Detail" }).click();
     await expect(page.getByText("No feature selected.")).toBeVisible();
   });
