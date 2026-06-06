@@ -31,7 +31,12 @@ import {
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
-import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
+import {
+  applyPresentationMapStyle,
+  quietOpsBasemapId,
+  tradeAreaBreakForDonorShare,
+  tradeAreaDonorShareBreaks
+} from "../maps/presentationStyle";
 import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
 import {
   buildLayerSnapshots,
@@ -87,6 +92,10 @@ const HOME_CENTER: [number, number] = [-96.2, 38.3];
 const CENTER = HOME_CENTER.join(",");
 const ZOOM = 4;
 const DEFAULT_WORKBENCH_PRESET: WorkbenchPreset = "default-workbench";
+const TRADE_AREA_COMBO_LAYER_ID = "trade-area-by-zip-combo";
+const TRADE_AREA_COMBO_TITLE = "Trade Areas by ZIP";
+const TRADE_AREA_COMBO_SUMMARY = "Fixed-site trade-area ZIPs colored by donor share.";
+const TRADE_AREA_COMBO_USE_CASE = "Use to compare ZIP-level donor concentration inside each fixed-site trade area.";
 const SEARCH_PER_LAYER_LIMIT = 4;
 const SEARCH_TOTAL_LIMIT = 24;
 const SEARCH_FIELD_HINTS = [
@@ -159,7 +168,55 @@ function normalizeDisplayValue(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
+function isTradeAreaLayerTitle(title: string) {
+  const normalized = title.toLowerCase().replace(/[_-]+/g, " ");
+  return normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo");
+}
+
+function isSupplementalBioMedSourceLayerTitle(title: string) {
+  return title.toLowerCase().replace(/[_-]+/g, " ").includes("biomed source layer");
+}
+
+function combineTradeAreaLayerSnapshots(snapshots: BioMedLayerSnapshot[]) {
+  const tradeAreaLayers = snapshots.filter((layer) => isTradeAreaLayerTitle(layer.title));
+  if (tradeAreaLayers.length === 0) return snapshots;
+
+  const firstTradeAreaIndex = snapshots.findIndex((layer) => isTradeAreaLayerTitle(layer.title));
+  const combinedTradeAreaLayer: BioMedLayerSnapshot = {
+    id: TRADE_AREA_COMBO_LAYER_ID,
+    title: TRADE_AREA_COMBO_TITLE,
+    category: "operations",
+    role: TRADE_AREA_COMBO_SUMMARY,
+    summary: TRADE_AREA_COMBO_SUMMARY,
+    useCase: TRADE_AREA_COMBO_USE_CASE,
+    visible: tradeAreaLayers.every((layer) => layer.visible),
+    type: "paired feature layers",
+    status: tradeAreaLayers.every((layer) => layer.status === "Loaded") ? "Loaded" : "Loading"
+  };
+
+  const combined: BioMedLayerSnapshot[] = [];
+  snapshots.forEach((layer, index) => {
+    if (index === firstTradeAreaIndex) combined.push(combinedTradeAreaLayer);
+    if (!isTradeAreaLayerTitle(layer.title)) combined.push(layer);
+  });
+  return combined;
+}
+
+function buildWorkbenchLayerSnapshots(map?: ReturnType<typeof getMapElementMap>, supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
+  return combineTradeAreaLayerSnapshots(buildLayerSnapshots(map, supplementalLayers));
+}
+
+function previewWorkbenchLayerSnapshots(supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
+  return combineTradeAreaLayerSnapshots(previewLayerSnapshots(supplementalLayers));
+}
+
 function featureDisplayTitle(feature: MasterFeatureSummary) {
+  const tradeAreaZip =
+    isTradeAreaLayerTitle(feature.layerTitle) &&
+    (featureSourceFieldValue(feature, ["TradeAreaByZip", "Trade Area By Zip"]) ||
+      formatIdentifierValue(featureAttributeValue(feature, ["TradeAreaByZip", "Trade Area By Zip"])));
+  if (tradeAreaZip) return `ZIP ${tradeAreaZip}`;
+
   const preferredPlaceTitle = featureSourceFieldValue(feature, [
     "Facility Name",
     "Facility",
@@ -178,6 +235,7 @@ function featureDisplayTitle(feature: MasterFeatureSummary) {
 
 function featureKindLabel(feature: MasterFeatureSummary) {
   const layerTitle = feature.layerTitle.toLowerCase();
+  if (isTradeAreaLayerTitle(feature.layerTitle)) return "Trade-area ZIP donor share";
   if (layerTitle.includes("division")) return "BioMed division boundary";
   if (layerTitle.includes("region")) return "BioMed regional boundary";
   if (layerTitle.includes("district")) return "BioMed district boundary";
@@ -257,6 +315,25 @@ function featureDetailValue(feature: MasterFeatureSummary, candidates: string[],
   return options.identifier ? fromSource.trim() : formatCompactValue(fromSource, 2);
 }
 
+function featureRawDetailValue(feature: MasterFeatureSummary, candidates: string[]) {
+  const raw = featureAttributeValue(feature, candidates);
+  if (raw != null) return raw;
+  return featureSourceFieldValue(feature, candidates);
+}
+
+function formatPercentDonorsValue(value: unknown) {
+  if (value == null) return "";
+  const raw = `${value}`.trim();
+  if (!raw) return "";
+  const parsed = Number(raw.replace(/[%,$]/g, ""));
+  if (!Number.isFinite(parsed)) return raw;
+  return `${parsed.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+}
+
+function rgbaCss(color: [number, number, number, number]) {
+  return `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${color[3]})`;
+}
+
 function cleanAddressPart(value: string) {
   return value.replace(/\s+/g, " ").replace(/\s+,/g, ",").trim();
 }
@@ -275,9 +352,79 @@ function composeFeatureAddress(feature: MasterFeatureSummary) {
   return cleanAddressPart([street, locality, zip].filter(Boolean).join(", "));
 }
 
+function tradeAreaDetailRows(feature: MasterFeatureSummary) {
+  const title = normalizeDisplayValue(featureDisplayTitle(feature));
+  const donorShare = formatPercentDonorsValue(
+    featureRawDetailValue(feature, ["PercentDonors", "Percent Donors", "Percent_Donors", "Donor Percent", "Donor Share"]),
+  );
+  const center =
+    featureDetailValue(feature, ["Donation Center", "Blood Donation Center", "Facility Name", "Facility", "Site Name", "Site", "Name"]) ||
+    (feature.title && !/^zip\s+\d/i.test(featureDisplayTitle(feature)) ? feature.title : "");
+  const rows = [
+    { label: "ZIP", value: featureDetailValue(feature, ["TradeAreaByZip", "Trade Area By Zip", "ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }) },
+    { label: "Donor share", value: donorShare },
+    { label: "Donation center", value: center },
+    { label: "City", value: featureDetailValue(feature, ["City"]) },
+    { label: "State", value: featureDetailValue(feature, ["State"], { identifier: true }) },
+    { label: "Region", value: featureDetailValue(feature, ["Region"]) },
+    { label: "District", value: featureDetailValue(feature, ["District"]) },
+    { label: "Division", value: featureDetailValue(feature, ["Division"]) },
+    { label: "Site type", value: featureDetailValue(feature, ["Site Type", "Facility Type", "Type"]) }
+  ];
+
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    if (!row.value) return false;
+    if (row.label !== "ZIP" && normalizeDisplayValue(row.value) === title) return false;
+    const key = `${row.label}:${normalizeDisplayValue(row.value)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function additionalFeatureRows(feature: MasterFeatureSummary, primaryRows: Array<{ label: string; value: string }>) {
+  const primaryKeys = new Set(primaryRows.map((row) => `${normalizeDisplayValue(row.label)}:${normalizeDisplayValue(row.value)}`));
+  const primaryLabels = new Set(primaryRows.map((row) => normalizeDisplayValue(row.label)));
+  const isTradeAreaFeature = isTradeAreaLayerTitle(feature.layerTitle);
+  return feature.sourceFields
+    .filter((field) => {
+      if (!field.value) return false;
+      const label = normalizeDisplayValue(field.label);
+      if (primaryLabels.has(label)) return false;
+      if (primaryKeys.has(`${label}:${normalizeDisplayValue(field.value)}`)) return false;
+      if (isTradeAreaFeature && ((label.includes("percent") && label.includes("donor")) || label.includes("tradeareabyzip"))) return false;
+      return true;
+    })
+    .slice(0, 8);
+}
+
+function TradeAreaZipLegend({ feature }: { feature: MasterFeatureSummary }) {
+  const donorShare = featureRawDetailValue(feature, ["PercentDonors", "Percent Donors", "Percent_Donors", "Donor Percent", "Donor Share"]);
+  const activeBreak = tradeAreaBreakForDonorShare(donorShare);
+
+  return (
+    <section className="opsv2__zip-legend" aria-label="Trade-area ZIP color legend">
+      <header>
+        <span>ZIP color legend</span>
+        {activeBreak && <b>{activeBreak.label}</b>}
+      </header>
+      <div className="opsv2__zip-legend-list">
+        {tradeAreaDonorShareBreaks.map((breakInfo) => (
+          <div key={breakInfo.label} data-active={activeBreak?.label === breakInfo.label ? "true" : "false"}>
+            <i style={{ backgroundColor: rgbaCss(breakInfo.color) }} />
+            <span>{breakInfo.label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function compactFeatureRows(feature: MasterFeatureSummary) {
   const title = normalizeDisplayValue(featureDisplayTitle(feature));
   const layerTitle = feature.layerTitle.toLowerCase();
+  if (isTradeAreaLayerTitle(feature.layerTitle)) return tradeAreaDetailRows(feature).slice(0, 8);
   const rows = [
     { label: "Region", value: featureDetailValue(feature, ["Region"]) },
     { label: "District", value: featureDetailValue(feature, ["District"]) },
@@ -413,7 +560,9 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
 function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   const address = composeFeatureAddress(feature);
   const rows = compactFeatureRows(feature);
+  const additionalRows = additionalFeatureRows(feature, rows);
   const title = featureDisplayTitle(feature);
+  const isTradeAreaFeature = isTradeAreaLayerTitle(feature.layerTitle);
 
   return (
     <>
@@ -438,6 +587,25 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
             </div>
           ))}
         </dl>
+      )}
+
+      {isTradeAreaFeature && <TradeAreaZipLegend feature={feature} />}
+
+      {additionalRows.length > 0 && (
+        <section className="opsv2__source-fields">
+          <header>
+            <span>Additional details</span>
+            <b>{feature.sourceFieldCount}</b>
+          </header>
+          <dl>
+            {additionalRows.map((item) => (
+              <div key={`${item.label}-${item.value}`}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       )}
 
       <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Selected feature source">
@@ -498,7 +666,13 @@ function isOperationalHitGraphic(graphic: Graphic | undefined, map?: ReturnType<
 function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: WorkbenchPreset) {
   const title = layer.title.toLowerCase();
   if (nextPreset === "default-workbench") {
-    return title.includes("fixed site") || title.includes("distribution site") || title.includes("biomed regions");
+    return (
+      title.includes("fixed site") ||
+      title.includes("distribution site") ||
+      title.includes("biomed regions") ||
+      isTradeAreaLayerTitle(title) ||
+      isSupplementalBioMedSourceLayerTitle(title)
+    );
   }
   if (nextPreset === "clean-map") return false;
   if (nextPreset === "all-layers") return true;
@@ -622,7 +796,7 @@ export default function BiomedOpsWorkbenchPage({
   const searchRunRef = useRef(0);
   const [preset, setPreset] = useState<WorkbenchPreset>(DEFAULT_WORKBENCH_PRESET);
   const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() =>
-    previewLayerSnapshots(supplementalLayers).map((layer) => ({
+    previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({
       ...layer,
       visible: shouldShowLayerForPreset(layer, DEFAULT_WORKBENCH_PRESET),
     })),
@@ -691,7 +865,7 @@ export default function BiomedOpsWorkbenchPage({
     : presetLabel;
 
   const refreshLayers = useCallback(() => {
-    setLayers(buildLayerSnapshots(getMapElementMap(mapRef.current), supplementalLayers));
+    setLayers(buildWorkbenchLayerSnapshots(getMapElementMap(mapRef.current), supplementalLayers));
   }, [supplementalLayers]);
 
   const closeSearchPopup = useCallback(() => {
@@ -862,7 +1036,7 @@ export default function BiomedOpsWorkbenchPage({
 
     async function hydrateMap() {
       if (!isAuthenticated) {
-        setLayers(previewLayerSnapshots(supplementalLayers).map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
+        setLayers(previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
         setSelectedFeature(null);
         setSelectedGraphic(null);
         setSpatialRollup(null);
@@ -1010,6 +1184,15 @@ export default function BiomedOpsWorkbenchPage({
   function toggleLayer(layerId: string) {
     const map = getMapElementMap(mapRef.current);
     if (!map) return;
+    if (layerId === TRADE_AREA_COMBO_LAYER_ID) {
+      const tradeAreaLayers = collectArcJurisdictionLayers(map).filter((candidate) => isTradeAreaLayerTitle(safeLayerTitle(candidate)));
+      const nextVisible = !tradeAreaLayers.every((candidate) => candidate.visible);
+      tradeAreaLayers.forEach((candidate) => {
+        candidate.visible = nextVisible;
+      });
+      refreshLayers();
+      return;
+    }
     const layer = collectArcJurisdictionLayers(map).find((candidate) => candidate.id === layerId);
     if (!layer) return;
     layer.visible = !layer.visible;

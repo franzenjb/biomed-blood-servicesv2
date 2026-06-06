@@ -261,7 +261,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",
     );
-    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("0/1");
+    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
     await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
       "Additional private BioMed source layer loaded with the Workbench layer stack.",
     );
@@ -269,7 +269,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("World Topo")).toHaveCount(0);
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(19);
-    await expect(page.getByText("3 active of 19 layers.")).toBeVisible();
+    await expect(page.getByText("4 active of 19 layers.")).toBeVisible();
   });
 
   test("/ops is the short V2 workbench route", async ({ page }) => {

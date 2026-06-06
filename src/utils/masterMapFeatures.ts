@@ -34,7 +34,7 @@ const layerCategoryRules: Array<{ category: MasterLayerCategory; patterns: strin
   },
   {
     category: "operations",
-    patterns: ["collection operations", "fy25 data", "zip", "drd", "portfolio"]
+    patterns: ["collection operations", "fy25 data", "zip", "drd", "portfolio", "trade", "tradearea", "fsrsmo"]
   },
   {
     category: "geography",

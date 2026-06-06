@@ -164,6 +164,7 @@ const MARKER_STYLES: Record<PresentationMarkerKind, { fill: string; stroke: stri
 export function markerKindForLayer(title: string, category?: BioMedLayerSnapshot["category"]): PresentationMarkerKind | null {
   const normalized = title.toLowerCase();
   if (normalized.includes("footprint")) return null;
+  if (normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo")) return "zip";
   if (normalized.includes("hospital")) return "hospital";
   if (normalized.includes("distribution")) return "distribution";
   if (normalized.includes("fixed")) return "fixed";

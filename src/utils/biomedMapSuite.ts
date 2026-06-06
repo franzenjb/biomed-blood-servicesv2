@@ -252,6 +252,11 @@ function normalizedLayerTitle(value: string) {
   return value.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+function isTradeAreaLayerTitle(title: string) {
+  const normalized = normalizedLayerTitle(title).replace(/[_-]+/g, " ");
+  return normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo");
+}
+
 export function isBasemapUtilityLayerTitle(title: string) {
   const normalized = normalizedLayerTitle(title);
   return (
@@ -296,6 +301,12 @@ export function safeLayerTitle(layer: Layer) {
 export function getLayerPresentation(title: string, supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
   const configured = getConfiguredArcJurisdictionLayer(title, supplementalLayers);
   const presentation = layerPresentation[configured?.title ?? title];
+  if (!presentation && !configured && isTradeAreaLayerTitle(title)) {
+    return {
+      summary: "Fixed-site trade-area ZIPs colored by donor share.",
+      useCase: "Use to compare ZIP-level donor concentration inside each fixed-site trade area."
+    };
+  }
   return {
     summary: presentation?.summary ?? configured?.role ?? "BioMed map layer.",
     useCase: presentation?.useCase ?? "Use only when it supports the current story."
@@ -320,7 +331,9 @@ export function shouldShowLayerForPresenterMode(layer: BioMedLayerSnapshot, mode
   const title = layer.title.toLowerCase();
   if (modeId === "national-reach") return title.includes("biomed regions") || title.includes("biomed divisions");
   if (modeId === "jurisdiction-story") return title.includes("biomed regions") || title.includes("biomed districts") || title.includes("biomed divisions");
-  if (modeId === "collection-access") return title.includes("biomed collection operations") || title.includes("fy25 data") || title.includes("fixed site");
+  if (modeId === "collection-access") {
+    return title.includes("biomed collection operations") || title.includes("fy25 data") || title.includes("fixed site") || isTradeAreaLayerTitle(title);
+  }
   if (modeId === "hospital-readiness") return title.includes("distribution") || title.includes("portfolio") || title.includes("hospital");
   if (modeId === "manufacturing-backbone") {
     return layer.category === "manufacturing" || title.includes("manufacturing") || title.includes("warehouse") || title.includes("irl") || title.includes("kitting");

@@ -13,6 +13,8 @@ type StyledFeatureLayer = FeatureLayer & {
   effect?: string;
   labelingInfo?: unknown[];
   labelsVisible?: boolean;
+  maxScale?: number;
+  minScale?: number;
   opacity?: number;
   refresh?: () => void;
 };
@@ -29,9 +31,23 @@ type PresentationLayerStyle = {
   labelMaxScale?: number;
 };
 
+export type TradeAreaDonorShareBreak = {
+  minValue: number;
+  maxValue: number;
+  color: Rgba;
+  label: string;
+};
+
 const QUIET_BASEMAP = "gray-vector";
 
 const NO_FILL: Rgba = [255, 255, 255, 0];
+const ZIP_OUTLINE: Rgba = [15, 18, 23, 0.9];
+export const tradeAreaDonorShareBreaks: TradeAreaDonorShareBreak[] = [
+  { minValue: 0, maxValue: 3.178484, color: [188, 229, 247, 0.82], label: "0.00 - 3.18%" },
+  { minValue: 3.178485, maxValue: 8.873239, color: [47, 169, 0, 0.86], label: "3.18 - 8.87%" },
+  { minValue: 8.87324, maxValue: 21.209741, color: [255, 244, 31, 0.88], label: "8.87 - 21.21%" },
+  { minValue: 21.209742, maxValue: 63.323782, color: [255, 24, 18, 0.9], label: "21.21 - 63.32%" }
+];
 
 const layerStyles = {
   biomedDivision: {
@@ -142,6 +158,27 @@ function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ");
 }
 
+function compact(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+export function tradeAreaBreakForDonorShare(value: unknown) {
+  if (value == null) return undefined;
+  const parsed = typeof value === "number" ? value : Number(`${value}`.replace(/[%,$]/g, ""));
+  if (!Number.isFinite(parsed)) return undefined;
+  return tradeAreaDonorShareBreaks.find((breakInfo) => parsed >= breakInfo.minValue && parsed <= breakInfo.maxValue);
+}
+
+function isTradeAreaLayerTitle(title: string) {
+  const normalized = normalize(title);
+  return normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo");
+}
+
+function isLower48VisibleSourceLayerTitle(title: string) {
+  const normalized = normalize(title);
+  return isTradeAreaLayerTitle(title) || normalized.includes("biomed source layer");
+}
+
 export function quietOpsBasemapId() {
   return QUIET_BASEMAP;
 }
@@ -207,6 +244,95 @@ function labelClassForField(field: Field, style: PresentationLayerStyle) {
   };
 }
 
+function isNumericField(field: Field) {
+  return field.type === "double" || field.type === "single" || field.type === "integer" || field.type === "small-integer" || field.type === "oid";
+}
+
+function findPercentDonorsField(fields: Field[] | undefined) {
+  return fields?.find((field) => {
+    if (!isNumericField(field)) return false;
+    const normalized = compact(`${field.name} ${field.alias ?? ""}`);
+    return normalized === "percentdonors" || (normalized.includes("percent") && normalized.includes("donor"));
+  });
+}
+
+function findTradeAreaZipField(fields: Field[] | undefined) {
+  return fields?.find((field) => {
+    if (field.type !== "string") return false;
+    const normalized = compact(`${field.name} ${field.alias ?? ""}`);
+    return normalized === "tradeareabyzip" || normalized === "zip" || normalized === "zipcode" || normalized.includes("postal");
+  });
+}
+
+function tradeAreaClassBreakSymbol(color: Rgba) {
+  return {
+    type: "simple-fill" as const,
+    color,
+    outline: {
+      type: "simple-line" as const,
+      color: ZIP_OUTLINE,
+      width: 1.35
+    }
+  };
+}
+
+function tradeAreaRenderer(field: Field) {
+  return {
+    type: "class-breaks" as const,
+    field: field.name,
+    legendOptions: {
+      title: field.alias || "Percent donors"
+    },
+    defaultLabel: "No donor share",
+    defaultSymbol: tradeAreaClassBreakSymbol([220, 226, 232, 0.62]),
+    classBreakInfos: tradeAreaDonorShareBreaks.map((breakInfo) => ({
+      minValue: breakInfo.minValue,
+      maxValue: breakInfo.maxValue,
+      label: breakInfo.label,
+      symbol: tradeAreaClassBreakSymbol(breakInfo.color)
+    }))
+  };
+}
+
+function tradeAreaZipLabelClass(field: Field) {
+  return {
+    labelExpressionInfo: {
+      expression: `Text($feature["${field.name.replace(/"/g, '\\"')}"])`
+    },
+    labelPlacement: "always-horizontal" as const,
+    minScale: 6500000,
+    maxScale: 0,
+    symbol: {
+      type: "text" as const,
+      color: [14, 18, 23, 0.94] as Rgba,
+      haloColor: [255, 255, 255, 0.94] as Rgba,
+      haloSize: 1.45,
+      font: {
+        family: "Avenir Next",
+        size: 11.5,
+        weight: "bold" as const
+      }
+    }
+  };
+}
+
+function applyTradeAreaZipStyle(featureLayer: StyledFeatureLayer) {
+  const percentDonorsField = findPercentDonorsField(featureLayer.fields);
+  if (!percentDonorsField) return false;
+
+  featureLayer.renderer = tradeAreaRenderer(percentDonorsField);
+  const zipField = findTradeAreaZipField(featureLayer.fields);
+  featureLayer.labelsVisible = Boolean(zipField);
+  featureLayer.labelingInfo = zipField ? [tradeAreaZipLabelClass(zipField)] : [];
+  featureLayer.minScale = 0;
+  featureLayer.maxScale = 0;
+  featureLayer.opacity = 1;
+  featureLayer.blendMode = "normal";
+  featureLayer.effect = "drop-shadow(0 1px 0 rgba(17, 24, 39, 0.16))";
+  featureLayer.refresh?.();
+  return true;
+}
+
 async function applyLayerStyle(layer: Layer) {
   if (typeof (layer as FeatureLayer).load !== "function") return;
 
@@ -219,7 +345,14 @@ async function applyLayerStyle(layer: Layer) {
 
   if (featureLayer.geometryType !== "polygon" && featureLayer.geometryType !== "polyline") return;
 
-  const style = getPresentationStyleForLayer(safeLayerTitle(featureLayer));
+  const title = safeLayerTitle(featureLayer);
+  if (featureLayer.geometryType === "polygon" && isTradeAreaLayerTitle(title) && applyTradeAreaZipStyle(featureLayer)) return;
+
+  const style = getPresentationStyleForLayer(title);
+  if (isLower48VisibleSourceLayerTitle(title)) {
+    featureLayer.minScale = 0;
+    featureLayer.maxScale = 0;
+  }
   featureLayer.renderer = {
     type: "simple",
     symbol:
