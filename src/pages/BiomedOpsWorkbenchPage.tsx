@@ -159,7 +159,14 @@ function normalizeDisplayValue(value: string) {
 }
 
 function featureDisplayTitle(feature: MasterFeatureSummary) {
-  const title = feature.title.trim();
+  const preferredPlaceTitle = featureSourceFieldValue(feature, [
+    "Facility Name",
+    "Facility",
+    "Site Name",
+    "Site",
+    "Hospital"
+  ]);
+  const title = (feature.category === "geography" ? feature.title : preferredPlaceTitle || feature.title).trim();
   const layerTitle = feature.layerTitle.toLowerCase();
   if (layerTitle.includes("division") && !/division$/i.test(title)) return `${title} Division`;
   if (layerTitle.includes("district") && !/district$/i.test(title)) return `${title} District`;
@@ -211,6 +218,17 @@ function featureAttributeValue(feature: MasterFeatureSummary, candidates: string
   return undefined;
 }
 
+function featureSourceFieldValue(feature: MasterFeatureSummary, candidates: string[]) {
+  const normalizedCandidates = candidates.map(normalizeDisplayValue);
+  const exact = feature.sourceFields.find((field) => normalizedCandidates.includes(normalizeDisplayValue(field.label)));
+  if (exact?.value) return exact.value;
+
+  const partial = feature.sourceFields.find((field) =>
+    normalizedCandidates.some((candidate) => normalizeDisplayValue(field.label).includes(candidate)),
+  );
+  return partial?.value ?? "";
+}
+
 function formatCompactValue(value: unknown, maximumFractionDigits = 1) {
   if (value == null) return "";
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -223,6 +241,71 @@ function formatCompactValue(value: unknown, maximumFractionDigits = 1) {
     return parsed.toLocaleString(undefined, { maximumFractionDigits });
   }
   return raw;
+}
+
+function formatIdentifierValue(value: unknown) {
+  if (value == null) return "";
+  return `${value}`.trim();
+}
+
+function featureDetailValue(feature: MasterFeatureSummary, candidates: string[], options: { identifier?: boolean } = {}) {
+  const raw = featureAttributeValue(feature, candidates);
+  if (raw != null) return options.identifier ? formatIdentifierValue(raw) : formatCompactValue(raw, 2);
+  const fromSource = featureSourceFieldValue(feature, candidates);
+  if (!fromSource) return "";
+  return options.identifier ? fromSource.trim() : formatCompactValue(fromSource, 2);
+}
+
+function cleanAddressPart(value: string) {
+  return value.replace(/\s+/g, " ").replace(/\s+,/g, ",").trim();
+}
+
+function composeFeatureAddress(feature: MasterFeatureSummary) {
+  const street = cleanAddressPart(
+    featureDetailValue(feature, ["Street Address", "Address 1", "Address Line 1", "StreetAddress"]) ||
+      featureDetailValue(feature, ["Match Address", "Place Address", "Address Or Place"]),
+  );
+  const city = cleanAddressPart(featureDetailValue(feature, ["City"]));
+  const state = cleanAddressPart(featureDetailValue(feature, ["State"]));
+  const zip = cleanAddressPart(featureDetailValue(feature, ["ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }));
+
+  if (!street) return cleanAddressPart([city, state, zip].filter(Boolean).join(", ").replace(/, ([A-Z]{2}),/, ", $1"));
+  const locality = [city, state].filter(Boolean).join(", ");
+  return cleanAddressPart([street, locality, zip].filter(Boolean).join(", "));
+}
+
+function compactFeatureRows(feature: MasterFeatureSummary) {
+  const title = normalizeDisplayValue(featureDisplayTitle(feature));
+  const layerTitle = feature.layerTitle.toLowerCase();
+  const rows = [
+    { label: "Region", value: featureDetailValue(feature, ["Region"]) },
+    { label: "District", value: featureDetailValue(feature, ["District"]) },
+    { label: "Division", value: featureDetailValue(feature, ["Division"]) },
+    { label: "Chapter", value: featureDetailValue(feature, ["Chapter"]) },
+    { label: "City", value: featureDetailValue(feature, ["City"]) },
+    { label: "State", value: featureDetailValue(feature, ["State"], { identifier: true }) },
+    { label: "ZIP", value: featureDetailValue(feature, ["ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }) },
+    { label: "Site type", value: featureDetailValue(feature, ["Site Type", "Facility Type", "Type"]) },
+    { label: "Urbanicity", value: featureDetailValue(feature, ["2024 Dominant Urbanicity Type Name", "Urbanicity"]) },
+    { label: "Drive distance", value: featureDetailValue(feature, ["Avg Drive Distance", "Drive Distance"]) },
+    { label: "RBC donors", value: featureDetailValue(feature, ["CY24 RBC Donors", "RBC Donors"]) },
+    { label: "Collections", value: featureDetailValue(feature, ["Collections", "Collection Count", "Total Collections"]) },
+    { label: "Units", value: featureDetailValue(feature, ["Units", "Total Units", "RBC Units"]) }
+  ];
+
+  const seen = new Set<string>();
+  const usefulRows = rows.filter((row) => {
+    if (!row.value) return false;
+    if (normalizeDisplayValue(row.value) === title) return false;
+    const key = `${row.label}:${normalizeDisplayValue(row.value)}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  if (feature.category === "geography") return [...featureContextRows(feature), ...usefulRows].slice(0, 7);
+  if (layerTitle.includes("fixed site") || layerTitle.includes("trade")) return usefulRows.slice(0, 7);
+  return usefulRows.slice(0, 5);
 }
 
 function hospitalAttribute(feature: MasterFeatureSummary, candidates: string[]) {
@@ -317,6 +400,46 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
       )}
 
       <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Hospital source layer">
+        <span>
+          Source
+          <strong>{feature.layerTitle}</strong>
+        </span>
+      </div>
+    </>
+  );
+}
+
+function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
+  const address = composeFeatureAddress(feature);
+  const rows = compactFeatureRows(feature);
+  const title = featureDisplayTitle(feature);
+
+  return (
+    <>
+      <header className="opsv2__feature-hero opsv2__feature-hero--compact">
+        <p className="opsv2__eyebrow">Selected feature</p>
+        <h2>{title}</h2>
+        <p className="opsv2__feature-kind">{featureKindLabel(feature)}</p>
+      </header>
+
+      {address && (
+        <p className="opsv2__feature-address" aria-label="Feature address">
+          {address}
+        </p>
+      )}
+
+      {rows.length > 0 && (
+        <dl className="opsv2__feature-facts opsv2__feature-facts--compact">
+          {rows.map((item) => (
+            <div key={`${item.label}-${item.value}`}>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Selected feature source">
         <span>
           Source
           <strong>{feature.layerTitle}</strong>
@@ -1251,54 +1374,7 @@ export default function BiomedOpsWorkbenchPage({
                   selectedFeature.category === "hospitals" ? (
                     <HospitalFeatureCard feature={selectedFeature} />
                   ) : (
-                    <>
-                      <header className="opsv2__feature-hero">
-                        <p className="opsv2__eyebrow">Selected feature</p>
-                        <h2>{featureDisplayTitle(selectedFeature)}</h2>
-                        <p className="opsv2__feature-kind">{featureKindLabel(selectedFeature)}</p>
-                      </header>
-
-                      <div className="opsv2__feature-meta" aria-label="Selected feature source">
-                        <span>
-                          Source layer
-                          <strong>{selectedFeature.layerTitle}</strong>
-                        </span>
-                        <span>
-                          Available fields
-                          <strong>{selectedFeature.sourceFieldCount}</strong>
-                        </span>
-                      </div>
-
-                      {featureContextRows(selectedFeature).length > 0 && (
-                        <dl className="opsv2__feature-facts">
-                          {featureContextRows(selectedFeature).map((item) => (
-                            <div key={`${item.label}-${item.value}`}>
-                              <dt>{item.label}</dt>
-                              <dd>{item.value}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                      )}
-
-                      <section className="opsv2__source-fields" aria-label="Curated source fields">
-                        <header>
-                          <span>Source fields</span>
-                          <b>{Math.min(selectedFeature.sourceFields.length, selectedFeature.sourceFieldCount)}/{selectedFeature.sourceFieldCount}</b>
-                        </header>
-                        {selectedFeature.sourceFields.length > 0 ? (
-                          <dl>
-                            {selectedFeature.sourceFields.map((item) => (
-                              <div key={`${item.label}-${item.value}`}>
-                                <dt>{item.label}</dt>
-                                <dd>{item.value}</dd>
-                              </div>
-                            ))}
-                          </dl>
-                        ) : (
-                          <p>No useful source fields were returned for this feature.</p>
-                        )}
-                      </section>
-                    </>
+                    <FeatureInfoCard feature={selectedFeature} />
                   )
                 ) : (
                   <p className="opsv2__empty">No feature selected.</p>

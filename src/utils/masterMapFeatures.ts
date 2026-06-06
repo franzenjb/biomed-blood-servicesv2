@@ -243,7 +243,15 @@ function isJunkAttributeField(fieldName: string) {
     normalized.includes("simptol") ||
     normalized.includes("simpgnflag") ||
     normalized.includes("inpoly") ||
-    normalized === "se_anno_cad_data"
+    normalized === "se_anno_cad_data" ||
+    readable === "country" ||
+    readable === "country name" ||
+    readable === "street name" ||
+    readable === "address type" ||
+    readable === "address number" ||
+    readable === "address or place" ||
+    readable === "match address" ||
+    readable === "place address"
   );
 }
 
@@ -319,7 +327,16 @@ function sourceFieldCanonicalKey(key: string, label: string, value: string) {
   else if (normalizedField.includes("county") || (normalizedField.includes("subregion") && /county$/i.test(value))) semantic = "county";
   else if (normalizedField.includes("facility")) semantic = "facility";
   else if (normalizedField.includes("site")) semantic = "site";
-  return `${semantic}:${normalize(value)}`;
+  const normalizedValue = normalize(value)
+    .replace(/\bavenue\b/g, "ave")
+    .replace(/\bstreet\b/g, "st")
+    .replace(/\broad\b/g, "rd")
+    .replace(/\bdrive\b/g, "dr")
+    .replace(/\beast\b/g, "e")
+    .replace(/\bwest\b/g, "w")
+    .replace(/\bnorth\b/g, "n")
+    .replace(/\bsouth\b/g, "s");
+  return `${semantic}:${normalizedValue}`;
 }
 
 function dedupeSourceFields<T extends { key: string; label: string; value: string }>(items: T[]) {
