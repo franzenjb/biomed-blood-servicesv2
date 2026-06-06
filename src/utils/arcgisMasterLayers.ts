@@ -3,6 +3,12 @@ import Layer from "@arcgis/core/layers/Layer";
 import PortalItem from "@arcgis/core/portal/PortalItem";
 import { masterMapLayerSources } from "../config/arcgisLayers";
 
+type PortalLayerSource = {
+  itemId: string;
+  title: string;
+  defaultVisible: boolean;
+};
+
 function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
@@ -19,13 +25,13 @@ function mapAlreadyHasLayer(map: ArcGISMap, itemId: string) {
   });
 }
 
-export async function addMasterMapSupplementalLayers(map?: ArcGISMap) {
+export async function addArcgisPortalLayers(map: ArcGISMap | undefined, sources: PortalLayerSource[]) {
   const added: string[] = [];
   const errors: string[] = [];
 
   if (!map) return { added, errors };
 
-  for (const source of masterMapLayerSources) {
+  for (const source of sources) {
     if (mapAlreadyHasLayer(map, source.itemId)) continue;
 
     try {
@@ -42,4 +48,8 @@ export async function addMasterMapSupplementalLayers(map?: ArcGISMap) {
   }
 
   return { added, errors };
+}
+
+export async function addMasterMapSupplementalLayers(map?: ArcGISMap) {
+  return addArcgisPortalLayers(map, masterMapLayerSources);
 }

@@ -12,14 +12,14 @@ test.describe("Home (hero)", () => {
 });
 
 test.describe("Hub", () => {
-  test("is the grid of 5 chapters + 4 tool tiles, and navigates", async ({ page }) => {
+  test("is the grid of 5 chapters + 5 tool tiles, and navigates", async ({ page }) => {
     await page.goto("/hub");
     await expect(page.getByTestId("hub")).toBeVisible();
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // 4 tool tiles (#6-#9): merged map+dashboard, ops, hospital network, regions
-    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "regions"]) {
+    // 5 tool tiles (#6-#10): merged map+dashboard, ops, layer atlas, hospital network, regions
+    for (const id of ["map-dashboard", "ops-workbench", "layer-atlas", "hospital-network", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
     // separated map + dashboard tiles are gone (merged into one)
@@ -27,6 +27,7 @@ test.describe("Hub", () => {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
+    await expect(page.getByTestId("hub-card-layer-atlas")).toHaveAttribute("href", "/biomed-layer-atlas");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
@@ -199,7 +200,7 @@ test.describe("Maps (shared shell)", () => {
         .map((child) => child.tagName.toLowerCase()),
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "arcgis-light-gray");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
@@ -221,6 +222,26 @@ test.describe("Maps (shared shell)", () => {
     );
     await page.getByRole("tab", { name: "Detail" }).click();
     await expect(page.getByText("No feature selected.")).toBeVisible();
+  });
+
+  test("/biomed-layer-atlas adds the supplemental layer to the workbench stack", async ({ page }) => {
+    await page.goto("/biomed-layer-atlas");
+    await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
+    await expect(page.getByRole("link", { name: /BioMed Layer Atlas/i })).toHaveAttribute("href", "/hub");
+    await expect(page.getByText("Sign in to inspect the full layer atlas")).toBeVisible();
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
+    await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-zoom[slot="top-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
+    await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
+      "Additional private BioMed source layer loaded with the Workbench layer stack.",
+    );
+    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
+    await expect(page.getByText("Source layers", { exact: true })).toBeVisible();
+    await expect(page.getByText("Layer groups", { exact: true })).toBeVisible();
   });
 
   test("/ops is the short V2 workbench route", async ({ page }) => {

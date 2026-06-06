@@ -24,6 +24,12 @@ export type ArcJurisdictionLayerSource = {
   defaultVisible: boolean;
 };
 
+export type ArcJurisdictionSupplementalLayerSource = ArcJurisdictionLayerSource & {
+  itemId: string;
+  itemUrl: string;
+  mapViewerUrl: string;
+};
+
 export const biomedCollectionsSource = {
   portalUrl: "https://arc-nhq-gis.maps.arcgis.com",
   webMapItemId: "fe8739d16bf148ad9244c6c4bb0ed816",
@@ -248,6 +254,25 @@ export const arcJurisdictionMapSource = {
       defaultVisible: false
     }
   ] satisfies ArcJurisdictionLayerSource[]
+};
+
+export const biomedLayerAtlasSource = {
+  title: "BioMed Layer Atlas",
+  routePath: "/biomed-layer-atlas",
+  webMapItemId: arcJurisdictionMapSource.webMapItemId,
+  itemUrl: arcJurisdictionMapSource.itemUrl,
+  supplementalLayers: [
+    {
+      title: "Supplemental BioMed source layer",
+      itemId: "6af8a323a0b5468f9427baa4d6ee7481",
+      category: "reference",
+      role: "Additional private BioMed source layer loaded alongside the Workbench map.",
+      defaultVisible: true,
+      itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=6af8a323a0b5468f9427baa4d6ee7481",
+      mapViewerUrl:
+        "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=6af8a323a0b5468f9427baa4d6ee7481"
+    }
+  ] satisfies ArcJurisdictionSupplementalLayerSource[]
 };
 
 export const hospitalPortfolioMapSource = {

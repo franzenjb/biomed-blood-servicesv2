@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { sections } from "../data/sections";
+import { biomedLayerAtlasSource } from "../config/arcgisLayers";
 import RcMark from "../components/RcMark";
 import ThemeToggle from "../components/ThemeToggle";
 import "./HubPage.css";
@@ -65,13 +66,27 @@ export default function HubPage() {
         </Link>
 
         <Link
+          to={biomedLayerAtlasSource.routePath}
+          className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
+          data-testid="hub-card-layer-atlas"
+        >
+          <span className="hub__scrim" />
+          <span className="hub__index mono">08</span>
+          <span className="hub__body">
+            <span className="hub__title">{biomedLayerAtlasSource.title}</span>
+            <span className="hub__q">Workbench source layers plus the supplemental BioMed layer in one map section.</span>
+          </span>
+        </Link>
+
+        <Link
           to="/hospital-network"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/hospital-network.jpg)" }}
           data-testid="hub-card-hospital-network"
         >
           <span className="hub__scrim" />
-          <span className="hub__index mono">08</span>
+          <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Hospital Network</span>
             <span className="hub__q">Tier, distribution sites, portfolio footprint &amp; coverage.</span>
@@ -85,7 +100,7 @@ export default function HubPage() {
           data-testid="hub-card-regions"
         >
           <span className="hub__scrim" />
-          <span className="hub__index mono">09</span>
+          <span className="hub__index mono">10</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
             <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>

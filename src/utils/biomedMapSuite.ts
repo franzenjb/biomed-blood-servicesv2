@@ -10,7 +10,7 @@ import {
   MapPinned,
   type LucideIcon
 } from "lucide-react";
-import { arcJurisdictionMapSource } from "../config/arcgisLayers";
+import { arcJurisdictionMapSource, type ArcJurisdictionSupplementalLayerSource } from "../config/arcgisLayers";
 import { classifyMasterLayer, type MasterLayerCategory } from "./masterMapFeatures";
 
 export type BioMedPresenterModeId =
@@ -125,6 +125,12 @@ export const sourceGroups: Array<{
     label: "Manufacturing",
     description: "Processing, kitting, IRL, and product-readiness infrastructure.",
     icon: Factory
+  },
+  {
+    id: "reference",
+    label: "Reference & Supplemental",
+    description: "Additional private source layers and supporting geography.",
+    icon: Layers
   }
 ];
 
@@ -196,6 +202,10 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   "FY25 Data/Zip Codes (04.2026)": {
     summary: "ZIP-level FY25 collection and jurisdiction data.",
     useCase: "Use for detailed data checks after the boundary story is clear."
+  },
+  "Supplemental BioMed source layer": {
+    summary: "Additional private BioMed source layer loaded with the Workbench layer stack.",
+    useCase: "Use when the broader source map needs this extra layer in context."
   }
 };
 
@@ -210,9 +220,16 @@ export function getPresenterMode(modeId: BioMedPresenterModeId) {
   return presenterModes.find((mode) => mode.id === modeId) ?? presenterModes[0];
 }
 
-export function getConfiguredArcJurisdictionLayer(title: string) {
+function combinedArcJurisdictionLayerSources(supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
+  return [...arcJurisdictionMapSource.operationalLayers, ...supplementalLayers];
+}
+
+export function getConfiguredArcJurisdictionLayer(
+  title: string,
+  supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []
+) {
   const normalized = title.toLowerCase();
-  return arcJurisdictionMapSource.operationalLayers.find((layer) => {
+  return combinedArcJurisdictionLayerSources(supplementalLayers).find((layer) => {
     const configured = layer.title.toLowerCase();
     return normalized === configured || normalized.includes(configured) || configured.includes(normalized);
   });
@@ -222,8 +239,8 @@ export function safeLayerTitle(layer: Layer) {
   return layer.title ?? layer.id ?? "Untitled BioMed layer";
 }
 
-export function getLayerPresentation(title: string) {
-  const configured = getConfiguredArcJurisdictionLayer(title);
+export function getLayerPresentation(title: string, supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
+  const configured = getConfiguredArcJurisdictionLayer(title, supplementalLayers);
   const presentation = layerPresentation[configured?.title ?? title];
   return {
     summary: presentation?.summary ?? configured?.role ?? "BioMed map layer.",
@@ -259,12 +276,15 @@ export function shouldShowLayerForPresenterMode(layer: BioMedLayerSnapshot, mode
   return false;
 }
 
-export function buildLayerSnapshots(map?: ArcGISMap): BioMedLayerSnapshot[] {
+export function buildLayerSnapshots(
+  map?: ArcGISMap,
+  supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []
+): BioMedLayerSnapshot[] {
   return collectArcJurisdictionLayers(map).map((layer) => {
     const title = safeLayerTitle(layer);
-    const configured = getConfiguredArcJurisdictionLayer(title);
+    const configured = getConfiguredArcJurisdictionLayer(title, supplementalLayers);
     const category = configured?.category ?? classifyMasterLayer(title);
-    const presentation = getLayerPresentation(title);
+    const presentation = getLayerPresentation(title, supplementalLayers);
     return {
       id: layer.id,
       title,
@@ -279,9 +299,9 @@ export function buildLayerSnapshots(map?: ArcGISMap): BioMedLayerSnapshot[] {
   });
 }
 
-export function previewLayerSnapshots(): BioMedLayerSnapshot[] {
-  return arcJurisdictionMapSource.operationalLayers.map((layer) => {
-    const presentation = getLayerPresentation(layer.title);
+export function previewLayerSnapshots(supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []): BioMedLayerSnapshot[] {
+  return combinedArcJurisdictionLayerSources(supplementalLayers).map((layer) => {
+    const presentation = getLayerPresentation(layer.title, supplementalLayers);
     return {
       id: layer.title,
       title: layer.title,

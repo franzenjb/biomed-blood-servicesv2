@@ -23,11 +23,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
-import { arcJurisdictionMapSource } from "../config/arcgisLayers";
+import { arcJurisdictionMapSource, type ArcJurisdictionSupplementalLayerSource } from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
+import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
 import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
@@ -59,6 +60,14 @@ type ArcgisSearchElement = HTMLElement & {
   };
 };
 type SearchStatus = "idle" | "searching" | "ready" | "empty" | "blocked" | "error";
+type BiomedOpsWorkbenchPageProps = {
+  title?: string;
+  resultLabel?: string;
+  supplementalLayers?: ArcJurisdictionSupplementalLayerSource[];
+  signInHeading?: string;
+  signInCopy?: string;
+  testId?: string;
+};
 type FeatureSearchResult = {
   id: string;
   title: string;
@@ -73,6 +82,7 @@ const CENTER = HOME_CENTER.join(",");
 const ZOOM = 4;
 const SEARCH_PER_LAYER_LIMIT = 4;
 const SEARCH_TOTAL_LIMIT = 24;
+const NO_SUPPLEMENTAL_LAYERS: ArcJurisdictionSupplementalLayerSource[] = [];
 const SEARCH_FIELD_HINTS = [
   "name",
   "title",
@@ -341,13 +351,20 @@ function SpatialRollupPanel({
   );
 }
 
-export default function BiomedOpsWorkbenchPage() {
+export default function BiomedOpsWorkbenchPage({
+  title = "BioMed Ops Workbench",
+  resultLabel = "Workbench",
+  supplementalLayers = NO_SUPPLEMENTAL_LAYERS,
+  signInHeading = "Sign in to inspect live workbench layers",
+  signInCopy = "Layer inventory is visible. Counts, toggles, and selected features require the private Red Cross ArcGIS web map.",
+  testId = "biomed-ops-workbench"
+}: BiomedOpsWorkbenchPageProps = {}) {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const searchRef = useRef<ArcgisSearchElement | null>(null);
   const searchRunRef = useRef(0);
   const [preset, setPreset] = useState<WorkbenchPreset>("all-layers");
-  const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(previewLayerSnapshots);
+  const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() => previewLayerSnapshots(supplementalLayers));
   const [query, setQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const [searchResults, setSearchResults] = useState<FeatureSearchResult[]>([]);
@@ -385,15 +402,17 @@ export default function BiomedOpsWorkbenchPage() {
 
   const groupSummaries = useMemo(
     () =>
-      sourceGroups.map((group) => {
-        const groupLayers = layers.filter((layer) => layer.category === group.id);
-        const activeCount = groupLayers.filter((layer) => layer.visible).length;
-        return {
-          ...group,
-          total: groupLayers.length,
-          active: activeCount,
-        };
-      }),
+      sourceGroups
+        .map((group) => {
+          const groupLayers = layers.filter((layer) => layer.category === group.id);
+          const activeCount = groupLayers.filter((layer) => layer.visible).length;
+          return {
+            ...group,
+            total: groupLayers.length,
+            active: activeCount,
+          };
+        })
+        .filter((group) => group.total > 0),
     [layers],
   );
 
@@ -409,8 +428,8 @@ export default function BiomedOpsWorkbenchPage() {
     : presetLabel;
 
   const refreshLayers = useCallback(() => {
-    setLayers(buildLayerSnapshots(getMapElementMap(mapRef.current)));
-  }, []);
+    setLayers(buildLayerSnapshots(getMapElementMap(mapRef.current), supplementalLayers));
+  }, [supplementalLayers]);
 
   const closeSearchPopup = useCallback(() => {
     const view = mapRef.current?.view as (MapView & { popup?: { close?: () => void } }) | undefined;
@@ -488,7 +507,7 @@ export default function BiomedOpsWorkbenchPage() {
         return;
       }
 
-      const nextSnapshots = buildLayerSnapshots(map);
+      const nextSnapshots = buildLayerSnapshots(map, supplementalLayers);
       mapLayers.forEach((layer) => {
         const snapshot = nextSnapshots.find((item) => item.id === layer.id);
         if (!snapshot) return;
@@ -496,7 +515,7 @@ export default function BiomedOpsWorkbenchPage() {
       });
       refreshLayers();
     },
-    [refreshLayers],
+    [refreshLayers, supplementalLayers],
   );
 
   useEffect(() => {
@@ -579,7 +598,7 @@ export default function BiomedOpsWorkbenchPage() {
 
     async function hydrateMap() {
       if (!isAuthenticated) {
-        setLayers(previewLayerSnapshots().map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
+        setLayers(previewLayerSnapshots(supplementalLayers).map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
         setSelectedFeature(null);
         setSelectedGraphic(null);
         setSpatialRollup(null);
@@ -594,6 +613,9 @@ export default function BiomedOpsWorkbenchPage() {
       if (cancelled) return;
 
       const map = getMapElementMap(mapElement);
+      await addArcgisPortalLayers(map, supplementalLayers);
+      if (cancelled) return;
+
       await applyPresentationMapStyle(map, view);
       await applyPresentationMarkers(map);
       if (cancelled) return;
@@ -651,7 +673,7 @@ export default function BiomedOpsWorkbenchPage() {
       cancelled = true;
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers]);
+  }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers, supplementalLayers]);
 
   useEffect(() => {
     let cancelled = false;
@@ -786,8 +808,8 @@ export default function BiomedOpsWorkbenchPage() {
       className="opsv2"
       data-left-open={leftOpen ? "true" : "false"}
       data-right-open={rightOpen ? "true" : "false"}
-      data-testid="biomed-ops-workbench"
-      aria-label="BioMed Ops Workbench"
+      data-testid={testId}
+      aria-label={title}
     >
       <header className="opsv2__bar">
         <Link to="/hub" className="opsv2__home-link" data-testid="ops-back-hub">
@@ -796,7 +818,7 @@ export default function BiomedOpsWorkbenchPage() {
         </Link>
         <Link to="/hub" className="opsv2__brand">
           <RcMark size={30} />
-          <strong>BioMed Ops Workbench</strong>
+          <strong>{title}</strong>
         </Link>
         <label className="opsv2__preset">
           <span>Quick View</span>
@@ -972,7 +994,7 @@ export default function BiomedOpsWorkbenchPage() {
       )}
 
       {rightOpen ? (
-        <aside className="opsv2__panel opsv2__panel--right" aria-label="Workbench results">
+        <aside className="opsv2__panel opsv2__panel--right" aria-label={`${resultLabel} results`}>
           <div className="opsv2__panel-head">
             <MapPinned aria-hidden="true" size={18} />
             <div>
@@ -980,11 +1002,11 @@ export default function BiomedOpsWorkbenchPage() {
               <h2>{currentTitle}</h2>
               <p>{currentSubtitle}</p>
             </div>
-            <button type="button" aria-label="Hide workbench results" onClick={() => setRightOpen(false)}>
+            <button type="button" aria-label={`Hide ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(false)}>
               <PanelRightOpen aria-hidden="true" size={17} />
             </button>
           </div>
-          <div className="opsv2__right-tabs" role="tablist" aria-label="Workbench result views">
+          <div className="opsv2__right-tabs" role="tablist" aria-label={`${resultLabel} result views`}>
             <button
               type="button"
               className={rightTab === "current" ? "is-active" : ""}
@@ -1182,8 +1204,8 @@ export default function BiomedOpsWorkbenchPage() {
       {!isAuthenticated && (
         <div className="opsv2__signin" role="dialog" aria-label="Sign in required">
           <ShieldCheck aria-hidden="true" size={24} />
-          <h2>Sign in to inspect live workbench layers</h2>
-          <p>Layer inventory is visible. Counts, toggles, and selected features require the private Red Cross ArcGIS web map.</p>
+          <h2>{signInHeading}</h2>
+          <p>{signInCopy}</p>
           <button type="button" onClick={() => void signIn()} disabled={status === "checking" || status === "signing-in"}>
             Sign in to ArcGIS
           </button>
