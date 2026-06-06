@@ -19,6 +19,11 @@ type StyledFeatureLayer = FeatureLayer & {
   refresh?: () => void;
 };
 
+type ReorderableLayerHost = {
+  layers?: { length?: number };
+  reorder?: (layer: Layer, index: number) => void;
+};
+
 type PresentationLayerStyle = {
   fill: Rgba;
   outline: Rgba;
@@ -172,6 +177,16 @@ export function tradeAreaBreakForDonorShare(value: unknown) {
 function isTradeAreaLayerTitle(title: string) {
   const normalized = normalize(title);
   return normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo");
+}
+
+function isTradeAreaZipLayerTitle(title: string) {
+  const normalized = compact(title);
+  return normalized.includes("tradeareabyzip");
+}
+
+function isTradeAreaBoundaryLayerTitle(title: string) {
+  const normalized = compact(title);
+  return normalized.includes("fsrsmotradeareas") || (normalized.includes("fsrsmo") && normalized.includes("tradeareas"));
 }
 
 function isLower48VisibleSourceLayerTitle(title: string) {
@@ -333,6 +348,29 @@ function applyTradeAreaZipStyle(featureLayer: StyledFeatureLayer) {
   return true;
 }
 
+function applyTradeAreaBoundaryStyle(featureLayer: StyledFeatureLayer) {
+  featureLayer.renderer = {
+    type: "simple",
+    symbol: {
+      type: "simple-fill",
+      color: [255, 255, 255, 0],
+      outline: {
+        type: "simple-line",
+        color: [12, 15, 20, 0.88],
+        width: 2.1
+      }
+    }
+  };
+  featureLayer.minScale = 0;
+  featureLayer.maxScale = 0;
+  featureLayer.opacity = 1;
+  featureLayer.blendMode = "normal";
+  featureLayer.effect = "drop-shadow(0 1px 0 rgba(17, 24, 39, 0.14))";
+  featureLayer.labelsVisible = false;
+  featureLayer.labelingInfo = [];
+  featureLayer.refresh?.();
+}
+
 async function applyLayerStyle(layer: Layer) {
   if (typeof (layer as FeatureLayer).load !== "function") return;
 
@@ -346,7 +384,11 @@ async function applyLayerStyle(layer: Layer) {
   if (featureLayer.geometryType !== "polygon" && featureLayer.geometryType !== "polyline") return;
 
   const title = safeLayerTitle(featureLayer);
-  if (featureLayer.geometryType === "polygon" && isTradeAreaLayerTitle(title) && applyTradeAreaZipStyle(featureLayer)) return;
+  if (featureLayer.geometryType === "polygon" && isTradeAreaBoundaryLayerTitle(title)) {
+    applyTradeAreaBoundaryStyle(featureLayer);
+    return;
+  }
+  if (featureLayer.geometryType === "polygon" && (isTradeAreaZipLayerTitle(title) || isTradeAreaLayerTitle(title)) && applyTradeAreaZipStyle(featureLayer)) return;
 
   const style = getPresentationStyleForLayer(title);
   if (isLower48VisibleSourceLayerTitle(title)) {
@@ -375,6 +417,55 @@ async function applyLayerStyle(layer: Layer) {
   featureLayer.refresh?.();
 }
 
+function layerDrawRank(layer: Layer) {
+  const title = normalize(safeLayerTitle(layer));
+  const geometryType = (layer as FeatureLayer).geometryType;
+  if (
+    geometryType === "point" ||
+    title.includes("hospital") ||
+    title.includes("fixed site") ||
+    title.includes("distribution") ||
+    title.includes("mobile") ||
+    title.includes("manufacturing") ||
+    title.includes("warehouse") ||
+    title.includes("kitting") ||
+    title.includes("irl")
+  ) {
+    return 90;
+  }
+  if (isTradeAreaBoundaryLayerTitle(title)) return 25;
+  if (isTradeAreaZipLayerTitle(title) || title.includes("zip")) return 35;
+  if (geometryType === "polygon" || geometryType === "polyline") return 20;
+  return 50;
+}
+
+function getLayerReorderHost(layer: Layer, map: ArcGISMap): ReorderableLayerHost {
+  const parent = (layer as Layer & { parent?: ReorderableLayerHost }).parent;
+  return parent?.reorder ? parent : (map as ReorderableLayerHost);
+}
+
+function reorderPresentationLayers(map: ArcGISMap) {
+  const groups = new Map<ReorderableLayerHost, Layer[]>();
+  collectArcJurisdictionLayers(map).forEach((layer) => {
+    const host = getLayerReorderHost(layer, map);
+    if (!host.reorder) return;
+    const current = groups.get(host) ?? [];
+    current.push(layer);
+    groups.set(host, current);
+  });
+
+  groups.forEach((layers, host) => {
+    const sortedLayers = [...layers].sort((a, b) => layerDrawRank(a) - layerDrawRank(b));
+    sortedLayers.forEach((layer, index) => {
+      try {
+        host.reorder?.(layer, index);
+      } catch {
+        // Some web-map sublayers cannot be reordered from the app shell.
+      }
+    });
+  });
+}
+
 export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView) {
   if (!map) return;
 
@@ -390,4 +481,5 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
   }
 
   await Promise.allSettled(collectArcJurisdictionLayers(map).map(applyLayerStyle));
+  reorderPresentationLayers(map);
 }
