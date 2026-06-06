@@ -38,7 +38,7 @@ const layerCategoryRules: Array<{ category: MasterLayerCategory; patterns: strin
   }
 ];
 
-const titleFields = [
+const geographyTitleFields = [
   "Division",
   "DIVISION",
   "Biomed_Division",
@@ -62,16 +62,38 @@ const titleFields = [
   "CountyName",
   "CNTY_NAME",
   "Name",
-  "NAME",
+  "NAME"
+];
+
+const placeTitleFields = [
+  "FacilityName",
+  "Facility Name",
+  "Facility",
+  "FACILITY",
   "SiteName",
   "SITE_NAME",
   "Site_Name",
-  "Facility",
-  "FACILITY",
-  "FacilityName",
+  "Site Name",
+  "Name",
+  "NAME",
+  "City",
+  "CITY",
   "ZIP",
   "ZIP_CODE",
   "ZipCode"
+];
+
+const operationsTitleFields = [
+  "Portfolio",
+  "PortfolioName",
+  "FacilityName",
+  "SiteName",
+  "Name",
+  "NAME",
+  "ZIP",
+  "ZIP_CODE",
+  "ZipCode",
+  ...geographyTitleFields
 ];
 
 const geographyFields = [
@@ -99,7 +121,7 @@ const metricNameHints = [
   "total"
 ];
 
-const sourceFieldPriority = [
+const geographySourceFieldPriority = [
   "division",
   "region",
   "district",
@@ -120,8 +142,34 @@ const sourceFieldPriority = [
   "portfolio"
 ];
 
+const placeSourceFieldPriority = [
+  "facility name",
+  "facility",
+  "site name",
+  "site",
+  "name",
+  "street address",
+  "address",
+  "city",
+  "state",
+  "zip",
+  "postal",
+  "county",
+  "subregion",
+  "chapter",
+  "district",
+  "region",
+  "division",
+  "collection",
+  "collections",
+  "unit",
+  "units",
+  "hospital",
+  "portfolio"
+];
+
 function normalize(value: string) {
-  return value.toLowerCase().replace(/[_-]+/g, " ");
+  return value.toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function formatFieldLabel(fieldName: string) {
@@ -183,10 +231,51 @@ function formatSourceValue(fieldName: string, value: unknown) {
   return raw;
 }
 
-function sourceFieldRank(fieldName: string) {
+function sourceFieldPriorityForCategory(category: MasterLayerCategory) {
+  if (category === "geography") return geographySourceFieldPriority;
+  return placeSourceFieldPriority;
+}
+
+function titleFieldsForCategory(category: MasterLayerCategory) {
+  if (category === "geography") return geographyTitleFields;
+  if (category === "operations") return operationsTitleFields;
+  return placeTitleFields;
+}
+
+function sourceFieldRank(fieldName: string, category: MasterLayerCategory) {
   const normalized = normalize(fieldName);
+  const sourceFieldPriority = sourceFieldPriorityForCategory(category);
   const index = sourceFieldPriority.findIndex((hint) => normalized.includes(hint));
   return index === -1 ? 999 : index;
+}
+
+function displaySourceLabel(key: string, label: string, value: string) {
+  const normalizedLabel = normalize(`${key} ${label}`);
+  if (normalizedLabel.includes("subregion") && /county$/i.test(value)) return "County";
+  if (normalizedLabel.includes("zip") || normalizedLabel.includes("postal")) return "ZIP";
+  return label;
+}
+
+function sourceFieldCanonicalKey(key: string, label: string, value: string) {
+  const normalizedField = normalize(`${key} ${label}`);
+  let semantic = normalize(label);
+  if (normalizedField.includes("zip") || normalizedField.includes("postal")) semantic = "zip";
+  else if (normalizedField.includes("city")) semantic = "city";
+  else if (normalizedField.includes("state")) semantic = "state";
+  else if (normalizedField.includes("county") || (normalizedField.includes("subregion") && /county$/i.test(value))) semantic = "county";
+  else if (normalizedField.includes("facility")) semantic = "facility";
+  else if (normalizedField.includes("site")) semantic = "site";
+  return `${semantic}:${normalize(value)}`;
+}
+
+function dedupeSourceFields<T extends { key: string; label: string; value: string }>(items: T[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const canonicalKey = sourceFieldCanonicalKey(item.key, item.label, item.value);
+    if (seen.has(canonicalKey)) return false;
+    seen.add(canonicalKey);
+    return true;
+  });
 }
 
 function attributeLabel(graphic: Graphic, fieldName: string) {
@@ -242,7 +331,7 @@ export function summarizeMasterFeature(graphic: Graphic, layerTitle?: string, in
     ((graphic.layer as Layer | undefined)?.title ?? graphicWithSource.sourceLayer?.title) ||
     "BioMed source layer";
   const category = classifyMasterLayer(resolvedLayerTitle);
-  const titleValue = getAttribute(attributes, titleFields);
+  const titleValue = getAttribute(attributes, titleFieldsForCategory(category));
   const title = titleValue ? `${titleValue}` : resolvedLayerTitle;
 
   const geography: Array<{ label: string; value: string }> = [];
@@ -270,15 +359,17 @@ export function summarizeMasterFeature(graphic: Graphic, layerTitle?: string, in
   const sourceFieldEntries = Object.entries(attributes)
     .map(([key, value], index) => ({
       key,
-      label: attributeLabel(graphic, key),
+      label: displaySourceLabel(key, attributeLabel(graphic, key), formatSourceValue(key, value)),
       value: formatSourceValue(key, value),
-      rank: sourceFieldRank(`${key} ${attributeLabel(graphic, key)}`),
+      rank: sourceFieldRank(`${key} ${attributeLabel(graphic, key)}`, category),
       index
     }))
     .filter((item) => item.value !== "" && !isJunkAttributeField(item.key))
     .sort((a, b) => a.rank - b.rank || a.index - b.index);
 
-  const sourceFields = sourceFieldEntries.slice(0, 12).map((item) => ({
+  const distinctSourceFieldEntries = dedupeSourceFields(sourceFieldEntries);
+
+  const sourceFields = distinctSourceFieldEntries.slice(0, 12).map((item) => ({
     label: item.label,
     value: item.value
   }));
@@ -292,7 +383,7 @@ export function summarizeMasterFeature(graphic: Graphic, layerTitle?: string, in
     geography,
     metrics,
     sourceFields,
-    sourceFieldCount: sourceFieldEntries.length,
+    sourceFieldCount: distinctSourceFieldEntries.length,
     source: resolvedLayerTitle,
     rawAttributes: includeRawAttributes ? attributes : undefined
   };
