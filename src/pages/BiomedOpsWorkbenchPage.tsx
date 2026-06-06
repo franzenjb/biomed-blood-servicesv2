@@ -169,29 +169,6 @@ function featureKindLabel(feature: MasterFeatureSummary) {
   return feature.layerTitle;
 }
 
-function featureStory(feature: MasterFeatureSummary) {
-  const layerTitle = feature.layerTitle.toLowerCase();
-  if (layerTitle.includes("division")) {
-    return "Use this as the leadership-level BioMed territory frame before drilling into regions, districts, chapters, and counties.";
-  }
-  if (layerTitle.includes("region")) {
-    return "Use this to tell the regional ownership story and connect local collection activity to the larger BioMed operating model.";
-  }
-  if (layerTitle.includes("district")) {
-    return "Use this when the story needs the operating layer between regional leadership and local chapter delivery.";
-  }
-  if (layerTitle.includes("county")) {
-    return "Use this as local community context, then pair it with BioMed ownership layers to avoid confusing county geography with operating responsibility.";
-  }
-  if (feature.category === "sites" || feature.category === "manufacturing") {
-    return "Use this to explain the physical network that supports collection access, processing, logistics, and patient-care readiness.";
-  }
-  if (feature.category === "operations") {
-    return "Use this to connect FY25 activity and portfolio coverage to the teams responsible for the local BioMed story.";
-  }
-  return feature.talkingPoint;
-}
-
 function featureContextRows(feature: MasterFeatureSummary) {
   const titleValue = normalizeDisplayValue(feature.title);
   return [...feature.geography, ...feature.metrics]
@@ -894,7 +871,6 @@ export default function BiomedOpsWorkbenchPage() {
                       <p className="opsv2__eyebrow">Selected feature</p>
                       <h2>{featureDisplayTitle(selectedFeature)}</h2>
                       <p className="opsv2__feature-kind">{featureKindLabel(selectedFeature)}</p>
-                      <p className="opsv2__feature-story">{featureStory(selectedFeature)}</p>
                     </header>
 
                     <div className="opsv2__feature-meta" aria-label="Selected feature source">

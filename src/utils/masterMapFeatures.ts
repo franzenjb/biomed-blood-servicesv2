@@ -226,12 +226,12 @@ export function getMasterLayerImpact(layerTitle: string, category: MasterLayerCa
 }
 
 export function getMasterTalkingPoint(category: MasterLayerCategory, layerTitle: string) {
-  if (category === "manufacturing") return "This is the backbone that converts donated blood into usable inventory for hospitals.";
-  if (category === "sites") return "Point to this as access infrastructure: where donors, staging, logistics, or distribution meet the network.";
-  if (category === "operations") return "Use this to connect collection activity to the operating geography that makes it accountable.";
-  if (category === "geography") return "Use the boundary to explain scale, stewardship, and who owns the local BioMed story.";
-  if (category === "hospitals") return "Use this to move from internal capacity to patient-care readiness.";
-  return `Use ${layerTitle} only as source context unless it directly supports the donor story.`;
+  if (category === "manufacturing") return "Manufacturing and processing capacity.";
+  if (category === "sites") return "Collection access, staging, logistics, and distribution infrastructure.";
+  if (category === "operations") return "Collection activity and accountable operating geography.";
+  if (category === "geography") return "BioMed scale, stewardship, and local ownership.";
+  if (category === "hospitals") return "Hospital and patient-care readiness context.";
+  return `${layerTitle} source context.`;
 }
 
 export function summarizeMasterFeature(graphic: Graphic, layerTitle?: string, includeRawAttributes = false): MasterFeatureSummary {

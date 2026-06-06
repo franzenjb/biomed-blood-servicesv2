@@ -705,14 +705,6 @@
   font-weight: 900;
 }
 
-.opsv2__feature-story {
-  max-width: 52ch;
-  color: #5f6975;
-  font-size: 14px;
-  font-weight: 750;
-  line-height: 1.45;
-}
-
 .opsv2__feature-meta {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
