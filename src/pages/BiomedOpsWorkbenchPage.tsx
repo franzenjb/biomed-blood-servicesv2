@@ -931,7 +931,7 @@ export default function BiomedOpsWorkbenchPage({
     setSpatialRollup(null);
     setRightTab("current");
     closeSearchPopup();
-    applyPreset(preset);
+    applyPreset("clean-map");
 
     const view = mapRef.current?.view as MapView | undefined;
     const map = getMapElementMap(mapRef.current);
