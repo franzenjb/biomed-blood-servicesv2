@@ -195,6 +195,7 @@ test.describe("Maps (shared shell)", () => {
         .map((child) => child.tagName.toLowerCase()),
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "arcgis-light-gray");
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);

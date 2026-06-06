@@ -27,6 +27,7 @@ import { arcJurisdictionMapSource } from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
+import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
 import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
@@ -401,6 +402,7 @@ export default function BiomedOpsWorkbenchPage() {
       if (cancelled) return;
 
       const map = getMapElementMap(mapElement);
+      await applyPresentationMapStyle(map, view);
       await applyPresentationMarkers(map);
       if (cancelled) return;
 
@@ -563,7 +565,7 @@ export default function BiomedOpsWorkbenchPage() {
             key: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : "opsv2-preview",
             ref: mapRef,
             itemId: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : undefined,
-            basemap: isAuthenticated ? undefined : "gray-vector",
+            basemap: isAuthenticated ? undefined : quietOpsBasemapId(),
             center: CENTER,
             zoom: ZOOM,
             className: "opsv2__arcgis",
