@@ -191,6 +191,136 @@ function featureContextRows(feature: MasterFeatureSummary) {
     .slice(0, 6);
 }
 
+function featureAttributeValue(feature: MasterFeatureSummary, candidates: string[]) {
+  const attributes = feature.rawAttributes ?? {};
+  const entries = Object.entries(attributes);
+
+  for (const candidate of candidates) {
+    const exact = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
+    if (exact && exact[1] != null && `${exact[1]}`.trim()) return exact[1];
+  }
+
+  for (const candidate of candidates) {
+    const normalizedCandidate = normalizeDisplayValue(candidate);
+    const partial = entries.find(([key, value]) => normalizeDisplayValue(key).includes(normalizedCandidate) && value != null && `${value}`.trim());
+    if (partial) return partial[1];
+  }
+
+  return undefined;
+}
+
+function formatCompactValue(value: unknown, maximumFractionDigits = 1) {
+  if (value == null) return "";
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value.toLocaleString(undefined, { maximumFractionDigits });
+  }
+  const raw = `${value}`.trim();
+  if (!raw) return "";
+  const parsed = Number(raw.replace(/,/g, ""));
+  if (Number.isFinite(parsed) && /^-?[\d,]+(\.\d+)?$/.test(raw)) {
+    return parsed.toLocaleString(undefined, { maximumFractionDigits });
+  }
+  return raw;
+}
+
+function hospitalAttribute(feature: MasterFeatureSummary, candidates: string[]) {
+  return formatCompactValue(featureAttributeValue(feature, candidates), 2);
+}
+
+function hospitalDriveTime(feature: MasterFeatureSummary) {
+  const raw = featureAttributeValue(feature, ["Dist Drive Time", "Drive Time", "AvgHrsbyHospital", "Avg Hrs by Hospital"]);
+  const value = typeof raw === "number" ? raw : Number(`${raw ?? ""}`.replace(/,/g, ""));
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value < 1) return `${Math.round(value * 60)} min`;
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })} hr`;
+}
+
+function hospitalPriority(feature: MasterFeatureSummary) {
+  const raw = featureAttributeValue(feature, ["Composite Priority Score", "Priority Score", "CompositePriorityScore"]);
+  const value = typeof raw === "number" ? raw : Number(`${raw ?? ""}`.replace(/,/g, ""));
+  if (!Number.isFinite(value)) return "";
+  return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function hospitalDetailRows(feature: MasterFeatureSummary) {
+  const rows = [
+    { label: "System", value: hospitalAttribute(feature, ["Group", "Health System", "Group Name"]) },
+    { label: "Hosp ID", value: hospitalAttribute(feature, ["HospID", "Hosp ID", "Hospital ID", "HospitalID"]) },
+    { label: "Group ID", value: hospitalAttribute(feature, ["Group ID", "GroupID"]) },
+    { label: "Distribution", value: hospitalAttribute(feature, ["Distribution Site", "DistributionSite"]) },
+    { label: "Division", value: hospitalAttribute(feature, ["Division"]) },
+    { label: "ZIP", value: hospitalAttribute(feature, ["ZIP", "ZipCode", "ZIP_CODE"]) },
+    { label: "Drive time", value: hospitalDriveTime(feature) },
+    { label: "Priority", value: hospitalPriority(feature) }
+  ];
+
+  const seen = new Set<string>();
+  return rows.filter((row) => {
+    if (!row.value) return false;
+    const key = `${row.label}:${row.value}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+  const title = hospitalAttribute(feature, ["Hospital", "HospitalName", "Hospital Name"]) || featureDisplayTitle(feature);
+  const tier = hospitalAttribute(feature, ["Final Tier", "FINAL_TIER", "Tier"]);
+  const distributionSite = hospitalAttribute(feature, ["Distribution Site", "DistributionSite"]);
+  const priority = hospitalPriority(feature);
+  const rows = hospitalDetailRows(feature);
+
+  return (
+    <>
+      <header className="opsv2__feature-hero opsv2__feature-hero--hospital">
+        <p className="opsv2__eyebrow">Selected hospital</p>
+        <h2>{title}</h2>
+        <p className="opsv2__feature-kind">Hospital receiving Red Cross blood products</p>
+      </header>
+
+      <div className="opsv2__hospital-snapshot" aria-label="Hospital selection summary">
+        {tier && (
+          <div>
+            <span>Tier</span>
+            <strong>{tier}</strong>
+          </div>
+        )}
+        {distributionSite && (
+          <div>
+            <span>Distribution site</span>
+            <strong>{distributionSite}</strong>
+          </div>
+        )}
+        {priority && (
+          <div>
+            <span>Priority score</span>
+            <strong>{priority}</strong>
+          </div>
+        )}
+      </div>
+
+      {rows.length > 0 && (
+        <dl className="opsv2__feature-facts opsv2__feature-facts--hospital">
+          {rows.map((item) => (
+            <div key={`${item.label}-${item.value}`}>
+              <dt>{item.label}</dt>
+              <dd>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Hospital source layer">
+        <span>
+          Source
+          <strong>{feature.layerTitle}</strong>
+        </span>
+      </div>
+    </>
+  );
+}
+
 async function enrichGraphicAttributes(graphic: Graphic) {
   const layer = graphic.layer as FeatureLayer | undefined;
   if (!layer || !isSearchableFeatureLayer(layer)) return graphic;
@@ -1093,56 +1223,63 @@ export default function BiomedOpsWorkbenchPage({
             )}
 
             {rightTab === "detail" && (
-              <section className="opsv2__selected-card">
+              <section
+                className={`opsv2__selected-card${selectedFeature?.category === "hospitals" ? " opsv2__selected-card--hospital" : ""}`}
+                data-testid={selectedFeature?.category === "hospitals" ? "ops-hospital-feature-card" : "ops-selected-feature-card"}
+              >
                 {selectedFeature ? (
-                  <>
-                    <header className="opsv2__feature-hero">
-                      <p className="opsv2__eyebrow">Selected feature</p>
-                      <h2>{featureDisplayTitle(selectedFeature)}</h2>
-                      <p className="opsv2__feature-kind">{featureKindLabel(selectedFeature)}</p>
-                    </header>
-
-                    <div className="opsv2__feature-meta" aria-label="Selected feature source">
-                      <span>
-                        Source layer
-                        <strong>{selectedFeature.layerTitle}</strong>
-                      </span>
-                      <span>
-                        Available fields
-                        <strong>{selectedFeature.sourceFieldCount}</strong>
-                      </span>
-                    </div>
-
-                    {featureContextRows(selectedFeature).length > 0 && (
-                      <dl className="opsv2__feature-facts">
-                        {featureContextRows(selectedFeature).map((item) => (
-                          <div key={`${item.label}-${item.value}`}>
-                            <dt>{item.label}</dt>
-                            <dd>{item.value}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    )}
-
-                    <section className="opsv2__source-fields" aria-label="Curated source fields">
-                      <header>
-                        <span>Source fields</span>
-                        <b>{Math.min(selectedFeature.sourceFields.length, selectedFeature.sourceFieldCount)}/{selectedFeature.sourceFieldCount}</b>
+                  selectedFeature.category === "hospitals" ? (
+                    <HospitalFeatureCard feature={selectedFeature} />
+                  ) : (
+                    <>
+                      <header className="opsv2__feature-hero">
+                        <p className="opsv2__eyebrow">Selected feature</p>
+                        <h2>{featureDisplayTitle(selectedFeature)}</h2>
+                        <p className="opsv2__feature-kind">{featureKindLabel(selectedFeature)}</p>
                       </header>
-                      {selectedFeature.sourceFields.length > 0 ? (
-                        <dl>
-                          {selectedFeature.sourceFields.map((item) => (
+
+                      <div className="opsv2__feature-meta" aria-label="Selected feature source">
+                        <span>
+                          Source layer
+                          <strong>{selectedFeature.layerTitle}</strong>
+                        </span>
+                        <span>
+                          Available fields
+                          <strong>{selectedFeature.sourceFieldCount}</strong>
+                        </span>
+                      </div>
+
+                      {featureContextRows(selectedFeature).length > 0 && (
+                        <dl className="opsv2__feature-facts">
+                          {featureContextRows(selectedFeature).map((item) => (
                             <div key={`${item.label}-${item.value}`}>
                               <dt>{item.label}</dt>
                               <dd>{item.value}</dd>
                             </div>
                           ))}
                         </dl>
-                      ) : (
-                        <p>No useful source fields were returned for this feature.</p>
                       )}
-                    </section>
-                  </>
+
+                      <section className="opsv2__source-fields" aria-label="Curated source fields">
+                        <header>
+                          <span>Source fields</span>
+                          <b>{Math.min(selectedFeature.sourceFields.length, selectedFeature.sourceFieldCount)}/{selectedFeature.sourceFieldCount}</b>
+                        </header>
+                        {selectedFeature.sourceFields.length > 0 ? (
+                          <dl>
+                            {selectedFeature.sourceFields.map((item) => (
+                              <div key={`${item.label}-${item.value}`}>
+                                <dt>{item.label}</dt>
+                                <dd>{item.value}</dd>
+                              </div>
+                            ))}
+                          </dl>
+                        ) : (
+                          <p>No useful source fields were returned for this feature.</p>
+                        )}
+                      </section>
+                    </>
+                  )
                 ) : (
                   <p className="opsv2__empty">No feature selected.</p>
                 )}

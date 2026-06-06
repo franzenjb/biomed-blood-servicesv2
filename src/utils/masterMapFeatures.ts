@@ -70,6 +70,10 @@ const geographyTitleFields = [
 ];
 
 const placeTitleFields = [
+  "Hospital",
+  "HOSPITAL",
+  "HospitalName",
+  "Hospital Name",
   "FacilityName",
   "Facility Name",
   "Facility",
@@ -98,6 +102,22 @@ const operationsTitleFields = [
   "ZIP_CODE",
   "ZipCode",
   ...geographyTitleFields
+];
+
+const hospitalTitleFields = [
+  "Hospital",
+  "HOSPITAL",
+  "HospitalName",
+  "Hospital Name",
+  "FacilityName",
+  "Facility Name",
+  "Name",
+  "NAME",
+  "Distribution Site",
+  "DistributionSite",
+  "ZIP",
+  "ZIP_CODE",
+  "ZipCode"
 ];
 
 const geographyFields = [
@@ -147,6 +167,7 @@ const geographySourceFieldPriority = [
 ];
 
 const placeSourceFieldPriority = [
+  "hospital",
   "facility name",
   "facility",
   "site name",
@@ -172,6 +193,25 @@ const placeSourceFieldPriority = [
   "portfolio"
 ];
 
+const hospitalSourceFieldPriority = [
+  "hospital",
+  "final tier",
+  "tier",
+  "distribution site",
+  "distribution",
+  "group",
+  "group id",
+  "hosp id",
+  "hospital id",
+  "health system",
+  "system",
+  "division",
+  "zip",
+  "drive time",
+  "avg hrs",
+  "priority score"
+];
+
 function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
 }
@@ -189,6 +229,11 @@ function isJunkAttributeField(fieldName: string) {
   return (
     normalized.startsWith("objectid") ||
     normalized.includes("globalid") ||
+    normalized === "lat" ||
+    normalized === "latitude" ||
+    normalized === "lon" ||
+    normalized === "long" ||
+    normalized === "longitude" ||
     /(^|_)fid$/.test(normalized) ||
     normalized.startsWith("shape_") ||
     normalized.startsWith("shape__") ||
@@ -237,12 +282,14 @@ function formatSourceValue(fieldName: string, value: unknown) {
 
 function sourceFieldPriorityForCategory(category: MasterLayerCategory) {
   if (category === "geography") return geographySourceFieldPriority;
+  if (category === "hospitals") return hospitalSourceFieldPriority;
   return placeSourceFieldPriority;
 }
 
 function titleFieldsForCategory(category: MasterLayerCategory) {
   if (category === "geography") return geographyTitleFields;
   if (category === "operations") return operationsTitleFields;
+  if (category === "hospitals") return hospitalTitleFields;
   return placeTitleFields;
 }
 

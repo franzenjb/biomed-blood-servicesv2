@@ -230,8 +230,16 @@ function hospitalTierSymbol(tier: HospitalTierMarker) {
   };
 }
 
+function normalizeTierFieldName(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 function findHospitalTierField(layer: FeatureLayer) {
-  return layer.fields?.find((field) => field.name.toLowerCase() === "final_tier")?.name;
+  return layer.fields?.find((field) => {
+    const normalizedName = normalizeTierFieldName(field.name);
+    const normalizedAlias = normalizeTierFieldName(field.alias ?? "");
+    return normalizedName === "finaltier" || normalizedAlias === "finaltier" || normalizedName === "tier" || normalizedAlias === "tier";
+  })?.name;
 }
 
 function arcadeFieldName(fieldName: string) {

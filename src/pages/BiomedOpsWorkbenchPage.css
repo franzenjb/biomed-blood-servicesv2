@@ -800,6 +800,10 @@
   padding: 12px;
 }
 
+.opsv2__selected-card--hospital {
+  gap: 8px;
+}
+
 .opsv2__eyebrow {
   color: #ed1b2e;
 }
@@ -826,6 +830,45 @@
   font-size: 12px;
   font-weight: 900;
   line-height: 1.2;
+}
+
+.opsv2__feature-hero--hospital {
+  padding-bottom: 8px;
+}
+
+.opsv2__hospital-snapshot {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.opsv2__hospital-snapshot div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid #e1e5ea;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 8px;
+}
+
+.opsv2__hospital-snapshot span {
+  color: #697480;
+  font-family: var(--font-data);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.75px;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.opsv2__hospital-snapshot strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #11161d;
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 1.1;
 }
 
 .opsv2__feature-meta {
@@ -863,6 +906,12 @@
   letter-spacing: 0;
   line-height: 1.15;
   text-transform: none;
+}
+
+.opsv2__feature-meta--quiet span {
+  border-color: #edf0f4;
+  background: #fff;
+  padding: 5px 8px;
 }
 
 .opsv2__feature-facts,
@@ -908,6 +957,14 @@
   font-size: 12px;
   font-weight: 850;
   line-height: 1.22;
+}
+
+.opsv2__feature-facts--hospital div {
+  grid-template-columns: minmax(74px, 26%) minmax(0, 1fr);
+}
+
+.opsv2__feature-facts--hospital dd {
+  overflow-wrap: anywhere;
 }
 
 .opsv2__source-fields {
@@ -1021,5 +1078,9 @@
   .opsv2__panel--left,
   .opsv2__panel--right {
     width: min(360px, calc(100vw - 28px));
+  }
+
+  .opsv2__hospital-snapshot {
+    grid-template-columns: 1fr;
   }
 }
