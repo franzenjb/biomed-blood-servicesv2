@@ -12,22 +12,24 @@ test.describe("Home (hero)", () => {
 });
 
 test.describe("Hub", () => {
-  test("is the grid of 5 chapters + 5 tool tiles, and navigates", async ({ page }) => {
+  test("is the grid of 5 chapters + 4 tool tiles, and navigates", async ({ page }) => {
     await page.goto("/hub");
     await expect(page.getByTestId("hub")).toBeVisible();
+    await expect(page.locator(".hub__grid .hub__card")).toHaveCount(9);
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // 5 tool tiles (#6-#10): merged map+dashboard, ops, layer atlas, hospital network, regions
-    for (const id of ["map-dashboard", "ops-workbench", "layer-atlas", "hospital-network", "regions"]) {
+    // 4 tool tiles (#6-#9): merged map+dashboard, ops, hospital network, regions
+    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // separated map + dashboard tiles are gone (merged into one)
-    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu"]) {
+    await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
+    await expect(page.getByTestId("hub-card-regions").locator(".hub__index")).toHaveText("09");
+    // separated map/dashboard tiles and the internal atlas tile are gone from the hub
+    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
-    await expect(page.getByTestId("hub-card-layer-atlas")).toHaveAttribute("href", "/biomed-layer-atlas");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
