@@ -393,7 +393,7 @@ export default function BiomedOpsWorkbenchPage() {
       cancelled = true;
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [applyPreset, isAuthenticated, preset, refreshLayers]);
+  }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers]);
 
   function toggleLayer(layerId: string) {
     const map = getMapElementMap(mapRef.current);
