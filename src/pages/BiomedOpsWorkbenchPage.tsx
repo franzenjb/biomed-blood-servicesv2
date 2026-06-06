@@ -287,18 +287,61 @@ function featureKindLabel(feature: MasterFeatureSummary) {
 
 const GEO_PILL_LABELS = new Set(["region", "district", "division", "chapter", "county", "state", "city", "zip"]);
 const STAT_ROW_LABELS = new Set(["collections", "units", "rbc donors", "drives", "drive distance", "drive time", "priority"]);
+const JUNK_VALUES = new Set(["x", "xx", "n/a", "na", "none", "null", "tbd", "unknown", "#n/a", "n.a.", "."]);
+
+function isJunkValue(value: string) {
+  const v = value.trim().toLowerCase();
+  if (!v) return true;
+  if (JUNK_VALUES.has(v)) return true;
+  if (/^[-–—.\s]+$/.test(v)) return true;
+  return false;
+}
+
+function extraSourceRows(
+  feature: MasterFeatureSummary,
+  existing: Array<{ label: string; value: string }>,
+  address: string,
+  title: string,
+  limit = 6,
+) {
+  const usedValues = new Set(existing.map((row) => normalizeDisplayValue(row.value)));
+  const usedLabels = new Set(existing.map((row) => row.label.toLowerCase()));
+  const titleNorm = normalizeDisplayValue(title);
+  const addrNorm = normalizeDisplayValue(address || "");
+  const out: Array<{ label: string; value: string }> = [];
+
+  for (const field of feature.sourceFields) {
+    if (out.length >= limit) break;
+    const value = (field.value ?? "").trim();
+    const label = (field.label ?? "").trim();
+    if (!value || !label || isJunkValue(value)) continue;
+    const valueNorm = normalizeDisplayValue(value);
+    if (valueNorm === titleNorm || valueNorm === addrNorm) continue;
+    if (usedValues.has(valueNorm) || usedLabels.has(label.toLowerCase())) continue;
+    if (/^(address|street|country|match address|place address|address or place|site address)/i.test(label)) continue;
+    out.push({ label, value });
+    usedValues.add(valueNorm);
+    usedLabels.add(label.toLowerCase());
+  }
+  return out;
+}
 
 function partitionFeatureRows(rows: Array<{ label: string; value: string }>) {
   const geo: Array<{ label: string; value: string }> = [];
   const stats: Array<{ label: string; value: string }> = [];
   const other: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
   rows.forEach((row) => {
+    if (isJunkValue(row.value)) return;
     const key = row.label.toLowerCase();
+    const dedupeKey = `${key}:${normalizeDisplayValue(row.value)}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
     if (STAT_ROW_LABELS.has(key)) stats.push(row);
     else if (GEO_PILL_LABELS.has(key)) geo.push(row);
     else other.push(row);
   });
-  return { geo, stats: stats.slice(0, 4), other };
+  return { geo, stats: stats.slice(0, 4), other: other.slice(0, 8) };
 }
 
 function featureAccentTone(feature: MasterFeatureSummary) {
@@ -665,11 +708,14 @@ function compactFeatureRows(feature: MasterFeatureSummary) {
         featureDetailRow(feature, "RBC donors", ["CY24 RBC Donors", "RBC Donors"]),
         featureDetailRow(feature, "Collections", ["Collections", "Collection Count", "Total Collections"]),
         featureDetailRow(feature, "Units", ["Units", "Total Units", "RBC Units"]),
+        featureDetailRow(feature, "City", ["City"]),
+        featureDetailRow(feature, "State", ["State"], { identifier: true }),
+        featureDetailRow(feature, "ZIP", ["ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }),
         featureDetailRow(feature, "Region", ["Region"], { requireNamedValue: true, rejectShortCode: true }),
         featureDetailRow(feature, "District", ["District"], { requireNamedValue: true, rejectShortCode: true }),
       ],
       displayTitle,
-      7,
+      9,
     );
   }
 
@@ -759,14 +805,17 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   const directionsUrl = address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
     : "";
-  const insight = distributionSite
+  const insight = distributionSite && !isJunkValue(distributionSite)
     ? `Hospital receiving Red Cross blood products, supplied through the ${distributionSite} distribution site.`
     : "Hospital receiving Red Cross blood products from the BioMed network.";
 
   const snapshotLabels = new Set(["distribution", "priority"]);
-  const detailRows = hospitalDetailRows(feature).filter((row) => !snapshotLabels.has(row.label.toLowerCase()));
+  const baseRows = hospitalDetailRows(feature).filter(
+    (row) => !snapshotLabels.has(row.label.toLowerCase()) && !isJunkValue(row.value),
+  );
+  const detailRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)];
   const pills = detailRows.filter((row) => GEO_PILL_LABELS.has(row.label.toLowerCase()));
-  const facts = detailRows.filter((row) => !GEO_PILL_LABELS.has(row.label.toLowerCase()));
+  const facts = detailRows.filter((row) => !GEO_PILL_LABELS.has(row.label.toLowerCase())).slice(0, 8);
 
   return (
     <div className="opsv2__feature-body" data-tone="blue">
@@ -796,26 +845,28 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </div>
       )}
 
-      <div className="opsv2__hospital-snapshot" aria-label="Hospital selection summary">
-        {tier && (
-          <div>
-            <span>Tier</span>
-            <strong>{tier}</strong>
-          </div>
-        )}
-        {distributionSite && (
-          <div>
-            <span>Distribution site</span>
-            <strong>{distributionSite}</strong>
-          </div>
-        )}
-        {priority && (
-          <div>
-            <span>Priority score</span>
-            <strong>{priority}</strong>
-          </div>
-        )}
-      </div>
+      {(tier || distributionSite || priority) && (
+        <div className="opsv2__hospital-snapshot" aria-label="Hospital selection summary">
+          {tier && !isJunkValue(tier) && (
+            <div>
+              <span>Tier</span>
+              <strong>{tier}</strong>
+            </div>
+          )}
+          {distributionSite && !isJunkValue(distributionSite) && (
+            <div>
+              <span>Distribution site</span>
+              <strong>{distributionSite}</strong>
+            </div>
+          )}
+          {priority && !isJunkValue(priority) && (
+            <div>
+              <span>Priority score</span>
+              <strong>{priority}</strong>
+            </div>
+          )}
+        </div>
+      )}
 
       {pills.length > 0 && (
         <div className="opsv2__feature-pills" aria-label="Hospital geographic context">
@@ -856,7 +907,9 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   const title = featureDisplayTitle(feature);
   const tone = featureAccentTone(feature);
   const insight = featureInsight(feature);
-  const { geo, stats, other } = partitionFeatureRows(compactFeatureRows(feature));
+  const baseRows = compactFeatureRows(feature);
+  const enrichedRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)];
+  const { geo, stats, other } = partitionFeatureRows(enrichedRows);
   const directionsUrl = address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
     : "";
