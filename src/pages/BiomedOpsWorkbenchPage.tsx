@@ -1533,7 +1533,7 @@ export default function BiomedOpsWorkbenchPage({
       </div>
 
       {leftOpen ? (
-        <aside className="opsv2__panel opsv2__panel--left" aria-label="Layer controls">
+        <aside className="opsv2__panel opsv2__panel--left" data-has-query={query.trim().length > 0 ? "true" : "false"} aria-label="Layer controls">
           <div className="opsv2__panel-head">
             <Layers aria-hidden="true" size={18} />
             <div>
