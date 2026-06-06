@@ -265,17 +265,6 @@ export function isBasemapUtilityLayerTitle(title: string) {
   );
 }
 
-function shouldHideBasemapUtilityLayerTitle(title: string) {
-  const normalized = normalizedLayerTitle(title);
-  return (
-    HIDDEN_BASEMAP_UTILITY_LAYER_TITLES.has(normalized) ||
-    normalized === "hillshade" ||
-    normalized === "topo" ||
-    normalized.endsWith(" hillshade") ||
-    normalized.endsWith(" topo")
-  );
-}
-
 export function isBasemapUtilityLayer(layer: Layer) {
   return isBasemapUtilityLayerTitle(safeLayerTitle(layer));
 }
@@ -285,9 +274,6 @@ export function hideBasemapUtilityLayers(map?: ArcGISMap) {
     const title = safeLayerTitle(layer);
     if (isBasemapUtilityLayerTitle(title) && "listMode" in layer) {
       (layer as Layer & { listMode?: "show" | "hide" }).listMode = "hide";
-    }
-    if (shouldHideBasemapUtilityLayerTitle(title)) {
-      layer.visible = false;
     }
   });
 }

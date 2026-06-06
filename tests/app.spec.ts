@@ -233,7 +233,8 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.locator("select")).toHaveValue("all-layers");
     await page.getByRole("button", { name: "Reset map" }).click();
-    await expect(page.locator("select")).toHaveValue("all-layers");
+    await expect(page.locator("select")).toHaveValue("clean-map");
+    await expect(page.getByText("0 active of 18 layers.")).toBeVisible();
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await page.getByRole("tab", { name: "Detail" }).click();

@@ -246,9 +246,9 @@ function hospitalTierSymbol(tier: HospitalTierMarker) {
   return {
     type: "picture-marker" as const,
     url: hospitalTierMarkerUrl(tier),
-    width: "30px",
-    height: "30px",
-    yoffset: "2px"
+    width: "21px",
+    height: "21px",
+    yoffset: "1px"
   };
 }
 
