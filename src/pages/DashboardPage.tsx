@@ -1,4 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
+import { Home } from "lucide-react";
 import { arcJurisdictionDashboardSource } from "../config/arcgisLayers";
 import "./DashboardPage.css";
 
@@ -10,7 +11,8 @@ export default function DashboardPage() {
   return (
     <section className="dash" data-testid="dashboard">
       <Link to="/hub" className="dash__back" data-testid="dash-back">
-        ← Hub
+        <Home aria-hidden="true" size={16} />
+        Home
       </Link>
       <iframe
         className="dash__frame"

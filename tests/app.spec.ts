@@ -153,22 +153,32 @@ test.describe("Maps (shared shell)", () => {
   test("/map renders the shared shell + sign-in gate", async ({ page }) => {
     await page.goto("/map");
     await expect(page.getByTestId("map-shell")).toBeVisible();
+    const mapWidgetOrder = await page.getByTestId("map-shell-arcgis").evaluate((element) =>
+      Array.from(element.children)
+        .filter((child) => child.getAttribute("slot") === "top-left")
+        .map((child) => child.tagName.toLowerCase()),
+    );
+    expect(mapWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
+    await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId("map-signin")).toBeVisible();
     await expect(page.getByTestId("map-tab-layers")).toBeVisible();
     await expect(page.getByTestId("map-tab-details")).toBeVisible();
   });
 
-  test("/dashboard embeds the ArcGIS dashboard with a hub back link", async ({ page }) => {
+  test("/dashboard embeds the ArcGIS dashboard with a home back link", async ({ page }) => {
     await page.goto("/dashboard");
     await expect(page.getByTestId("dashboard")).toBeVisible();
     await expect(page.getByTestId("dash-frame")).toHaveAttribute("src", /arcgis\.com\/apps\/dashboards/);
+    await expect(page.getByTestId("dash-back")).toContainText("Home");
     await page.getByTestId("dash-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
 
   test("map back link returns to hub", async ({ page }) => {
     await page.goto("/map");
+    await expect(page.getByTestId("map-back")).toContainText("Home");
     await page.getByTestId("map-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
@@ -177,7 +187,17 @@ test.describe("Maps (shared shell)", () => {
     await page.goto("/biomed-ops-workbench");
     await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
     await expect(page.getByTestId("ops-back-hub")).toHaveAttribute("href", "/hub");
+    await expect(page.getByTestId("ops-back-hub")).toContainText("Home");
     await expect(page.getByText("Quick View")).toBeVisible();
+    const opsWidgetOrder = await page.getByTestId("biomed-ops-arcgis").evaluate((element) =>
+      Array.from(element.children)
+        .filter((child) => child.getAttribute("slot") === "top-left")
+        .map((child) => child.tagName.toLowerCase()),
+    );
+    expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
+    await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Current" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();

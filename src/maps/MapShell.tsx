@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import { Link } from "react-router-dom";
+import { Home } from "lucide-react";
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Layer from "@arcgis/core/layers/Layer";
@@ -26,6 +27,7 @@ import { buildFeatureInfo, type FeatureInfo } from "./featureInfo";
 import MapPanel from "./MapPanel";
 import LayerList from "./LayerList";
 import FeatureDetails from "./FeatureDetails";
+import { applyPresentationMarkers } from "./presentationMarkers";
 import "./mapShell.css";
 
 type Props = {
@@ -47,12 +49,6 @@ type QueryableLayer = Layer & {
     outFields: string[];
     returnGeometry: boolean;
   }) => Promise<{ features?: Array<{ attributes?: Record<string, unknown> }> }>;
-};
-
-type VisibleLayer = Layer & {
-  blendMode?: string;
-  effect?: string;
-  opacity?: number;
 };
 
 // The hit-test graphic only carries render/popup fields. Re-query the source
@@ -77,26 +73,6 @@ function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : `${error}`;
   if (/abort|cancel|closed/i.test(message)) return "Sign-in was closed before it completed.";
   return "ArcGIS sign-in did not complete. Try again.";
-}
-
-function enhanceHospitalLayerVisibility(map?: ArcGISMap) {
-  collectArcJurisdictionLayers(map).forEach((layer) => {
-    const title = safeLayerTitle(layer).toLowerCase();
-    const isHospitalPointLayer =
-      title.includes("hospital portfolio") ||
-      title.includes("hospital network") ||
-      title.includes("hospital points") ||
-      title.includes("workingcopy");
-    const isFootprint = title.includes("footprint");
-
-    if (!isHospitalPointLayer || isFootprint) return;
-
-    const visibleLayer = layer as VisibleLayer;
-    visibleLayer.effect =
-      "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.78)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.95))";
-    visibleLayer.blendMode = "normal";
-    visibleLayer.opacity = Math.max(visibleLayer.opacity ?? 1, 1);
-  });
 }
 
 export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapItemId }: Props) {
@@ -152,7 +128,8 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
       await addMasterMapSupplementalLayers(getMapElementMap(mapElement));
       if (cancelled) return;
 
-      enhanceHospitalLayerVisibility(getMapElementMap(mapElement));
+      await applyPresentationMarkers(getMapElementMap(mapElement));
+      if (cancelled) return;
 
       // Manufacturing belongs on the bottom Z so points/geography draw above it.
       const baseMap = getMapElementMap(mapElement) as (ArcGISMap & { reorder?: (layer: Layer, index: number) => void }) | undefined;
@@ -269,8 +246,8 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
             "data-testid": "map-shell-arcgis",
           },
           [
-            createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
             createElement("arcgis-home", { key: "home", slot: "top-left" }),
+            createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
             createElement("arcgis-scale-bar", { key: "scale", slot: "bottom-left", unit: "dual" }),
             createElement(
               "arcgis-expand",
@@ -282,7 +259,8 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
       </div>
 
       <Link to="/hub" className="map-shell__back" data-testid="map-back">
-        ← Hub
+        <Home aria-hidden="true" size={16} />
+        Home
       </Link>
 
       <MapPanel

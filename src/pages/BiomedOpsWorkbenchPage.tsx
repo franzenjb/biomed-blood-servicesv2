@@ -9,6 +9,7 @@ import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronDown,
   Filter,
+  Home,
   Info,
   Layers,
   List,
@@ -25,6 +26,7 @@ import RcMark from "../components/RcMark";
 import { arcJurisdictionMapSource } from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
+import { applyPresentationMarkers } from "../maps/presentationMarkers";
 import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
@@ -399,6 +401,9 @@ export default function BiomedOpsWorkbenchPage() {
       if (cancelled) return;
 
       const map = getMapElementMap(mapElement);
+      await applyPresentationMarkers(map);
+      if (cancelled) return;
+
       collectArcJurisdictionLayers(map).forEach((layer) => {
         if ("popupEnabled" in layer) {
           (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
@@ -516,12 +521,13 @@ export default function BiomedOpsWorkbenchPage() {
       aria-label="BioMed Ops Workbench"
     >
       <header className="opsv2__bar">
+        <Link to="/hub" className="opsv2__home-link" data-testid="ops-back-hub">
+          <Home aria-hidden="true" size={18} />
+          Home
+        </Link>
         <Link to="/hub" className="opsv2__brand">
           <RcMark size={30} />
           <strong>BioMed Ops Workbench</strong>
-        </Link>
-        <Link to="/hub" className="opsv2__button opsv2__button--hub" data-testid="ops-back-hub">
-          Hub
         </Link>
         <label className="opsv2__preset">
           <span>Quick View</span>
@@ -564,8 +570,8 @@ export default function BiomedOpsWorkbenchPage() {
             "data-testid": "biomed-ops-arcgis",
           },
           [
-            createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
             createElement("arcgis-home", { key: "home", slot: "top-left" }),
+            createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
             createElement("arcgis-search", {
               key: "search",
               ref: searchRef,
