@@ -1,0 +1,837 @@
+{
+  ".claude/settings.local.json": {
+    "mtime": 1779737088.0199683,
+    "ast_hash": "e65743c1e8814e521dae239461f9c56f",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1780686445.6317587,
+    "ast_hash": "2d82c1c1159408be879e0ec070ab749c",
+    "semantic_hash": ""
+  },
+  "playwright.config.ts": {
+    "mtime": 1779567957.7601445,
+    "ast_hash": "d5ef90eecc55cbde6fd210f679c757e9",
+    "semantic_hash": ""
+  },
+  "scripts/genHero.mjs": {
+    "mtime": 1779648424.5485246,
+    "ast_hash": "272e800cc3da4c9c3c74fa74e6be253f",
+    "semantic_hash": ""
+  },
+  "src/App.tsx": {
+    "mtime": 1780684976.09426,
+    "ast_hash": "7ddee58d841427e8a87c9c3671a2a2ea",
+    "semantic_hash": ""
+  },
+  "src/components/ChainOfCare.tsx": {
+    "mtime": 1779567756.4727225,
+    "ast_hash": "155d6f000f855a174c2bc2f0cf530621",
+    "semantic_hash": ""
+  },
+  "src/components/NotesPanel.tsx": {
+    "mtime": 1780688124.0198221,
+    "ast_hash": "7bca4978a14e9be22d40d130be1b8701",
+    "semantic_hash": ""
+  },
+  "src/components/RcLogo.tsx": {
+    "mtime": 1779710345.1693194,
+    "ast_hash": "3e50f46d31a6e7fecd44a8d70709bb17",
+    "semantic_hash": ""
+  },
+  "src/components/RcMark.tsx": {
+    "mtime": 1779710335.0627313,
+    "ast_hash": "b450641e7dcfaa8d5b81dc49abf19460",
+    "semantic_hash": ""
+  },
+  "src/components/Slide.tsx": {
+    "mtime": 1779731776.1737163,
+    "ast_hash": "e63a16a58d835fd111776d51c2f07156",
+    "semantic_hash": ""
+  },
+  "src/components/SlideDeck.tsx": {
+    "mtime": 1780687604.0970204,
+    "ast_hash": "4d20f19b84a5e595b02f3844617b3ea6",
+    "semantic_hash": ""
+  },
+  "src/components/ThemeToggle.tsx": {
+    "mtime": 1779649350.1123939,
+    "ast_hash": "d8fe816b76eb0bce041a61aa137b2111",
+    "semantic_hash": ""
+  },
+  "src/config/arcgisLayers.ts": {
+    "mtime": 1779569192.825913,
+    "ast_hash": "cfbdf413ee3427e430f2ac0a1719947e",
+    "semantic_hash": ""
+  },
+  "src/data/bonusDecks.ts": {
+    "mtime": 1779895152.602446,
+    "ast_hash": "93ba7efad0b73a3f12082d801052089e",
+    "semantic_hash": ""
+  },
+  "src/data/hospitalNetworkData.ts": {
+    "mtime": 1779567595.7510443,
+    "ast_hash": "c7b6a952b93fb92633fc8aa774af7ad3",
+    "semantic_hash": ""
+  },
+  "src/data/infographics.ts": {
+    "mtime": 1779894326.2654305,
+    "ast_hash": "d472a1fa1ccb413b4203f00538c59e98",
+    "semantic_hash": ""
+  },
+  "src/data/mockData.ts": {
+    "mtime": 1779567595.748464,
+    "ast_hash": "e0135f10edbbe05a0161275351e69754",
+    "semantic_hash": ""
+  },
+  "src/data/sections.ts": {
+    "mtime": 1780684976.0948682,
+    "ast_hash": "4cec20432f2a490d904dfcb91e08e42f",
+    "semantic_hash": ""
+  },
+  "src/hooks/useArcgisComponents.ts": {
+    "mtime": 1779632739.983877,
+    "ast_hash": "e46328e66b449729f65370277b2011bb",
+    "semantic_hash": ""
+  },
+  "src/hooks/useRedCrossArcGISAuth.ts": {
+    "mtime": 1779569200.2271261,
+    "ast_hash": "53e7ca0e84e14fe4c97e3164f44ea523",
+    "semantic_hash": ""
+  },
+  "src/lib/supabase.ts": {
+    "mtime": 1780686445.6326838,
+    "ast_hash": "dcf8adafd4d91ff39ca70a4002c4b64d",
+    "semantic_hash": ""
+  },
+  "src/main.tsx": {
+    "mtime": 1779567670.9666185,
+    "ast_hash": "c1959d2122745ae9a185f73e9f2f9a4d",
+    "semantic_hash": ""
+  },
+  "src/maps/FeatureDetails.tsx": {
+    "mtime": 1779637643.0509062,
+    "ast_hash": "9ecb1ac0152883ddc031cc8b9439bfc1",
+    "semantic_hash": ""
+  },
+  "src/maps/LayerList.tsx": {
+    "mtime": 1779633824.060429,
+    "ast_hash": "6ee5511e12ff1a82d3402c6e5da737a5",
+    "semantic_hash": ""
+  },
+  "src/maps/MapPanel.tsx": {
+    "mtime": 1779633837.7076852,
+    "ast_hash": "86514e3e104143ccdde59e4559e0e04d",
+    "semantic_hash": ""
+  },
+  "src/maps/MapShell.tsx": {
+    "mtime": 1779635086.338717,
+    "ast_hash": "66bf23692b84cd045bffde636dce7911",
+    "semantic_hash": ""
+  },
+  "src/maps/featureInfo.ts": {
+    "mtime": 1779637007.4633598,
+    "ast_hash": "c6b49eb01a6ecc69c408ecc6c002793f",
+    "semantic_hash": ""
+  },
+  "src/pages/DashboardPage.tsx": {
+    "mtime": 1779733467.9597743,
+    "ast_hash": "1f9408960ff30df4b86a3372ebb45a95",
+    "semantic_hash": ""
+  },
+  "src/pages/DeckViewerPage.tsx": {
+    "mtime": 1779895180.2768354,
+    "ast_hash": "4aca2b5cd5dc096036f89f0b4761f3fe",
+    "semantic_hash": ""
+  },
+  "src/pages/DecksGalleryPage.tsx": {
+    "mtime": 1779896123.870838,
+    "ast_hash": "119df3f549e338030fdd9c429d8b37ec",
+    "semantic_hash": ""
+  },
+  "src/pages/HomePage.tsx": {
+    "mtime": 1780681500.6967504,
+    "ast_hash": "24af6762ebe89c197e3706d585ab948a",
+    "semantic_hash": ""
+  },
+  "src/pages/HubPage.tsx": {
+    "mtime": 1780684967.2501402,
+    "ast_hash": "58a2d08f6d2476b58d9879a7398f9266",
+    "semantic_hash": ""
+  },
+  "src/pages/InfographicsPage.tsx": {
+    "mtime": 1779894924.174663,
+    "ast_hash": "fa7983e30d28072b0b615d53323fa9cf",
+    "semantic_hash": ""
+  },
+  "src/pages/MapPage.tsx": {
+    "mtime": 1779733460.3279653,
+    "ast_hash": "421432e1066d9c8ce54e444f6c42091a",
+    "semantic_hash": ""
+  },
+  "src/pages/RegionsPage.tsx": {
+    "mtime": 1780684560.2474627,
+    "ast_hash": "a8bdb75438eb866f98786b10e53dee69",
+    "semantic_hash": ""
+  },
+  "src/pages/SectionDeckPage.tsx": {
+    "mtime": 1779636596.7981317,
+    "ast_hash": "eb2cdb4d98f772fb79ad10a40bec27c6",
+    "semantic_hash": ""
+  },
+  "src/pages/VideoDemoPage.tsx": {
+    "mtime": 1779795768.4294405,
+    "ast_hash": "ddbf1b81884b92fc234722de9bc27e05",
+    "semantic_hash": ""
+  },
+  "src/utils/arcgisMasterLayers.ts": {
+    "mtime": 1779569200.2249558,
+    "ast_hash": "596968f6021f532d529458074f5c77ac",
+    "semantic_hash": ""
+  },
+  "src/utils/arcgisOAuth.ts": {
+    "mtime": 1779569200.2243323,
+    "ast_hash": "198ec60e9fc31a80866ba3d78007a2c0",
+    "semantic_hash": ""
+  },
+  "src/utils/biomedMapSuite.ts": {
+    "mtime": 1779569200.2245731,
+    "ast_hash": "e4ec5c7d8a57f3929532a3b961e2a485",
+    "semantic_hash": ""
+  },
+  "src/utils/masterMapFeatures.ts": {
+    "mtime": 1779569200.2247741,
+    "ast_hash": "048feaa5b1ba12f6702f880e9c85bb96",
+    "semantic_hash": ""
+  },
+  "src/vite-env.d.ts": {
+    "mtime": 1779567869.7069778,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": ""
+  },
+  "tests/app.spec.ts": {
+    "mtime": 1780681500.6975675,
+    "ast_hash": "9dc425d2a16cddac8895a110df78acb1",
+    "semantic_hash": ""
+  },
+  "tsconfig.app.json": {
+    "mtime": 1779569241.538028,
+    "ast_hash": "489be2e78d863075841c6c82c2104ae3",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1779567568.5372515,
+    "ast_hash": "cebcd0aef9a53b9c724ac53266f03437",
+    "semantic_hash": ""
+  },
+  "tsconfig.node.json": {
+    "mtime": 1779567572.8636181,
+    "ast_hash": "b84a00cad3da1546ce9db508961f650b",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1780685934.5989845,
+    "ast_hash": "3ce034f37a6661efc8073a99b87d2c87",
+    "semantic_hash": ""
+  },
+  "vite.config.ts": {
+    "mtime": 1779567567.9973917,
+    "ast_hash": "d57f1fc735cae55180214c74f2f19832",
+    "semantic_hash": ""
+  },
+  ".github/ISSUE_TEMPLATE/client-ask.md": {
+    "mtime": 1780680563.4864206,
+    "ast_hash": "7e7fdfac8e9d0c6c17c84ed72bab2447",
+    "semantic_hash": ""
+  },
+  ".github/pull_request_template.md": {
+    "mtime": 1780680563.4865737,
+    "ast_hash": "5f7e9b76ec8cf01448cef32c95387676",
+    "semantic_hash": ""
+  },
+  "CONTRIBUTING.md": {
+    "mtime": 1780680563.4867456,
+    "ast_hash": "4361908c3dd383c737381313e4739fed",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1779649360.7264602,
+    "ast_hash": "18262eacec5ece46a5cd49ba70df50e4",
+    "semantic_hash": ""
+  },
+  "public/oauth-callback.html": {
+    "mtime": 1779569192.8301826,
+    "ast_hash": "7c6006ca0b1de4183207b46e08fd5878",
+    "semantic_hash": ""
+  },
+  "public/decks/SD_The_Biological_Supply_Chain.pdf": {
+    "mtime": 1779895134.5989134,
+    "ast_hash": "28b823b282c1404949b148caa066920b",
+    "semantic_hash": ""
+  },
+  "public/decks/SD_The_Blood_Ledger.pdf": {
+    "mtime": 1779895134.5362113,
+    "ast_hash": "7a241a18ab65d1b48b32f7b97dd80707",
+    "semantic_hash": ""
+  },
+  "public/decks/SD_The_Future_Blood_Debt.pdf": {
+    "mtime": 1779895134.304135,
+    "ast_hash": "71635d12f3b6355f9a50aacfe45b34e1",
+    "semantic_hash": ""
+  },
+  "public/decks/SD_The_Networked_Lifeline.pdf": {
+    "mtime": 1779894944.1989782,
+    "ast_hash": "11577ebd2e7afb27aa1c72e08923c15b",
+    "semantic_hash": ""
+  },
+  "public/decks/SD_The_Vital_Pipeline.pdf": {
+    "mtime": 1779895134.6622586,
+    "ast_hash": "0e5abb33b2b60a331c6ac39fe325fbee",
+    "semantic_hash": ""
+  },
+  "docs/baseline/deck-blood-101.jpg": {
+    "mtime": 1780680563.4872813,
+    "ast_hash": "51af31302e181b18962973c832994ac7",
+    "semantic_hash": ""
+  },
+  "docs/baseline/decks-gallery.jpg": {
+    "mtime": 1780680563.4877248,
+    "ast_hash": "a8f322b361fe2bbc7accff006ddbf45e",
+    "semantic_hash": ""
+  },
+  "docs/baseline/home.jpg": {
+    "mtime": 1780680563.488077,
+    "ast_hash": "0eb4a0cee41a95bdb6c465509a16f819",
+    "semantic_hash": ""
+  },
+  "docs/baseline/hub.jpg": {
+    "mtime": 1780680563.488591,
+    "ast_hash": "7006c4fc374549ec1969a9b87c8c0aee",
+    "semantic_hash": ""
+  },
+  "docs/baseline/infographics.jpg": {
+    "mtime": 1780680563.4889681,
+    "ast_hash": "53671b9f31291de0557d83d09143abf0",
+    "semantic_hash": ""
+  },
+  "public/ai/biomed-collections.png": {
+    "mtime": 1779648532.5966437,
+    "ast_hash": "bb1c97c3056c8d093d4e91da4c8ce076",
+    "semantic_hash": ""
+  },
+  "public/ai/blood-101.png": {
+    "mtime": 1779648510.1025712,
+    "ast_hash": "68fd13b70053a6747be1768ac002a00d",
+    "semantic_hash": ""
+  },
+  "public/ai/blood-journey.png": {
+    "mtime": 1779648583.9107099,
+    "ast_hash": "423779317f6268a053e914ea28f53a9e",
+    "semantic_hash": ""
+  },
+  "public/ai/future-demand.png": {
+    "mtime": 1779648656.5983393,
+    "ast_hash": "4314c98ee35659073bf2fb2934f63c06",
+    "semantic_hash": ""
+  },
+  "public/ai/hospital-distribution.png": {
+    "mtime": 1779648637.3026438,
+    "ast_hash": "f8b784a990edd4db827f2f7bc2b558c9",
+    "semantic_hash": ""
+  },
+  "public/covers/biomed-collections.png": {
+    "mtime": 1779567595.7288125,
+    "ast_hash": "bdcbb606f95c665b7b6e60b072da67f3",
+    "semantic_hash": ""
+  },
+  "public/covers/blood-101.png": {
+    "mtime": 1779567595.7336905,
+    "ast_hash": "4f34e2916f99b9c59041e9c9baff202a",
+    "semantic_hash": ""
+  },
+  "public/covers/blood-journey.png": {
+    "mtime": 1779567595.7352302,
+    "ast_hash": "d8c59d92ad60939c85fcb754e224b3b9",
+    "semantic_hash": ""
+  },
+  "public/covers/future-demand.png": {
+    "mtime": 1779567595.7396743,
+    "ast_hash": "8428c65929a9515919c7fc2d0fb2a889",
+    "semantic_hash": ""
+  },
+  "public/covers/hospital-distribution.png": {
+    "mtime": 1779567595.7410142,
+    "ast_hash": "f59c94b3062cbb05ee523b1a5643e404",
+    "semantic_hash": ""
+  },
+  "public/covers/tools/dashboard.jpg": {
+    "mtime": 1780684967.2481143,
+    "ast_hash": "b98abf20fbf60362f6d11c5a9bbc2dce",
+    "semantic_hash": ""
+  },
+  "public/covers/tools/hospital-network.jpg": {
+    "mtime": 1780684967.2486963,
+    "ast_hash": "bf91c253009abe86aefef41857e5da61",
+    "semantic_hash": ""
+  },
+  "public/covers/tools/ops-workbench.jpg": {
+    "mtime": 1780684967.2491546,
+    "ast_hash": "0ddb5b48c338805af848a88d498fa2ea",
+    "semantic_hash": ""
+  },
+  "public/covers/tools/regions.jpg": {
+    "mtime": 1780684967.24944,
+    "ast_hash": "4bb4e1f5dc4e93aa5337c1e195b4e650",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-01.jpg": {
+    "mtime": 1779737144.333332,
+    "ast_hash": "9903bbf5c6fe9a17ac23ff12de20a19d",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-02.jpg": {
+    "mtime": 1779737144.3507164,
+    "ast_hash": "43136d6bdfe94b7ccb4f5ffe2e974661",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-03.jpg": {
+    "mtime": 1779737144.3662767,
+    "ast_hash": "45e9fcf1d25627f0e92e3700f0d85e26",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-04.jpg": {
+    "mtime": 1779737144.3829737,
+    "ast_hash": "4e422c7aabc142061571fceed280c8bf",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-05.jpg": {
+    "mtime": 1779737144.4001677,
+    "ast_hash": "203e5b9daad7dca26da435823b7b3fa9",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-06.jpg": {
+    "mtime": 1779737144.418754,
+    "ast_hash": "aa984268b4428ac9fc0a8f32ca6eb617",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-07.jpg": {
+    "mtime": 1779737144.4361334,
+    "ast_hash": "b351314da0e2aa5b7b45c8ffed34439a",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-08.jpg": {
+    "mtime": 1779737144.452672,
+    "ast_hash": "4ddc8b70352b813351f82406c10c837a",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-09.jpg": {
+    "mtime": 1779737144.4691997,
+    "ast_hash": "824e5b1a1e73c6b031e5c68f2f444620",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-10.jpg": {
+    "mtime": 1779737144.4865055,
+    "ast_hash": "f7c91a41c903abd76dd11f941ff9c3af",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-11.jpg": {
+    "mtime": 1779737144.5044734,
+    "ast_hash": "ebb084941b1489b84ce02e79ba0cd893",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-12.jpg": {
+    "mtime": 1779737144.5214543,
+    "ast_hash": "0d2339a20107b4836f7b4bd32f61857b",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-13.jpg": {
+    "mtime": 1779737144.538529,
+    "ast_hash": "8aed01d02f11caf84d59e042df4e35cc",
+    "semantic_hash": ""
+  },
+  "public/decks/biological-supply-chain/p-14.jpg": {
+    "mtime": 1779737144.556352,
+    "ast_hash": "ea28f1171e30a363f18d87e0185f48dc",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-01.jpg": {
+    "mtime": 1779737143.7496061,
+    "ast_hash": "dd51ddee360cffa2d2bb058f4f13aac7",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-02.jpg": {
+    "mtime": 1779737143.7683976,
+    "ast_hash": "dce0f72e174701b0e79f67f32dc84798",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-03.jpg": {
+    "mtime": 1779737143.7854733,
+    "ast_hash": "6c38eaa26e1af230b04432fc6c2a6933",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-04.jpg": {
+    "mtime": 1779737143.8018599,
+    "ast_hash": "56551b830675eca4aa263fe0dd75c45e",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-05.jpg": {
+    "mtime": 1779737143.8181071,
+    "ast_hash": "aa4c21cc7d4b14006c662fd340ceee16",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-06.jpg": {
+    "mtime": 1779737143.8336098,
+    "ast_hash": "2903175a4697055770e2cc2b7c52b1ee",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-07.jpg": {
+    "mtime": 1779737143.8485215,
+    "ast_hash": "8b261905135aa4d090809930309a93b8",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-08.jpg": {
+    "mtime": 1779737143.8639295,
+    "ast_hash": "06d3112d742bf45515e6fb4e678cb368",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-09.jpg": {
+    "mtime": 1779737143.8802414,
+    "ast_hash": "dfb1371dd31b08f3fa951481c626e061",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-10.jpg": {
+    "mtime": 1779737143.8957853,
+    "ast_hash": "c6d28312656ec41de73440fdbcc9a9ba",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-11.jpg": {
+    "mtime": 1779737143.9117324,
+    "ast_hash": "830f610e9a6ec63a485cacbfc0a2cf6a",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-12.jpg": {
+    "mtime": 1779737143.9279428,
+    "ast_hash": "cd5ccaf6870e147a3413a26fd2721b9c",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-13.jpg": {
+    "mtime": 1779737143.9439056,
+    "ast_hash": "687208cf7e0bf1b6e6fa8b473b97c69d",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-14.jpg": {
+    "mtime": 1779737143.9600594,
+    "ast_hash": "b473d8e2b74591bb6293891f5a0b47ce",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-15.jpg": {
+    "mtime": 1779737143.976085,
+    "ast_hash": "6bc51cd1e2c7f6094fcb9e6a46e732e1",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-16.jpg": {
+    "mtime": 1779737143.9929543,
+    "ast_hash": "cd64ebb95ccc41f5649f1016fc3dee82",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-17.jpg": {
+    "mtime": 1779737144.0095944,
+    "ast_hash": "acbe78f35bc682e9a83dd67522ee2641",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-18.jpg": {
+    "mtime": 1779737144.026322,
+    "ast_hash": "d988b9c217c5e6fc7d4e7de6c28a6d43",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-19.jpg": {
+    "mtime": 1779737144.0434723,
+    "ast_hash": "0f77d58e8d79b21edd40d2ddf4f90b01",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-20.jpg": {
+    "mtime": 1779737144.0589557,
+    "ast_hash": "bc8652788dbfdaebaeb4e977051523af",
+    "semantic_hash": ""
+  },
+  "public/decks/blood-ledger/p-21.jpg": {
+    "mtime": 1779737144.075118,
+    "ast_hash": "3098ef67f5bd16bd04d8dc525ecb276f",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-01.jpg": {
+    "mtime": 1779737144.100346,
+    "ast_hash": "9e6f6269d3e59bb85b748dd349107473",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-02.jpg": {
+    "mtime": 1779737144.1169798,
+    "ast_hash": "4f3a6ab1321ae0db67297fe791fd97d1",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-03.jpg": {
+    "mtime": 1779737144.1324272,
+    "ast_hash": "10b81736d64dd37f803b52f84ccd6168",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-04.jpg": {
+    "mtime": 1779737144.1481445,
+    "ast_hash": "0c975d1e15c74b191f7bcdaa40342f82",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-05.jpg": {
+    "mtime": 1779737144.164086,
+    "ast_hash": "adb30401207ad9b0c3254e2940b5dcf3",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-06.jpg": {
+    "mtime": 1779737144.17874,
+    "ast_hash": "3efa0e341f4e108f4bfc759b46dffd35",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-07.jpg": {
+    "mtime": 1779737144.1946046,
+    "ast_hash": "80035597f347b7ac3b8514204ef60323",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-08.jpg": {
+    "mtime": 1779737144.2103708,
+    "ast_hash": "42a9b00a0416d9046e0b9effd60cec38",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-09.jpg": {
+    "mtime": 1779737144.2260766,
+    "ast_hash": "a9314576c2680c7f7e012e78ce6bd7a9",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-10.jpg": {
+    "mtime": 1779737144.2423098,
+    "ast_hash": "695da3214199b8c1866209d476239dce",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-11.jpg": {
+    "mtime": 1779737144.2581336,
+    "ast_hash": "83017ce423afa35ea599234812e2108b",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-12.jpg": {
+    "mtime": 1779737144.2744982,
+    "ast_hash": "184a467f838955f88857a2883e347b9f",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-13.jpg": {
+    "mtime": 1779737144.2909334,
+    "ast_hash": "f9b7b197e0bf563ef2d8d863e55824bd",
+    "semantic_hash": ""
+  },
+  "public/decks/future-blood-debt/p-14.jpg": {
+    "mtime": 1779737144.307463,
+    "ast_hash": "09bbf73d63fa1f845fe1d27dc0b4d184",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-01.jpg": {
+    "mtime": 1779895098.4232054,
+    "ast_hash": "d34a4708c7613de730958e9d8cae5ded",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-02.jpg": {
+    "mtime": 1779895098.4420624,
+    "ast_hash": "3a00aa4134d9ecf04cd4dbf9b25222f3",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-03.jpg": {
+    "mtime": 1779895098.4587152,
+    "ast_hash": "5e7d6b3c56c5ff42c877347c3033aaff",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-04.jpg": {
+    "mtime": 1779895098.4743948,
+    "ast_hash": "ef9e9e12957249a2483f1fa1868617f9",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-05.jpg": {
+    "mtime": 1779895098.489787,
+    "ast_hash": "1b7487a6aabaacd4bb52f0ef0b1878e5",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-06.jpg": {
+    "mtime": 1779895098.5058112,
+    "ast_hash": "9e7fbf216a445e89af06ffa963da2d08",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-07.jpg": {
+    "mtime": 1779895098.520945,
+    "ast_hash": "be3368cb3e462964c12d0338753bb1d8",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-08.jpg": {
+    "mtime": 1779895098.5367248,
+    "ast_hash": "4284404a76335a3fc4a4ea88ea5e8d3b",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-09.jpg": {
+    "mtime": 1779895098.5530412,
+    "ast_hash": "d249d828d510c06464283faef8a05bdf",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-10.jpg": {
+    "mtime": 1779895098.5688484,
+    "ast_hash": "6dbf712a34d260e6b307e3762f77aea5",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-11.jpg": {
+    "mtime": 1779895098.5843914,
+    "ast_hash": "814ace5018b917be57db9ca1d89cd218",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-12.jpg": {
+    "mtime": 1779895098.60024,
+    "ast_hash": "a091cdd4b4550ff4a07e05d4594ec13c",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-13.jpg": {
+    "mtime": 1779895098.616304,
+    "ast_hash": "7d3188a7ec93490d3bb2db4f53d43881",
+    "semantic_hash": ""
+  },
+  "public/decks/networked-lifeline/p-14.jpg": {
+    "mtime": 1779895098.6317334,
+    "ast_hash": "883901db136833d4dff09caf8f0fd471",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-01.jpg": {
+    "mtime": 1779737144.5829582,
+    "ast_hash": "8036a39628fc66a89f24f9474571a7c3",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-02.jpg": {
+    "mtime": 1779737144.6000576,
+    "ast_hash": "736a10f2174106033cdf4c745f1c9aac",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-03.jpg": {
+    "mtime": 1779737144.6161199,
+    "ast_hash": "6c674cc4d949be416c06d7118b99426e",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-04.jpg": {
+    "mtime": 1779737144.6308098,
+    "ast_hash": "e87b3fd8e47834ef5b410eab9d0b03db",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-05.jpg": {
+    "mtime": 1779737144.6465378,
+    "ast_hash": "b6034e2550038ce22ef308fdca147603",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-06.jpg": {
+    "mtime": 1779737144.6631272,
+    "ast_hash": "1267b421cf42b193be4fb5b6b9c54c68",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-07.jpg": {
+    "mtime": 1779737144.679601,
+    "ast_hash": "ba2287bac88419b651c0cb54f3c5a3a2",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-08.jpg": {
+    "mtime": 1779737144.6987267,
+    "ast_hash": "7c1724dc9eef6ed55e2d6b6381fb06ac",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-09.jpg": {
+    "mtime": 1779737144.7149422,
+    "ast_hash": "c6a8b22ea7ee0ea8e4ba094601b5495b",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-10.jpg": {
+    "mtime": 1779737144.730719,
+    "ast_hash": "75b33307666d00a62451bdf0294c697c",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-11.jpg": {
+    "mtime": 1779737144.7482343,
+    "ast_hash": "e82827bdbbef36d1b649395335d2e126",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-12.jpg": {
+    "mtime": 1779737144.7639346,
+    "ast_hash": "64045dbd797b9af781a28717664507c9",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-13.jpg": {
+    "mtime": 1779737144.782333,
+    "ast_hash": "922d1eb021eaf3aaf74856a10c9f7f5b",
+    "semantic_hash": ""
+  },
+  "public/decks/vital-pipeline/p-14.jpg": {
+    "mtime": 1779737144.7974925,
+    "ast_hash": "14be2d66bc39e3fbc20eb03687372cbf",
+    "semantic_hash": ""
+  },
+  "public/favicon.svg": {
+    "mtime": 1779567869.1929345,
+    "ast_hash": "1fa475002736aefde9a374d2cd926375",
+    "semantic_hash": ""
+  },
+  "public/infographics/IG_Addressing_Future_Blood_Supply_Demand.jpg": {
+    "mtime": 1779894258.4622862,
+    "ast_hash": "4895d1ba337831eae7545cac48efb5d5",
+    "semantic_hash": ""
+  },
+  "public/infographics/IG_Blood_Supply_and_Donor_Trends.jpg": {
+    "mtime": 1779894110.7709577,
+    "ast_hash": "c995b2a7d52022eec50a8f2fedd057ed",
+    "semantic_hash": ""
+  },
+  "public/infographics/IG_Future_Blood_Crisis_Analysis.jpg": {
+    "mtime": 1779894073.3702993,
+    "ast_hash": "fda010f050f15b85076fb11523630883",
+    "semantic_hash": ""
+  },
+  "public/infographics/IG_Future_of_Blood_Supply_Trends.jpg": {
+    "mtime": 1779894034.7734628,
+    "ast_hash": "3d4b1245def8139a42dd4f927d204e01",
+    "semantic_hash": ""
+  },
+  "public/infographics/IG_The_Future_of_Blood.jpg": {
+    "mtime": 1779894131.077936,
+    "ast_hash": "21543a38853b913b0c5f4c3aa401a15e",
+    "semantic_hash": ""
+  },
+  "public/map-previews/hospital-network.svg": {
+    "mtime": 1779567595.7445946,
+    "ast_hash": "3d9a480eee74530c84b830428bc7c72b",
+    "semantic_hash": ""
+  },
+  "public/map-previews/map-app-v1.svg": {
+    "mtime": 1779567595.7449505,
+    "ast_hash": "f296471a759876b81aced21b2993f378",
+    "semantic_hash": ""
+  },
+  "public/map-previews/map-app-v2.svg": {
+    "mtime": 1779567595.7454178,
+    "ast_hash": "b60e8aeeddf5b1d757354daba1e2f192",
+    "semantic_hash": ""
+  },
+  "public/map-previews/map-app-v3.svg": {
+    "mtime": 1779567595.7459285,
+    "ast_hash": "c77607e2dbd5cc74e488684e9883338a",
+    "semantic_hash": ""
+  },
+  "public/video/hero-sharp-plus.mp4": {
+    "mtime": 1779795746.150991,
+    "ast_hash": "f2e799dcb8e9eac7712713266cf5ea02",
+    "semantic_hash": ""
+  },
+  "public/video/hero-sharp.mp4": {
+    "mtime": 1779795739.7244058,
+    "ast_hash": "7269178eb90496e966777e99913e87d0",
+    "semantic_hash": ""
+  },
+  "public/video/hero.mp4": {
+    "mtime": 1779718333.7634614,
+    "ast_hash": "2f1cfb442302f660802e3113bd81d088",
+    "semantic_hash": ""
+  }
+}
