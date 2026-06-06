@@ -1008,7 +1008,7 @@ export default function BiomedOpsWorkbenchPage({
             key: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : "opsv2-preview",
             ref: mapRef,
             itemId: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : undefined,
-            basemap: quietOpsBasemapId(),
+            basemap: isAuthenticated ? undefined : quietOpsBasemapId(),
             center: CENTER,
             zoom: ZOOM,
             className: "opsv2__arcgis",
