@@ -140,6 +140,10 @@ export default function NotesPanel() {
   const [showAllPages, setShowAllPages] = useState(false);
   const [openOnly, setOpenOnly] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editAuthor, setEditAuthor] = useState("Jeff");
+  const [editKind, setEditKind] = useState<Kind>("note");
+  const [editText, setEditText] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Fetch from Supabase. Falls back to local on any failure.
@@ -267,6 +271,45 @@ export default function NotesPanel() {
         setLastSyncedAt(Date.now());
       }
     }
+    setBusy(false);
+  };
+
+  const beginEdit = (note: Note) => {
+    setEditingId(note.id);
+    setEditAuthor(note.author);
+    setEditKind(note.kind);
+    setEditText(note.text);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditAuthor("Jeff");
+    setEditKind("note");
+    setEditText("");
+  };
+
+  const saveEdit = async (id: string) => {
+    const trimmed = editText.trim();
+    if (!trimmed) return;
+    const patch = { author: editAuthor, kind: editKind, text: trimmed };
+    const prev = notes;
+    setNotes((all) => all.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    setBusy(true);
+    if (supabase) {
+      const { error } = await supabase.from(TABLE).update(patch).eq("id", id);
+      if (error) {
+        setError(error.message);
+        setMode("local");
+        setNotes(prev);
+        setBusy(false);
+        return;
+      }
+      setNotes((all) => all.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+      setError(null);
+      setMode("shared");
+      setLastSyncedAt(Date.now());
+    }
+    cancelEdit();
     setBusy(false);
   };
 
@@ -446,6 +489,15 @@ export default function NotesPanel() {
                       <span className="np-note__actions">
                         <button
                           type="button"
+                          className="np-note__edit"
+                          aria-label="Edit note"
+                          onClick={() => beginEdit(n)}
+                          disabled={busy || editingId === n.id}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
                           className="np-note__resolve"
                           aria-label={n.status === "open" ? "Resolve note" : "Reopen note"}
                           onClick={() => void updateStatus(n.id, n.status === "open" ? "resolved" : "open")}
@@ -464,7 +516,52 @@ export default function NotesPanel() {
                         </button>
                       </span>
                     </header>
-                    <p className="np-note__text">{n.text}</p>
+                    {editingId === n.id ? (
+                      <form
+                        className="np-edit"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          void saveEdit(n.id);
+                        }}
+                      >
+                        <div className="np-edit__row">
+                          <label className="np-edit__label">
+                            Author
+                            <select className="np-edit__author" value={editAuthor} onChange={(e) => setEditAuthor(e.target.value)}>
+                              <option>Jeff</option>
+                              <option>Client</option>
+                              <option>M&amp;C</option>
+                              <option>Other</option>
+                            </select>
+                          </label>
+                          <label className="np-edit__label">
+                            Kind
+                            <select className="np-edit__kind" value={editKind} onChange={(e) => setEditKind(e.target.value as Kind)}>
+                              <option value="note">Note</option>
+                              <option value="question">Question</option>
+                              <option value="answer">Answer</option>
+                            </select>
+                          </label>
+                        </div>
+                        <textarea
+                          className="np-edit__text"
+                          rows={4}
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          aria-label="Edit note text"
+                        />
+                        <div className="np-edit__actions">
+                          <button type="button" className="np-edit__cancel" onClick={cancelEdit} disabled={busy}>
+                            Cancel
+                          </button>
+                          <button type="submit" className="np-edit__save" disabled={!editText.trim() || busy}>
+                            {busy ? "Saving..." : "Save edit"}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <p className="np-note__text">{n.text}</p>
+                    )}
                   </article>
                 ))
               )}

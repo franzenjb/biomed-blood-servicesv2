@@ -266,6 +266,20 @@
   color: var(--d-text);
   border-color: var(--d-soft);
 }
+.np-note__edit {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--d-soft, #4a4a4a);
+  background: transparent;
+  border: 1px solid var(--d-line, rgba(0, 0, 0, 0.16));
+  border-radius: 999px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.np-note__edit:hover {
+  color: var(--d-text);
+  border-color: var(--d-soft);
+}
 .np-note__del {
   background: transparent;
   border: 0;
@@ -278,6 +292,7 @@
   color: var(--arc-red);
 }
 .np-note__resolve:disabled,
+.np-note__edit:disabled,
 .np-note__del:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -291,6 +306,75 @@
 }
 .np-note--resolved .np-note__text {
   color: #686868;
+}
+.np-edit {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.np-edit__row {
+  display: flex;
+  gap: 8px;
+}
+.np-edit__label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--d-faint, #737373);
+}
+.np-edit__author,
+.np-edit__kind,
+.np-edit__text {
+  font: inherit;
+  font-size: 12px;
+  color: var(--d-text, #1a1a1a);
+  background: #fff;
+  border: 1px solid var(--d-line, rgba(0, 0, 0, 0.16));
+  border-radius: 8px;
+}
+.np-edit__author,
+.np-edit__kind {
+  padding: 6px 8px;
+}
+.np-edit__text {
+  min-height: 82px;
+  padding: 9px 10px;
+  line-height: 1.45;
+  resize: vertical;
+}
+.np-edit__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.np-edit__cancel,
+.np-edit__save {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.np-edit__cancel {
+  color: var(--d-soft, #4a4a4a);
+  background: transparent;
+  border: 1px solid var(--d-line, rgba(0, 0, 0, 0.16));
+}
+.np-edit__save {
+  color: #fff;
+  background: var(--arc-red, #ed1b2e);
+  border: 1px solid var(--arc-red, #ed1b2e);
+}
+.np-edit__cancel:disabled,
+.np-edit__save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .np-form {
@@ -362,7 +446,10 @@ html[data-theme="dark"] .np-panel {
 }
 html[data-theme="dark"] .np-note,
 html[data-theme="dark"] .np-label select,
-html[data-theme="dark"] .np-text {
+html[data-theme="dark"] .np-text,
+html[data-theme="dark"] .np-edit__author,
+html[data-theme="dark"] .np-edit__kind,
+html[data-theme="dark"] .np-edit__text {
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.14);

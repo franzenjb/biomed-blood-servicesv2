@@ -35,6 +35,7 @@ test.describe("Hub", () => {
 test.describe("Notes panel", () => {
   test("adds, resolves, filters, reopens, and removes a shared page note", async ({ page }) => {
     const noteText = `Playwright shared notes probe ${Date.now()}`;
+    const editedText = `${noteText} - edited`;
 
     await page.goto("/");
     await page.getByRole("button", { name: /Notes/i }).click();
@@ -46,9 +47,20 @@ test.describe("Notes panel", () => {
     await page.getByPlaceholder(/Add a question for Home/).fill(noteText);
     await page.getByRole("button", { name: "Save" }).click();
 
-    const note = page.locator(".np-note").filter({ hasText: noteText });
+    let note = page.locator(".np-note").filter({ hasText: noteText });
     await expect(note).toBeVisible({ timeout: 10_000 });
     await expect(note.getByText("Open")).toBeVisible();
+
+    await note.getByRole("button", { name: "Edit" }).click();
+    await note.locator(".np-edit__text").fill(editedText);
+    await note.locator(".np-edit__kind").selectOption("answer");
+    await note.getByRole("button", { name: "Save edit" }).click();
+
+    note = page.locator(".np-note").filter({ hasText: editedText });
+    await expect(note).toBeVisible({ timeout: 10_000 });
+    await expect(note.locator(".np-edit")).toHaveCount(0, { timeout: 10_000 });
+    await expect(note.locator(".np-note__kind")).toHaveText("answer");
+    await expect(page.locator(".np-note").filter({ hasText: noteText }).filter({ hasNotText: editedText })).toHaveCount(0);
 
     await page.getByRole("button", { name: /All pages/ }).click();
     await expect(note).toBeVisible();
