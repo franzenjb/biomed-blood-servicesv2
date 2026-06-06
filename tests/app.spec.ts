@@ -36,9 +36,13 @@ test.describe("Hub", () => {
 
 test.describe("Notes panel", () => {
   test("adds, edits, completes, reopens, and removes a universal task", async ({ page }) => {
-    const noteText = `Playwright shared notes probe ${Date.now()}`;
+    const noteText = `Playwright local notes probe ${Date.now()}`;
     const editedText = `${noteText} - edited`;
 
+    await page.addInitScript(() => {
+      window.localStorage.setItem("biomed-notes-force-local", "true");
+      window.localStorage.removeItem("biomed-notes-v1");
+    });
     await page.goto("/");
     await page.getByRole("button", { name: /Notes/i }).click();
     await expect(page.getByText("Review tasks")).toBeVisible();

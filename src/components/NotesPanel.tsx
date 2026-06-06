@@ -20,6 +20,7 @@ type Note = {
 
 const TABLE = "biomed_notes";
 const LOCAL_KEY = "biomed-notes-v1";
+const FORCE_LOCAL_KEY = "biomed-notes-force-local";
 const KINDS: Kind[] = ["note", "question", "answer"];
 const STATUSES: Status[] = ["open", "resolved"];
 
@@ -102,6 +103,14 @@ function writeLocal(notes: Note[]) {
   }
 }
 
+function readForceLocal() {
+  try {
+    return window.localStorage.getItem(FORCE_LOCAL_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 const PAGE_LABELS: Record<string, string> = {
   "/": "Home",
   "/hub": "Hub",
@@ -130,12 +139,13 @@ const fmtTime = (ts: number) =>
 export default function NotesPanel() {
   const location = useLocation();
   const page = location.pathname;
+  const forceLocal = useMemo(readForceLocal, []);
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState<Note[]>(() => readLocal());
   const [author, setAuthor] = useState<string>("Jeff");
   const [text, setText] = useState("");
   const [kind, setKind] = useState<Kind>("note");
-  const [mode, setMode] = useState<"shared" | "local">(SUPABASE_READY ? "shared" : "local");
+  const [mode, setMode] = useState<"shared" | "local">(SUPABASE_READY && !forceLocal ? "shared" : "local");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [taskFilter, setTaskFilter] = useState<TaskFilter>("open");
@@ -148,8 +158,9 @@ export default function NotesPanel() {
 
   // Fetch from Supabase. Falls back to local on any failure.
   const refresh = useCallback(async () => {
-    if (!supabase) {
+    if (forceLocal || !supabase) {
       setMode("local");
+      setError(null);
       setNotes(readLocal());
       return;
     }
@@ -167,13 +178,13 @@ export default function NotesPanel() {
     setMode("shared");
     setError(null);
     setLastSyncedAt(Date.now());
-  }, []);
+  }, [forceLocal]);
 
   // Initial fetch + realtime subscription for live updates.
   useEffect(() => {
     void refresh();
     const client = supabase;
-    if (!client) return;
+    if (forceLocal || !client) return;
     const channel = client
       .channel("biomed_notes_changes")
       .on(
@@ -185,7 +196,7 @@ export default function NotesPanel() {
     return () => {
       void client.removeChannel(channel);
     };
-  }, [refresh]);
+  }, [forceLocal, refresh]);
 
   // Mirror to localStorage so the local fallback always has the latest set.
   useEffect(() => {
@@ -234,7 +245,7 @@ export default function NotesPanel() {
     setNotes((all) => [...all, note]);
     setText("");
     setBusy(true);
-    if (supabase) {
+    if (!forceLocal && supabase) {
       const { error } = await supabase.from(TABLE).insert(note);
       if (error) {
         setError(error.message);
@@ -253,7 +264,7 @@ export default function NotesPanel() {
     const prev = notes;
     setNotes((all) => all.map((n) => (n.id === id ? { ...n, status } : n)));
     setBusy(true);
-    if (supabase) {
+    if (!forceLocal && supabase) {
       const { error } = await supabase.from(TABLE).update({ status }).eq("id", id);
       if (error) {
         setError(error.message);
@@ -290,7 +301,7 @@ export default function NotesPanel() {
     const prev = notes;
     setNotes((all) => all.map((n) => (n.id === id ? { ...n, ...patch } : n)));
     setBusy(true);
-    if (supabase) {
+    if (!forceLocal && supabase) {
       const { error } = await supabase.from(TABLE).update(patch).eq("id", id);
       if (error) {
         setError(error.message);
@@ -313,7 +324,7 @@ export default function NotesPanel() {
     const prev = notes;
     setNotes((all) => all.filter((n) => n.id !== id));
     setBusy(true);
-    if (supabase) {
+    if (!forceLocal && supabase) {
       const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) {
         setError(error.message);
@@ -358,7 +369,7 @@ export default function NotesPanel() {
       const parsed = normalizeNotes(JSON.parse(raw));
       if (parsed.length === 0) return;
       setBusy(true);
-      if (supabase) {
+      if (!forceLocal && supabase) {
         // Upsert each — server is the source of truth.
         const { error } = await supabase.from(TABLE).upsert(parsed);
         if (error) setError(error.message);
