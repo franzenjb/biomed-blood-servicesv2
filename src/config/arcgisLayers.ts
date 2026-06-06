@@ -256,17 +256,30 @@ export const arcJurisdictionMapSource = {
   ] satisfies ArcJurisdictionLayerSource[]
 };
 
-export const arcJurisdictionSupplementalLayers = [
-  {
-    title: "Hospital Locations",
-    itemId: "87e9189c3b284ecb900749eecfb64a05",
-    category: "hospitals",
-    role: "Hospital portfolio locations for patient-care readiness and network rollups.",
-    defaultVisible: false,
-    itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=87e9189c3b284ecb900749eecfb64a05",
-    mapViewerUrl:
-      "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=87e9189c3b284ecb900749eecfb64a05"
-  }
+export const supplementalBiomedSourceLayer = {
+  title: "Supplemental BioMed source layer",
+  itemId: "6af8a323a0b5468f9427baa4d6ee7481",
+  category: "reference",
+  role: "Additional private BioMed source layer loaded alongside the Workbench map.",
+  defaultVisible: true,
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=6af8a323a0b5468f9427baa4d6ee7481",
+  mapViewerUrl:
+    "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=6af8a323a0b5468f9427baa4d6ee7481"
+} satisfies ArcJurisdictionSupplementalLayerSource;
+
+export const hospitalLocationsLayerSource = {
+  title: "Hospital Locations",
+  itemId: "87e9189c3b284ecb900749eecfb64a05",
+  category: "hospitals",
+  role: "Private hospital location layer added to the BioMed maps.",
+  defaultVisible: true,
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=87e9189c3b284ecb900749eecfb64a05",
+  mapViewerUrl:
+    "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=87e9189c3b284ecb900749eecfb64a05"
+} satisfies ArcJurisdictionSupplementalLayerSource;
+
+export const biomedWorkbenchSupplementalLayers = [
+  hospitalLocationsLayerSource
 ] satisfies ArcJurisdictionSupplementalLayerSource[];
 
 export const biomedLayerAtlasSource = {
@@ -275,16 +288,8 @@ export const biomedLayerAtlasSource = {
   webMapItemId: arcJurisdictionMapSource.webMapItemId,
   itemUrl: arcJurisdictionMapSource.itemUrl,
   supplementalLayers: [
-    {
-      title: "Supplemental BioMed source layer",
-      itemId: "6af8a323a0b5468f9427baa4d6ee7481",
-      category: "reference",
-      role: "Additional private BioMed source layer loaded alongside the Workbench map.",
-      defaultVisible: true,
-      itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=6af8a323a0b5468f9427baa4d6ee7481",
-      mapViewerUrl:
-        "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=6af8a323a0b5468f9427baa4d6ee7481"
-    }
+    supplementalBiomedSourceLayer,
+    hospitalLocationsLayerSource
   ] satisfies ArcJurisdictionSupplementalLayerSource[]
 };
 

@@ -122,8 +122,8 @@ export const sourceGroups: Array<{
   },
   {
     id: "hospitals",
-    label: "Hospitals",
-    description: "Hospital locations and patient-care network context.",
+    label: "Hospitals & Patient Care",
+    description: "Hospital locations and patient-care demand context.",
     icon: Hospital
   },
   {
@@ -164,10 +164,6 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   "Distribution Sites": {
     summary: "Fulfillment anchors that move products toward hospital support.",
     useCase: "Use for distribution and patient-care readiness."
-  },
-  "Hospital Locations": {
-    summary: "Hospital portfolio locations for patient-care readiness and network context.",
-    useCase: "Use when connecting BioMed operations to hospital reach."
   },
   "Fixed Sites": {
     summary: "Donor-facing fixed collection sites.",
@@ -212,6 +208,10 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   "FY25 Data/Zip Codes (04.2026)": {
     summary: "ZIP-level FY25 collection and jurisdiction data.",
     useCase: "Use for detailed data checks after the boundary story is clear."
+  },
+  "Hospital Locations": {
+    summary: "Hospital location layer for patient-care reach and network context.",
+    useCase: "Use when connecting the BioMed operating footprint to patient-care demand."
   },
   "Supplemental BioMed source layer": {
     summary: "Additional private BioMed source layer loaded with the Workbench layer stack.",

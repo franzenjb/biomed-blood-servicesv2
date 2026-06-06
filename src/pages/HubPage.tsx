@@ -75,7 +75,7 @@ export default function HubPage() {
           <span className="hub__index mono">08</span>
           <span className="hub__body">
             <span className="hub__title">{biomedLayerAtlasSource.title}</span>
-            <span className="hub__q">Workbench source layers plus the supplemental BioMed layer in one map section.</span>
+            <span className="hub__q">Workbench source layers plus supplemental BioMed and hospital layers.</span>
           </span>
         </Link>
 

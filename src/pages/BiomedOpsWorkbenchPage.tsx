@@ -25,7 +25,7 @@ import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import {
   arcJurisdictionMapSource,
-  arcJurisdictionSupplementalLayers,
+  biomedWorkbenchSupplementalLayers,
   type ArcJurisdictionSupplementalLayerSource
 } from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
@@ -173,6 +173,7 @@ function featureKindLabel(feature: MasterFeatureSummary) {
   if (layerTitle.includes("district")) return "BioMed district boundary";
   if (layerTitle.includes("chapter")) return "Chapter boundary";
   if (layerTitle.includes("county")) return "County context";
+  if (layerTitle.includes("hospital")) return "Hospital location";
   if (layerTitle.includes("fixed site")) return "Fixed collection site";
   if (layerTitle.includes("distribution")) return "Distribution anchor";
   if (layerTitle.includes("manufacturing")) return "Manufacturing location";
@@ -357,7 +358,7 @@ function SpatialRollupPanel({
 export default function BiomedOpsWorkbenchPage({
   title = "BioMed Ops Workbench",
   resultLabel = "Workbench",
-  supplementalLayers = arcJurisdictionSupplementalLayers,
+  supplementalLayers = biomedWorkbenchSupplementalLayers,
   signInHeading = "Sign in to inspect live workbench layers",
   signInCopy = "Layer inventory is visible. Counts, toggles, and selected features require the private Red Cross ArcGIS web map.",
   testId = "biomed-ops-workbench"

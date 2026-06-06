@@ -207,6 +207,13 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
+    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
+    const hospitalLayer = page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" });
+    await expect(hospitalLayer).toContainText("Hospital location layer for patient-care reach and network context.");
+    await expect(hospitalLayer.locator('[data-testid="ops-layer-legend-marker"]')).toHaveAttribute(
+      "data-kind",
+      "hospital",
+    );
     await expect(page.getByText("Use for local donor access.")).toHaveCount(0);
     await expect(page.getByText("Use for distribution and patient-care readiness.")).toHaveCount(0);
     await expect(page.getByRole("tab", { name: "Current" })).toBeVisible();
@@ -215,12 +222,6 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("Layer group subtotals")).toBeVisible();
     await expect(page.getByRole("button", { name: "Jurisdictions & Regions" })).toContainText(
       "BioMed ownership first; HS boundaries only for alignment comparison.",
-    );
-    await expect(page.getByRole("button", { name: "Hospitals" })).toContainText(
-      "Hospital locations and patient-care network context.",
-    );
-    await expect(page.locator(".opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
-      "Hospital portfolio locations for patient-care readiness and network context.",
     );
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("BioMed division boundaries.");
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
@@ -241,11 +242,15 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
+    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
+      "Hospital location layer for patient-care reach and network context.",
+    );
     await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
     await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
       "Additional private BioMed source layer loaded with the Workbench layer stack.",
     );
-    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
+    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(19);
     await expect(page.getByText("Source layers", { exact: true })).toBeVisible();
     await expect(page.getByText("Layer groups", { exact: true })).toBeVisible();
   });

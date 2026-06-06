@@ -8,7 +8,7 @@ export default function BiomedLayerAtlasPage() {
       resultLabel="Layer atlas"
       supplementalLayers={biomedLayerAtlasSource.supplementalLayers}
       signInHeading="Sign in to inspect the full layer atlas"
-      signInCopy="The Workbench layer inventory plus the supplemental source layer are listed here. Live counts, search, and selected features require the private Red Cross ArcGIS web map."
+      signInCopy="The Workbench layer inventory plus supplemental source layers are listed here. Live counts, search, and selected features require the private Red Cross ArcGIS web map."
       testId="biomed-layer-atlas"
     />
   );
