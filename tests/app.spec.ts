@@ -202,7 +202,7 @@ test.describe("Maps (shared shell)", () => {
         .map((child) => child.tagName.toLowerCase()),
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "topo-vector");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
@@ -239,7 +239,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
     await expect(page.getByRole("link", { name: /BioMed Layer Atlas/i })).toHaveAttribute("href", "/hub");
     await expect(page.getByText("Sign in to inspect the full layer atlas")).toBeVisible();
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "topo-vector");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
     await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-zoom[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
@@ -253,6 +253,8 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
       "Additional private BioMed source layer loaded with the Workbench layer stack.",
     );
+    await expect(page.getByText("World Hillshade")).toHaveCount(0);
+    await expect(page.getByText("World Topo")).toHaveCount(0);
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(19);
     await expect(page.getByText("Source layers", { exact: true })).toBeVisible();
     await expect(page.getByText("Layer groups", { exact: true })).toBeVisible();

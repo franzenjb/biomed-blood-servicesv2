@@ -37,6 +37,8 @@ import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
   getMapElementMap,
+  hideBasemapUtilityLayers,
+  isBasemapUtilityLayerTitle,
   presenterModes,
   previewLayerSnapshots,
   safeLayerTitle,
@@ -635,6 +637,7 @@ export default function BiomedOpsWorkbenchPage({
     (nextPreset: WorkbenchPreset) => {
       setPreset(nextPreset);
       const map = getMapElementMap(mapRef.current);
+      hideBasemapUtilityLayers(map);
       const mapLayers = collectArcJurisdictionLayers(map);
       if (!map || mapLayers.length === 0) {
         setLayers((current) => current.map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, nextPreset) })));
@@ -750,6 +753,7 @@ export default function BiomedOpsWorkbenchPage({
       await addArcgisPortalLayers(map, supplementalLayers);
       if (cancelled) return;
 
+      hideBasemapUtilityLayers(map);
       await applyPresentationMapStyle(map, view);
       await applyPresentationMarkers(map);
       if (cancelled) return;
@@ -781,7 +785,7 @@ export default function BiomedOpsWorkbenchPage({
           const result = hit.results.find((candidate: unknown) => {
             const graphic = (candidate as { graphic?: Graphic }).graphic;
             const title = graphic?.layer ? safeLayerTitle(graphic.layer as Layer) : "";
-            return Boolean(graphic?.attributes) && !title.toLowerCase().includes("light gray");
+            return Boolean(graphic?.attributes) && !isBasemapUtilityLayerTitle(title);
           }) as { graphic?: Graphic } | undefined;
           const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
           const summary = enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null;
@@ -919,6 +923,11 @@ export default function BiomedOpsWorkbenchPage({
     applyPreset("clean-map");
 
     const view = mapRef.current?.view as MapView | undefined;
+    const map = getMapElementMap(mapRef.current);
+    if (map) {
+      await applyPresentationMapStyle(map, view);
+      await applyPresentationMarkers(map);
+    }
     if (!view) return;
 
     try {
@@ -988,7 +997,7 @@ export default function BiomedOpsWorkbenchPage({
             key: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : "opsv2-preview",
             ref: mapRef,
             itemId: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : undefined,
-            basemap: isAuthenticated ? undefined : quietOpsBasemapId(),
+            basemap: quietOpsBasemapId(),
             center: CENTER,
             zoom: ZOOM,
             className: "opsv2__arcgis",

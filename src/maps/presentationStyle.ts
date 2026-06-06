@@ -3,7 +3,7 @@ import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type Layer from "@arcgis/core/layers/Layer";
 import type MapView from "@arcgis/core/views/MapView";
-import { collectArcJurisdictionLayers, safeLayerTitle } from "../utils/biomedMapSuite";
+import { collectArcJurisdictionLayers, hideBasemapUtilityLayers, safeLayerTitle } from "../utils/biomedMapSuite";
 
 type Rgba = [number, number, number, number];
 
@@ -28,23 +28,23 @@ type PresentationLayerStyle = {
   labelMaxScale?: number;
 };
 
-const QUIET_BASEMAP = "topo-vector";
+const QUIET_BASEMAP = "osm";
 
 const NO_FILL: Rgba = [255, 255, 255, 0];
 
 const layerStyles = {
   biomedDivision: {
-    fill: [215, 48, 65, 0.1],
-    outline: [122, 32, 43, 0.74],
-    outlineWidth: 1.45,
+    fill: [189, 214, 224, 0.16],
+    outline: [18, 24, 31, 0.84],
+    outlineWidth: 2.2,
     opacity: 1,
     labelHints: ["division"],
-    labelSize: 12.5
+    labelSize: 13
   },
   biomedRegion: {
-    fill: [82, 113, 130, 0.09],
-    outline: [42, 74, 92, 0.58],
-    outlineWidth: 1.05,
+    fill: [190, 225, 242, 0.22],
+    outline: [18, 24, 31, 0.7],
+    outlineWidth: 1.55,
     opacity: 0.96,
     labelHints: ["region"],
     labelSize: 10.5,
@@ -52,15 +52,15 @@ const layerStyles = {
     labelMinScale: 12000000
   },
   biomedDistrict: {
-    fill: [96, 106, 118, 0.055],
-    outline: [61, 72, 84, 0.36],
-    outlineWidth: 0.7,
+    fill: [190, 225, 242, 0.18],
+    outline: [18, 24, 31, 0.5],
+    outlineWidth: 1.05,
     opacity: 0.9
   },
   biomedChapter: {
     fill: NO_FILL,
-    outline: [80, 91, 105, 0.28],
-    outlineWidth: 0.55,
+    outline: [18, 24, 31, 0.42],
+    outlineWidth: 0.8,
     opacity: 0.8
   },
   hsBoundary: {
@@ -71,16 +71,16 @@ const layerStyles = {
     opacity: 0.82
   },
   county: {
-    fill: NO_FILL,
-    outline: [71, 85, 105, 0.18],
-    outlineWidth: 0.45,
-    opacity: 0.72
+    fill: [190, 225, 242, 0.22],
+    outline: [18, 24, 31, 0.4],
+    outlineWidth: 0.7,
+    opacity: 0.82
   },
   operations: {
-    fill: [66, 118, 101, 0.13],
-    outline: [42, 82, 72, 0.46],
-    outlineWidth: 0.85,
-    opacity: 0.9,
+    fill: [244, 211, 94, 0.42],
+    outline: [18, 24, 31, 0.68],
+    outlineWidth: 1.15,
+    opacity: 0.94,
     labelHints: ["operation", "chapter", "region"],
     labelSize: 9.5,
     labelMinScale: 5000000
@@ -92,15 +92,27 @@ const layerStyles = {
     opacity: 0.88
   },
   zip: {
-    fill: [205, 158, 76, 0.07],
-    outline: [130, 101, 56, 0.18],
-    outlineWidth: 0.35,
-    opacity: 0.72
+    fill: [184, 224, 242, 0.62],
+    outline: [18, 24, 31, 0.72],
+    outlineWidth: 1.15,
+    opacity: 0.98,
+    labelHints: ["zip", "postal"],
+    labelSize: 10.5,
+    labelMinScale: 900000
+  },
+  tradeArea: {
+    fill: [184, 224, 242, 0.64],
+    outline: [18, 24, 31, 0.86],
+    outlineWidth: 2,
+    opacity: 0.98,
+    labelHints: ["zip", "postal", "trade", "name"],
+    labelSize: 11,
+    labelMinScale: 1200000
   },
   fallback: {
-    fill: [95, 105, 118, 0.06],
-    outline: [67, 76, 90, 0.32],
-    outlineWidth: 0.65,
+    fill: [184, 224, 242, 0.28],
+    outline: [18, 24, 31, 0.42],
+    outlineWidth: 0.9,
     opacity: 0.82
   }
 } satisfies Record<string, PresentationLayerStyle>;
@@ -115,6 +127,7 @@ export function quietOpsBasemapId() {
 
 export function getPresentationStyleForLayer(title: string): PresentationLayerStyle {
   const normalized = normalize(title);
+  if (normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo")) return layerStyles.tradeArea;
   if (normalized.includes("hs ")) return layerStyles.hsBoundary;
   if (normalized.includes("division")) return layerStyles.biomedDivision;
   if (normalized.includes("region")) return layerStyles.biomedRegion;
@@ -209,9 +222,10 @@ async function applyLayerStyle(layer: Layer) {
 export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView) {
   if (!map) return;
 
+  hideBasemapUtilityLayers(map);
   map.basemap = QUIET_BASEMAP;
   if (view) {
-    view.background = { color: [238, 242, 240, 1] };
+    view.background = { color: [244, 247, 244, 1] };
     (view as MapView & { highlightOptions?: unknown }).highlightOptions = {
       color: [215, 48, 65, 1],
       fillOpacity: 0.08,

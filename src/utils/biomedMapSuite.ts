@@ -219,6 +219,13 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   }
 };
 
+const BASEMAP_UTILITY_LAYER_TITLES = new Set([
+  "light gray reference",
+  "light gray base",
+  "world hillshade",
+  "world topo"
+]);
+
 export const focusStops = [
   { id: "national", label: "National", center: [-96.2, 38.3], zoom: 4 },
   { id: "east", label: "Eastern Reach", center: [-78.5, 38.7], zoom: 5 },
@@ -232,6 +239,35 @@ export function getPresenterMode(modeId: BioMedPresenterModeId) {
 
 function combinedArcJurisdictionLayerSources(supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []) {
   return [...arcJurisdictionMapSource.operationalLayers, ...supplementalLayers];
+}
+
+function normalizedLayerTitle(value: string) {
+  return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export function isBasemapUtilityLayerTitle(title: string) {
+  const normalized = normalizedLayerTitle(title);
+  return (
+    BASEMAP_UTILITY_LAYER_TITLES.has(normalized) ||
+    normalized === "hillshade" ||
+    normalized === "topo" ||
+    normalized.endsWith(" hillshade") ||
+    normalized.endsWith(" topo")
+  );
+}
+
+export function isBasemapUtilityLayer(layer: Layer) {
+  return isBasemapUtilityLayerTitle(safeLayerTitle(layer));
+}
+
+export function hideBasemapUtilityLayers(map?: ArcGISMap) {
+  ((map?.allLayers?.toArray?.() ?? []) as Layer[]).forEach((layer) => {
+    if (!isBasemapUtilityLayer(layer)) return;
+    layer.visible = false;
+    if ("listMode" in layer) {
+      (layer as Layer & { listMode?: "show" | "hide" }).listMode = "hide";
+    }
+  });
 }
 
 export function getConfiguredArcJurisdictionLayer(
@@ -264,8 +300,7 @@ export function getLayerRole(title: string) {
 
 export function collectArcJurisdictionLayers(map?: ArcGISMap): Layer[] {
   return ((map?.allLayers?.toArray?.() ?? []) as Layer[]).filter((layer) => {
-    const title = safeLayerTitle(layer).toLowerCase();
-    return !["light gray reference", "light gray base"].includes(title);
+    return !isBasemapUtilityLayer(layer);
   });
 }
 
@@ -310,20 +345,22 @@ export function buildLayerSnapshots(
 }
 
 export function previewLayerSnapshots(supplementalLayers: ArcJurisdictionSupplementalLayerSource[] = []): BioMedLayerSnapshot[] {
-  return combinedArcJurisdictionLayerSources(supplementalLayers).map((layer) => {
-    const presentation = getLayerPresentation(layer.title, supplementalLayers);
-    return {
-      id: layer.title,
-      title: layer.title,
-      category: layer.category,
-      role: presentation.summary,
-      summary: presentation.summary,
-      useCase: presentation.useCase,
-      visible: layer.defaultVisible,
-      type: "private feature layer",
-      status: "Sign in required"
-    };
-  });
+  return combinedArcJurisdictionLayerSources(supplementalLayers)
+    .filter((layer) => !isBasemapUtilityLayerTitle(layer.title))
+    .map((layer) => {
+      const presentation = getLayerPresentation(layer.title, supplementalLayers);
+      return {
+        id: layer.title,
+        title: layer.title,
+        category: layer.category,
+        role: presentation.summary,
+        summary: presentation.summary,
+        useCase: presentation.useCase,
+        visible: layer.defaultVisible,
+        type: "private feature layer",
+        status: "Sign in required"
+      };
+    });
 }
 
 export function formatCount(value?: number) {
