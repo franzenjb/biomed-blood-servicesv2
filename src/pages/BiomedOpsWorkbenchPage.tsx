@@ -724,7 +724,7 @@ function zoomTargetForGeometry(geometry: Geometry) {
 }
 
 function isOperationalHitGraphic(graphic: Graphic | undefined, map?: ReturnType<typeof getMapElementMap>) {
-  const layer = graphic?.layer as Layer | undefined;
+  const layer = hitGraphicSourceLayer(graphic);
   if (!graphic?.attributes || !layer || !map) return false;
   if (isBasemapUtilityLayerTitle(safeLayerTitle(layer))) return false;
 
@@ -1184,10 +1184,7 @@ export default function BiomedOpsWorkbenchPage({
           view.popup?.close?.();
           const hit = await view.hitTest(event);
           const currentMap = getMapElementMap(mapElement);
-          const result = hit.results.find((candidate: unknown) => {
-            const graphic = (candidate as { graphic?: Graphic }).graphic;
-            return isOperationalHitGraphic(graphic, currentMap);
-          }) as { graphic?: Graphic } | undefined;
+          const result = selectBestOperationalHit(hit.results, currentMap);
           const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
           const summary = enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null;
           setSelectedFeature(summary);
