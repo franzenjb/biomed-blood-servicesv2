@@ -262,20 +262,89 @@ function featureDisplayTitle(feature: MasterFeatureSummary) {
 function featureKindLabel(feature: MasterFeatureSummary) {
   const layerTitle = feature.layerTitle.toLowerCase();
   if (isTradeAreaLayerTitle(feature.layerTitle)) return "Trade-area ZIP donor share";
+  if (layerTitle.includes("footprint")) return "Portfolio footprint";
+  if (layerTitle.includes("portfolio") && layerTitle.includes("home zip")) return "Portfolio manager base";
+  if (layerTitle.includes("portfolio")) return "Portfolio operating area";
+  if (layerTitle.includes("best location")) return "Recommended location";
   if (layerTitle.includes("division")) return "BioMed division boundary";
   if (layerTitle.includes("region")) return "BioMed regional boundary";
   if (layerTitle.includes("district")) return "BioMed district boundary";
   if (layerTitle.includes("chapter")) return "Chapter boundary";
-  if (layerTitle.includes("county")) return "County context";
+  if (layerTitle.includes("county") || layerTitle.includes("counties")) return "County context";
+  if (layerTitle.includes("state")) return "State context";
   if (layerTitle.includes("hospital")) return "Hospital location";
   if (layerTitle.includes("fixed site")) return "Fixed collection site";
+  if (layerTitle.includes("mobile")) return "Mobile staging site";
   if (layerTitle.includes("distribution")) return "Distribution anchor";
   if (layerTitle.includes("manufacturing")) return "Manufacturing location";
   if (layerTitle.includes("warehouse")) return "Warehouse/logistics anchor";
   if (layerTitle.includes("kitting")) return "Kitting support site";
   if (layerTitle.includes("irl")) return "Reference lab location";
+  if (layerTitle.includes("collection operations")) return "Collection operations";
   if (layerTitle.includes("zip")) return "ZIP-level operating data";
   return feature.layerTitle;
+}
+
+const GEO_PILL_LABELS = new Set(["region", "district", "division", "chapter", "county", "state", "city", "zip"]);
+const STAT_ROW_LABELS = new Set(["collections", "units", "rbc donors", "drives", "drive distance", "drive time", "priority"]);
+
+function partitionFeatureRows(rows: Array<{ label: string; value: string }>) {
+  const geo: Array<{ label: string; value: string }> = [];
+  const stats: Array<{ label: string; value: string }> = [];
+  const other: Array<{ label: string; value: string }> = [];
+  rows.forEach((row) => {
+    const key = row.label.toLowerCase();
+    if (STAT_ROW_LABELS.has(key)) stats.push(row);
+    else if (GEO_PILL_LABELS.has(key)) geo.push(row);
+    else other.push(row);
+  });
+  return { geo, stats: stats.slice(0, 4), other };
+}
+
+function featureAccentTone(feature: MasterFeatureSummary) {
+  const layerTitle = feature.layerTitle.toLowerCase();
+  if (feature.category === "geography") return "slate";
+  if (layerTitle.includes("distribution")) return "red";
+  if (layerTitle.includes("manufacturing") || layerTitle.includes("warehouse") || layerTitle.includes("kitting") || layerTitle.includes("irl")) return "violet";
+  if (layerTitle.includes("fixed site") || layerTitle.includes("mobile") || feature.category === "sites") return "teal";
+  if (feature.category === "operations") return "amber";
+  return "slate";
+}
+
+function featureInsight(feature: MasterFeatureSummary) {
+  const layerTitle = feature.layerTitle.toLowerCase();
+  const region = featureDetailValue(feature, ["Region"]);
+  const regionTail = region ? ` across ${region}` : "";
+
+  // Sites & facilities
+  if (layerTitle.includes("distribution")) return `Distribution anchor that receives manufactured blood products and routes them to hospitals${regionTail}.`;
+  if (layerTitle.includes("manufacturing")) return "Manufacturing and processing site that turns donations into patient-ready blood products.";
+  if (layerTitle.includes("warehouse")) return "Warehouse and logistics hub that stages product and supplies for the BioMed network.";
+  if (layerTitle.includes("kitting")) return "Kitting site that assembles the supplies field collection teams rely on.";
+  if (layerTitle.includes("irl")) return "Immunohematology reference lab providing specialized compatibility testing.";
+  if (layerTitle.includes("fixed site")) return "Fixed collection site where donors give blood that feeds the BioMed supply chain.";
+  if (layerTitle.includes("mobile")) return "Mobile staging site that launches blood drives directly into the community.";
+
+  // Operations
+  if (layerTitle.includes("footprint")) return "Geographic footprint a portfolio manager covers for hospital distribution.";
+  if (layerTitle.includes("portfolio") && layerTitle.includes("home zip")) return "Home base a portfolio manager works from across their assigned territory.";
+  if (layerTitle.includes("portfolio")) return "Portfolio operating area pairing accountable managers with the hospitals they serve.";
+  if (layerTitle.includes("best location")) return "Modeled site recommendation for expanding collection or distribution reach.";
+  if (layerTitle.includes("collection operations")) return "Collection activity tied to the geography and teams responsible for donor reach.";
+  if (layerTitle.includes("zip")) return "ZIP-level operating data connecting collection activity to local donor geography.";
+
+  // Geography
+  if (feature.category === "geography") {
+    if (layerTitle.includes("division")) return "BioMed division — the broadest stewardship tier organizing regional operations.";
+    if (layerTitle.includes("region")) return "BioMed region accountable for collection performance and donor reach in this area.";
+    if (layerTitle.includes("district")) return "BioMed district grouping local teams under a shared operating plan.";
+    if (layerTitle.includes("chapter")) return "Red Cross chapter footprint framing local presence and community ties.";
+    if (layerTitle.includes("county") || layerTitle.includes("counties")) return "County context for grounding operations in familiar local geography.";
+    if (layerTitle.includes("state")) return "State context framing reach without raw operational clutter.";
+    return feature.impact;
+  }
+
+  return feature.talkingPoint;
 }
 
 function featureContextRows(feature: MasterFeatureSummary) {
@@ -686,15 +755,46 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   const tier = hospitalAttribute(feature, ["Final Tier", "FINAL_TIER", "Tier"]);
   const distributionSite = hospitalAttribute(feature, ["Distribution Site", "DistributionSite"]);
   const priority = hospitalPriority(feature);
-  const rows = hospitalDetailRows(feature);
+  const address = composeFeatureAddress(feature);
+  const directionsUrl = address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+    : "";
+  const insight = distributionSite
+    ? `Hospital receiving Red Cross blood products, supplied through the ${distributionSite} distribution site.`
+    : "Hospital receiving Red Cross blood products from the BioMed network.";
+
+  const snapshotLabels = new Set(["distribution", "priority"]);
+  const detailRows = hospitalDetailRows(feature).filter((row) => !snapshotLabels.has(row.label.toLowerCase()));
+  const pills = detailRows.filter((row) => GEO_PILL_LABELS.has(row.label.toLowerCase()));
+  const facts = detailRows.filter((row) => !GEO_PILL_LABELS.has(row.label.toLowerCase()));
 
   return (
-    <>
+    <div className="opsv2__feature-body" data-tone="blue">
       <header className="opsv2__feature-hero opsv2__feature-hero--hospital">
         <p className="opsv2__eyebrow">Selected hospital</p>
         <h2>{title}</h2>
-        <p className="opsv2__feature-kind">Hospital receiving Red Cross blood products</p>
+        <span className="opsv2__feature-badge">
+          <i aria-hidden="true" />
+          Hospital location
+        </span>
       </header>
+
+      <p className="opsv2__feature-insight">{insight}</p>
+
+      {address && (
+        <div className="opsv2__feature-address" aria-label="Hospital address">
+          <svg className="opsv2__feature-address-pin" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+          </svg>
+          <span className="opsv2__feature-address-text">{address}</span>
+          {directionsUrl && (
+            <a className="opsv2__feature-directions" href={directionsUrl} target="_blank" rel="noreferrer">
+              Directions
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </div>
+      )}
 
       <div className="opsv2__hospital-snapshot" aria-label="Hospital selection summary">
         {tier && (
@@ -717,9 +817,20 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         )}
       </div>
 
-      {rows.length > 0 && (
+      {pills.length > 0 && (
+        <div className="opsv2__feature-pills" aria-label="Hospital geographic context">
+          {pills.map((item) => (
+            <span key={`${item.label}-${item.value}`} className="opsv2__feature-pill">
+              <em>{item.label}</em>
+              {item.value}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {facts.length > 0 && (
         <dl className="opsv2__feature-facts opsv2__feature-facts--hospital">
-          {rows.map((item) => (
+          {facts.map((item) => (
             <div key={`${item.label}-${item.value}`}>
               <dt>{item.label}</dt>
               <dd>{item.value}</dd>
@@ -734,35 +845,75 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
           <strong>{feature.layerTitle}</strong>
         </span>
       </div>
-    </>
+    </div>
   );
 }
 
 function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
-  const address = composeFeatureAddress(feature);
-  const rows = compactFeatureRows(feature);
-  const title = featureDisplayTitle(feature);
-  const isTradeAreaFeature = isTradeAreaLayerTitle(feature.layerTitle);
+  if (isTradeAreaLayerTitle(feature.layerTitle)) return <TradeAreaFeatureCard feature={feature} />;
 
-  if (isTradeAreaFeature) return <TradeAreaFeatureCard feature={feature} />;
+  const address = composeFeatureAddress(feature);
+  const title = featureDisplayTitle(feature);
+  const tone = featureAccentTone(feature);
+  const insight = featureInsight(feature);
+  const { geo, stats, other } = partitionFeatureRows(compactFeatureRows(feature));
+  const directionsUrl = address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+    : "";
 
   return (
-    <>
+    <div className="opsv2__feature-body" data-tone={tone}>
       <header className="opsv2__feature-hero opsv2__feature-hero--compact">
         <p className="opsv2__eyebrow">Selected feature</p>
         <h2>{title}</h2>
-        <p className="opsv2__feature-kind">{featureKindLabel(feature)}</p>
+        <span className="opsv2__feature-badge">
+          <i aria-hidden="true" />
+          {featureKindLabel(feature)}
+        </span>
       </header>
 
+      {insight && <p className="opsv2__feature-insight">{insight}</p>}
+
       {address && (
-        <p className="opsv2__feature-address" aria-label="Feature address">
-          {address}
-        </p>
+        <div className="opsv2__feature-address" aria-label="Feature address">
+          <svg className="opsv2__feature-address-pin" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+          </svg>
+          <span className="opsv2__feature-address-text">{address}</span>
+          {directionsUrl && (
+            <a className="opsv2__feature-directions" href={directionsUrl} target="_blank" rel="noreferrer">
+              Directions
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </div>
       )}
 
-      {rows.length > 0 && (
+      {stats.length > 0 && (
+        <div className="opsv2__feature-stats" aria-label="Feature metrics">
+          {stats.map((item) => (
+            <div key={`${item.label}-${item.value}`}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {geo.length > 0 && (
+        <div className="opsv2__feature-pills" aria-label="Geographic context">
+          {geo.map((item) => (
+            <span key={`${item.label}-${item.value}`} className="opsv2__feature-pill">
+              <em>{item.label}</em>
+              {item.value}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {other.length > 0 && (
         <dl className="opsv2__feature-facts opsv2__feature-facts--compact">
-          {rows.map((item) => (
+          {other.map((item) => (
             <div key={`${item.label}-${item.value}`}>
               <dt>{item.label}</dt>
               <dd>{item.value}</dd>
@@ -771,15 +922,13 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
         </dl>
       )}
 
-      {isTradeAreaFeature && <TradeAreaZipLegend feature={feature} />}
-
       <div className="opsv2__feature-meta opsv2__feature-meta--quiet" aria-label="Selected feature source">
         <span>
           Source
           <strong>{feature.layerTitle}</strong>
         </span>
       </div>
-    </>
+    </div>
   );
 }
 
