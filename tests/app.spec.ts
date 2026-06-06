@@ -205,7 +205,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
-    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(17);
+    await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.getByText("Use for local donor access.")).toHaveCount(0);
     await expect(page.getByText("Use for distribution and patient-care readiness.")).toHaveCount(0);
@@ -215,6 +215,12 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("Layer group subtotals")).toBeVisible();
     await expect(page.getByRole("button", { name: "Jurisdictions & Regions" })).toContainText(
       "BioMed ownership first; HS boundaries only for alignment comparison.",
+    );
+    await expect(page.getByRole("button", { name: "Hospitals" })).toContainText(
+      "Hospital locations and patient-care network context.",
+    );
+    await expect(page.locator(".opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
+      "Hospital portfolio locations for patient-care readiness and network context.",
     );
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("BioMed division boundaries.");
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(

@@ -21,6 +21,10 @@ export type MasterFeatureSummary = {
 
 const layerCategoryRules: Array<{ category: MasterLayerCategory; patterns: string[] }> = [
   {
+    category: "hospitals",
+    patterns: ["hospital"]
+  },
+  {
     category: "manufacturing",
     patterns: ["manufacturing", "warehouse", "kitting", "irl"]
   },

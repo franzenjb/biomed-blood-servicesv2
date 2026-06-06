@@ -23,7 +23,11 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
-import { arcJurisdictionMapSource, type ArcJurisdictionSupplementalLayerSource } from "../config/arcgisLayers";
+import {
+  arcJurisdictionMapSource,
+  arcJurisdictionSupplementalLayers,
+  type ArcJurisdictionSupplementalLayerSource
+} from "../config/arcgisLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
@@ -82,7 +86,6 @@ const CENTER = HOME_CENTER.join(",");
 const ZOOM = 4;
 const SEARCH_PER_LAYER_LIMIT = 4;
 const SEARCH_TOTAL_LIMIT = 24;
-const NO_SUPPLEMENTAL_LAYERS: ArcJurisdictionSupplementalLayerSource[] = [];
 const SEARCH_FIELD_HINTS = [
   "name",
   "title",
@@ -354,7 +357,7 @@ function SpatialRollupPanel({
 export default function BiomedOpsWorkbenchPage({
   title = "BioMed Ops Workbench",
   resultLabel = "Workbench",
-  supplementalLayers = NO_SUPPLEMENTAL_LAYERS,
+  supplementalLayers = arcJurisdictionSupplementalLayers,
   signInHeading = "Sign in to inspect live workbench layers",
   signInCopy = "Layer inventory is visible. Counts, toggles, and selected features require the private Red Cross ArcGIS web map.",
   testId = "biomed-ops-workbench"

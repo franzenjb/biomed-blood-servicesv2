@@ -121,6 +121,12 @@ export const sourceGroups: Array<{
     icon: Activity
   },
   {
+    id: "hospitals",
+    label: "Hospitals",
+    description: "Hospital locations and patient-care network context.",
+    icon: Hospital
+  },
+  {
     id: "manufacturing",
     label: "Manufacturing",
     description: "Processing, kitting, IRL, and product-readiness infrastructure.",
@@ -158,6 +164,10 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   "Distribution Sites": {
     summary: "Fulfillment anchors that move products toward hospital support.",
     useCase: "Use for distribution and patient-care readiness."
+  },
+  "Hospital Locations": {
+    summary: "Hospital portfolio locations for patient-care readiness and network context.",
+    useCase: "Use when connecting BioMed operations to hospital reach."
   },
   "Fixed Sites": {
     summary: "Donor-facing fixed collection sites.",

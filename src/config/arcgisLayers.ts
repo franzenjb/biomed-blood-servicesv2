@@ -15,7 +15,7 @@ export type MasterMapLayerSource = {
   mapViewerUrl: string;
 };
 
-export type ArcJurisdictionLayerCategory = "sites" | "geography" | "operations" | "reference";
+export type ArcJurisdictionLayerCategory = "sites" | "geography" | "operations" | "hospitals" | "reference";
 
 export type ArcJurisdictionLayerSource = {
   title: string;
@@ -255,6 +255,19 @@ export const arcJurisdictionMapSource = {
     }
   ] satisfies ArcJurisdictionLayerSource[]
 };
+
+export const arcJurisdictionSupplementalLayers = [
+  {
+    title: "Hospital Locations",
+    itemId: "87e9189c3b284ecb900749eecfb64a05",
+    category: "hospitals",
+    role: "Hospital portfolio locations for patient-care readiness and network rollups.",
+    defaultVisible: false,
+    itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=87e9189c3b284ecb900749eecfb64a05",
+    mapViewerUrl:
+      "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=87e9189c3b284ecb900749eecfb64a05"
+  }
+] satisfies ArcJurisdictionSupplementalLayerSource[];
 
 export const biomedLayerAtlasSource = {
   title: "BioMed Layer Atlas",
