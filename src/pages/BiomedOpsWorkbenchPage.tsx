@@ -138,6 +138,94 @@ function buildSearchWhere(fields: string[], term: string) {
   return fields.map((field) => `UPPER(${field}) LIKE '%${escapedTerm}%'`).join(" OR ");
 }
 
+function normalizeDisplayValue(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function featureDisplayTitle(feature: MasterFeatureSummary) {
+  const title = feature.title.trim();
+  const layerTitle = feature.layerTitle.toLowerCase();
+  if (layerTitle.includes("division") && !/division$/i.test(title)) return `${title} Division`;
+  if (layerTitle.includes("district") && !/district$/i.test(title)) return `${title} District`;
+  if (layerTitle.includes("chapter") && !/chapter$/i.test(title)) return `${title} Chapter`;
+  if (layerTitle.includes("county") && !/county$/i.test(title)) return `${title} County`;
+  return title;
+}
+
+function featureKindLabel(feature: MasterFeatureSummary) {
+  const layerTitle = feature.layerTitle.toLowerCase();
+  if (layerTitle.includes("division")) return "BioMed division boundary";
+  if (layerTitle.includes("region")) return "BioMed regional boundary";
+  if (layerTitle.includes("district")) return "BioMed district boundary";
+  if (layerTitle.includes("chapter")) return "Chapter boundary";
+  if (layerTitle.includes("county")) return "County context";
+  if (layerTitle.includes("fixed site")) return "Fixed collection site";
+  if (layerTitle.includes("distribution")) return "Distribution anchor";
+  if (layerTitle.includes("manufacturing")) return "Manufacturing location";
+  if (layerTitle.includes("warehouse")) return "Warehouse/logistics anchor";
+  if (layerTitle.includes("kitting")) return "Kitting support site";
+  if (layerTitle.includes("irl")) return "Reference lab location";
+  if (layerTitle.includes("zip")) return "ZIP-level operating data";
+  return feature.layerTitle;
+}
+
+function featureStory(feature: MasterFeatureSummary) {
+  const layerTitle = feature.layerTitle.toLowerCase();
+  if (layerTitle.includes("division")) {
+    return "Use this as the leadership-level BioMed territory frame before drilling into regions, districts, chapters, and counties.";
+  }
+  if (layerTitle.includes("region")) {
+    return "Use this to tell the regional ownership story and connect local collection activity to the larger BioMed operating model.";
+  }
+  if (layerTitle.includes("district")) {
+    return "Use this when the story needs the operating layer between regional leadership and local chapter delivery.";
+  }
+  if (layerTitle.includes("county")) {
+    return "Use this as local community context, then pair it with BioMed ownership layers to avoid confusing county geography with operating responsibility.";
+  }
+  if (feature.category === "sites" || feature.category === "manufacturing") {
+    return "Use this to explain the physical network that supports collection access, processing, logistics, and patient-care readiness.";
+  }
+  if (feature.category === "operations") {
+    return "Use this to connect FY25 activity and portfolio coverage to the teams responsible for the local BioMed story.";
+  }
+  return feature.talkingPoint;
+}
+
+function featureContextRows(feature: MasterFeatureSummary) {
+  const titleValue = normalizeDisplayValue(feature.title);
+  return [...feature.geography, ...feature.metrics]
+    .filter((item) => normalizeDisplayValue(item.value) !== titleValue)
+    .slice(0, 6);
+}
+
+async function enrichGraphicAttributes(graphic: Graphic) {
+  const layer = graphic.layer as FeatureLayer | undefined;
+  if (!layer || !isSearchableFeatureLayer(layer)) return graphic;
+
+  try {
+    await layer.load?.();
+    const objectIdRaw = layer.objectIdField ? graphic.attributes?.[layer.objectIdField] : undefined;
+    const objectId = Number(objectIdRaw);
+    if (!Number.isFinite(objectId)) return graphic;
+
+    const query = layer.createQuery();
+    query.objectIds = [objectId];
+    query.outFields = ["*"];
+    query.returnGeometry = false;
+
+    const result = await layer.queryFeatures(query);
+    const fullAttributes = result.features?.[0]?.attributes;
+    if (fullAttributes) {
+      graphic.attributes = { ...graphic.attributes, ...fullAttributes };
+    }
+  } catch {
+    // Hit-test attributes are still good enough for a fallback readout.
+  }
+
+  return graphic;
+}
+
 function zoomTargetForGeometry(geometry: Geometry) {
   const extent = geometry.extent as Extent | null | undefined;
   if (extent) return extent.clone().expand(1.35);
@@ -435,7 +523,8 @@ export default function BiomedOpsWorkbenchPage() {
             const title = graphic?.layer ? safeLayerTitle(graphic.layer as Layer) : "";
             return Boolean(graphic?.attributes) && !title.toLowerCase().includes("light gray");
           }) as { graphic?: Graphic } | undefined;
-          setSelectedFeature(result?.graphic ? summarizeMasterFeature(result.graphic) : null);
+          const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
+          setSelectedFeature(enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null);
           if (result?.graphic) {
             setRightOpen(true);
             setRightTab("detail");
@@ -469,7 +558,7 @@ export default function BiomedOpsWorkbenchPage() {
   async function selectSearchResult(result: FeatureSearchResult) {
     result.layer.visible = true;
     refreshLayers();
-    setSelectedFeature(summarizeMasterFeature(result.graphic, result.layerTitle));
+    setSelectedFeature(summarizeMasterFeature(result.graphic, result.layerTitle, true));
     setExpandedGroups((current) => ({ ...current, [result.category]: true }));
     setRightOpen(true);
     setRightTab("detail");
@@ -799,32 +888,55 @@ export default function BiomedOpsWorkbenchPage() {
 
             {rightTab === "detail" && (
               <section className="opsv2__selected-card">
-                <p className="opsv2__eyebrow">Selected feature</p>
                 {selectedFeature ? (
                   <>
-                    <h1>{selectedFeature.title}</h1>
-                    <dl className="opsv2__detail-grid">
-                      <div>
-                        <dt>Layer</dt>
-                        <dd>{selectedFeature.layerTitle}</dd>
-                      </div>
-                      <div>
-                        <dt>Type</dt>
-                        <dd>{selectedFeature.category}</dd>
-                      </div>
-                      {selectedFeature.geography.map((item) => (
-                        <div key={`${item.label}-${item.value}`}>
-                          <dt>{item.label}</dt>
-                          <dd>{item.value}</dd>
-                        </div>
-                      ))}
-                      {selectedFeature.metrics.map((item) => (
-                        <div key={`${item.label}-${item.value}`}>
-                          <dt>{item.label}</dt>
-                          <dd>{item.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
+                    <header className="opsv2__feature-hero">
+                      <p className="opsv2__eyebrow">Selected feature</p>
+                      <h2>{featureDisplayTitle(selectedFeature)}</h2>
+                      <p className="opsv2__feature-kind">{featureKindLabel(selectedFeature)}</p>
+                      <p className="opsv2__feature-story">{featureStory(selectedFeature)}</p>
+                    </header>
+
+                    <div className="opsv2__feature-meta" aria-label="Selected feature source">
+                      <span>
+                        Source layer
+                        <strong>{selectedFeature.layerTitle}</strong>
+                      </span>
+                      <span>
+                        Available fields
+                        <strong>{selectedFeature.sourceFieldCount}</strong>
+                      </span>
+                    </div>
+
+                    {featureContextRows(selectedFeature).length > 0 && (
+                      <dl className="opsv2__feature-facts">
+                        {featureContextRows(selectedFeature).map((item) => (
+                          <div key={`${item.label}-${item.value}`}>
+                            <dt>{item.label}</dt>
+                            <dd>{item.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+
+                    <section className="opsv2__source-fields" aria-label="Curated source fields">
+                      <header>
+                        <span>Source fields</span>
+                        <b>{Math.min(selectedFeature.sourceFields.length, selectedFeature.sourceFieldCount)}/{selectedFeature.sourceFieldCount}</b>
+                      </header>
+                      {selectedFeature.sourceFields.length > 0 ? (
+                        <dl>
+                          {selectedFeature.sourceFields.map((item) => (
+                            <div key={`${item.label}-${item.value}`}>
+                              <dt>{item.label}</dt>
+                              <dd>{item.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      ) : (
+                        <p>No useful source fields were returned for this feature.</p>
+                      )}
+                    </section>
                   </>
                 ) : (
                   <p className="opsv2__empty">No feature selected.</p>
