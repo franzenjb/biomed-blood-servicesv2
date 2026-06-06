@@ -200,6 +200,7 @@
 .np-note--resolved {
   background: #f7f6f3;
   border-style: dashed;
+  opacity: 0.82;
 }
 .np-note__head {
   display: flex;
@@ -208,6 +209,55 @@
   gap: 10px;
   font-size: 11px;
   color: var(--d-faint, #737373);
+}
+.np-note__check {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  cursor: pointer;
+}
+.np-note__check input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  cursor: pointer;
+}
+.np-note__checkmark {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--d-line, rgba(0, 0, 0, 0.22));
+  border-radius: 5px;
+  background: #fff;
+  pointer-events: none;
+}
+.np-note__checkmark::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  opacity: 0;
+  transform: rotate(45deg);
+}
+.np-note__check input:checked + .np-note__checkmark {
+  background: #6a6a6a;
+  border-color: #6a6a6a;
+}
+.np-note__check input:checked + .np-note__checkmark::after {
+  opacity: 1;
+}
+.np-note__check input:focus-visible + .np-note__checkmark {
+  outline: 2px solid var(--arc-red, #ed1b2e);
+  outline-offset: 2px;
+}
+.np-note__check input:disabled + .np-note__checkmark {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .np-note__author {
   font-weight: 700;
@@ -232,8 +282,8 @@
   background: rgba(237, 27, 46, 0.1);
 }
 .np-note__status--resolved {
-  color: #2d5a27;
-  background: rgba(45, 90, 39, 0.12);
+  color: #686868;
+  background: rgba(0, 0, 0, 0.08);
 }
 .np-note__page {
   max-width: 150px;
@@ -243,7 +293,6 @@
   color: var(--d-soft, #4a4a4a);
 }
 .np-note__ts {
-  margin-left: auto;
   font-size: 10px;
 }
 .np-note__actions {
@@ -251,20 +300,6 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-.np-note__resolve {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--d-soft, #4a4a4a);
-  background: transparent;
-  border: 1px solid var(--d-line, rgba(0, 0, 0, 0.16));
-  border-radius: 999px;
-  padding: 3px 8px;
-  cursor: pointer;
-}
-.np-note__resolve:hover {
-  color: var(--d-text);
-  border-color: var(--d-soft);
 }
 .np-note__edit {
   font-size: 10px;
@@ -291,7 +326,6 @@
 .np-note__del:hover {
   color: var(--arc-red);
 }
-.np-note__resolve:disabled,
 .np-note__edit:disabled,
 .np-note__del:disabled {
   opacity: 0.5;
@@ -305,7 +339,15 @@
   white-space: pre-wrap;
 }
 .np-note--resolved .np-note__text {
-  color: #686868;
+  color: #777;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+.np-note--resolved .np-note__author,
+.np-note--resolved .np-note__kind,
+.np-note--resolved .np-note__page,
+.np-note--resolved .np-note__ts {
+  color: #777;
 }
 .np-edit {
   margin-top: 10px;
@@ -462,6 +504,10 @@ html[data-theme="dark"] .np-note--resolved {
 }
 html[data-theme="dark"] .np-note--resolved .np-note__text {
   color: rgba(255, 255, 255, 0.7);
+}
+html[data-theme="dark"] .np-note__checkmark {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 @media (max-width: 480px) {

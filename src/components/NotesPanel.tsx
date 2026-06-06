@@ -7,6 +7,7 @@ import "./NotesPanel.css";
 
 type Kind = "note" | "question" | "answer";
 type Status = "open" | "resolved";
+type TaskFilter = "open" | "completed" | "all";
 type Note = {
   id: string;
   page: string;
@@ -137,8 +138,7 @@ export default function NotesPanel() {
   const [mode, setMode] = useState<"shared" | "local">(SUPABASE_READY ? "shared" : "local");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [showAllPages, setShowAllPages] = useState(false);
-  const [openOnly, setOpenOnly] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<TaskFilter>("open");
   const [lastSyncedAt, setLastSyncedAt] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editAuthor, setEditAuthor] = useState("Jeff");
@@ -193,30 +193,25 @@ export default function NotesPanel() {
     else writeLocal(notes);
   }, [mode, notes]);
 
-  const pageNotes = useMemo(
-    () => notes.filter((n) => n.page === page).sort((a, b) => a.ts - b.ts),
-    [notes, page],
-  );
   const openNotes = useMemo(() => notes.filter((n) => n.status === "open"), [notes]);
-  const pageOpenNotes = useMemo(() => pageNotes.filter((n) => n.status === "open"), [pageNotes]);
+  const completedNotes = useMemo(() => notes.filter((n) => n.status === "resolved"), [notes]);
   const visibleNotes = useMemo(
     () =>
-      (showAllPages ? notes : pageNotes)
-        .filter((n) => !openOnly || n.status === "open")
+      notes
+        .filter((n) => {
+          if (taskFilter === "open") return n.status === "open";
+          if (taskFilter === "completed") return n.status === "resolved";
+          return true;
+        })
         .slice()
         .sort((a, b) => a.ts - b.ts),
-    [notes, openOnly, pageNotes, showAllPages],
+    [notes, taskFilter],
   );
 
   const pageLabel = PAGE_LABELS[page] ?? page;
-  const unreadCount = pageOpenNotes.length;
-  const scopeLabel = showAllPages
-    ? openOnly
-      ? "Open items across pages"
-      : "All pages"
-    : openOnly
-      ? `${pageLabel} open items`
-      : pageLabel;
+  const unreadCount = openNotes.length;
+  const filterLabel =
+    taskFilter === "open" ? "Open tasks" : taskFilter === "completed" ? "Completed tasks" : "All tasks";
   const syncLabel =
     mode === "shared"
       ? `Shared live${lastSyncedAt ? ` - refreshed ${fmtTime(lastSyncedAt)}` : ""}`
@@ -339,7 +334,7 @@ export default function NotesPanel() {
       (n) =>
         `[${fmtTime(n.ts)}] ${PAGE_LABELS[n.page] ?? n.page} - ${n.author} (${n.kind}, ${n.status}):\n${n.text}\n`,
     );
-    const body = `Notes for ${scopeLabel}${showAllPages ? "" : ` (${page})`}\n\n${lines.join("\n")}`;
+    const body = `Biomed review queue - ${filterLabel}\n\n${lines.join("\n")}`;
     try {
       await navigator.clipboard.writeText(body);
     } catch {
@@ -405,13 +400,13 @@ export default function NotesPanel() {
             <header className="np-header">
               <div>
                 <p className="np-eyebrow">
-                  Notes &amp; questions
+                  Review tasks
                   <span className={`np-mode np-mode--${mode}`}>
                     {mode === "shared" ? "shared (live)" : "local (this device)"}
                   </span>
                 </p>
-                <h2 className="np-title">{scopeLabel}</h2>
-                <p className="np-path mono">{page}</p>
+                <h2 className="np-title">{filterLabel}</h2>
+                <p className="np-path mono">Universal queue - write location in the task text</p>
                 <p className="np-sync mono">{syncLabel}</p>
               </div>
               <button type="button" className="np-close" aria-label="Close" onClick={() => setOpen(false)}>
@@ -421,24 +416,28 @@ export default function NotesPanel() {
 
             <div className="np-actions">
               <button type="button" className="np-btn" onClick={copyPage}>
-                {showAllPages ? "Copy all notes" : "Copy page notes"}
-              </button>
-              <button type="button" className="np-btn" onClick={() => setShowAllPages((value) => !value)}>
-                {showAllPages ? "This page" : `All pages (${notes.length})`}
+                Copy visible
               </button>
               <button
                 type="button"
-                className={`np-btn ${openOnly ? "np-btn--active" : ""}`}
-                onClick={() => {
-                  if (openOnly) {
-                    setOpenOnly(false);
-                  } else {
-                    setShowAllPages(true);
-                    setOpenOnly(true);
-                  }
-                }}
+                className={`np-btn ${taskFilter === "open" ? "np-btn--active" : ""}`}
+                onClick={() => setTaskFilter("open")}
               >
-                {openOnly ? "All statuses" : `Open only (${openNotes.length})`}
+                Open tasks ({openNotes.length})
+              </button>
+              <button
+                type="button"
+                className={`np-btn ${taskFilter === "completed" ? "np-btn--active" : ""}`}
+                onClick={() => setTaskFilter("completed")}
+              >
+                Completed ({completedNotes.length})
+              </button>
+              <button
+                type="button"
+                className={`np-btn ${taskFilter === "all" ? "np-btn--active" : ""}`}
+                onClick={() => setTaskFilter("all")}
+              >
+                All ({notes.length})
               </button>
               <button type="button" className="np-btn" onClick={exportAll}>
                 Export all
@@ -467,24 +466,32 @@ export default function NotesPanel() {
             <div className="np-list">
               {visibleNotes.length === 0 ? (
                 <p className="np-empty">
-                  {openOnly && showAllPages
-                    ? "No open notes across any page."
-                    : openOnly
-                      ? "No open notes for this page."
-                      : showAllPages
-                    ? "No shared notes yet. Add the first one below."
-                    : "No notes yet for this page. Add the first one below."}
+                  {taskFilter === "open"
+                    ? "No open tasks. Add the next review item below."
+                    : taskFilter === "completed"
+                      ? "No completed tasks yet."
+                      : "No shared tasks yet. Add the first one below."}
                 </p>
               ) : (
                 visibleNotes.map((n) => (
                   <article className={`np-note np-note--${n.kind} np-note--${n.status}`} key={n.id}>
                     <header className="np-note__head">
+                      <label className="np-note__check">
+                        <input
+                          type="checkbox"
+                          checked={n.status === "resolved"}
+                          onChange={() => void updateStatus(n.id, n.status === "open" ? "resolved" : "open")}
+                          disabled={busy}
+                          aria-label={n.status === "open" ? "Mark task completed" : "Reopen task"}
+                        />
+                        <span className="np-note__checkmark" aria-hidden="true" />
+                      </label>
                       <span className="np-note__author">{n.author}</span>
                       <span className="np-note__kind">{n.kind}</span>
                       <span className={`np-note__status np-note__status--${n.status}`}>
-                        {n.status === "open" ? "Open" : "Resolved"}
+                        {n.status === "open" ? "Open task" : "Completed"}
                       </span>
-                      {showAllPages && <span className="np-note__page">{PAGE_LABELS[n.page] ?? n.page}</span>}
+                      <span className="np-note__page">{PAGE_LABELS[n.page] ?? n.page}</span>
                       <span className="np-note__ts mono">{fmtTime(n.ts)}</span>
                       <span className="np-note__actions">
                         <button
@@ -495,15 +502,6 @@ export default function NotesPanel() {
                           disabled={busy || editingId === n.id}
                         >
                           Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="np-note__resolve"
-                          aria-label={n.status === "open" ? "Resolve note" : "Reopen note"}
-                          onClick={() => void updateStatus(n.id, n.status === "open" ? "resolved" : "open")}
-                          disabled={busy}
-                        >
-                          {n.status === "open" ? "Resolve" : "Reopen"}
                         </button>
                         <button
                           type="button"
@@ -598,7 +596,7 @@ export default function NotesPanel() {
                 rows={3}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={`Add a ${kind} for ${pageLabel}…`}
+                placeholder={`Add task, e.g. ${pageLabel} - Slide 6 - correct typo...`}
               />
               <button type="submit" className="np-submit" disabled={!text.trim()}>
                 {busy ? "Saving..." : "Save"}
