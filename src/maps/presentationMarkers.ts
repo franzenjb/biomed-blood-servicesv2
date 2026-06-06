@@ -58,7 +58,7 @@ const MARKER_STYLES: Record<PresentationMarkerKind, { fill: string; stroke: stri
   hospital: {
     fill: "#d71920",
     stroke: "#8f1118",
-    label: "Hospital",
+    label: "Hospital tiers",
     glyph: '<path d="M22 11h6v8h8v6h-8v8h-6v-8h-8v-6h8z" fill="#fff"/>'
   },
   distribution: {
@@ -189,7 +189,7 @@ export function markerKindForLayer(title: string, category?: BioMedLayerSnapshot
 }
 
 export function markerUrl(kind: PresentationMarkerKind) {
-  if (kind === "hospital") return hospitalTierMarkerUrl("tier1");
+  if (kind === "hospital") return hospitalTierLegendMarkerUrl();
 
   const style = MARKER_STYLES[kind];
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 48 48">
@@ -197,6 +197,28 @@ export function markerUrl(kind: PresentationMarkerKind) {
 <circle cx="24" cy="24" r="19" fill="#fff" filter="url(#shadow)"/>
 <circle cx="24" cy="24" r="16" fill="${style.fill}" stroke="${style.stroke}" stroke-width="2"/>
 ${style.glyph}
+</svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function hospitalTierLegendMarkerUrl() {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 48 48" role="img" aria-label="Hospital tier colors">
+<defs>
+  <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%">
+    <feDropShadow dx="0" dy="3" stdDeviation="2.4" flood-color="#111827" flood-opacity=".42"/>
+  </filter>
+  <linearGradient id="tierFill" x1="8" y1="10" x2="40" y2="38" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="${HOSPITAL_TIER_STYLES.tier1.fill}"/>
+    <stop offset=".5" stop-color="${HOSPITAL_TIER_STYLES.tier2.fill}"/>
+    <stop offset="1" stop-color="${HOSPITAL_TIER_STYLES.tier3.fill}"/>
+  </linearGradient>
+</defs>
+<circle cx="24" cy="24" r="20" fill="#f8fafc" filter="url(#shadow)"/>
+<circle cx="24" cy="24" r="16.5" fill="url(#tierFill)" stroke="#111827" stroke-opacity=".75" stroke-width="2"/>
+<path d="M16 36V19c0-2 1.6-3.6 3.6-3.6h8.8c2 0 3.6 1.6 3.6 3.6v17" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+<path d="M24 19.5v10M19 24.5h10" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="3.4"/>
+<path d="M20.5 36v-6.5h7V36" fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="3"/>
+<path d="M16 36h16" stroke="#fff" stroke-linecap="round" stroke-width="3"/>
 </svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }
