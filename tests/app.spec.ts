@@ -202,7 +202,7 @@ test.describe("Maps (shared shell)", () => {
         .map((child) => child.tagName.toLowerCase()),
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
@@ -211,7 +211,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.locator(".opsv2__layer-group").first()).toContainText("Hospitals & Patient Care");
-    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
+    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
     const hospitalLayer = page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" });
     await expect(hospitalLayer).toContainText("Hospitals receiving Red Cross blood products.");
     await expect(hospitalLayer.locator('[data-testid="ops-layer-legend-marker"]')).toHaveAttribute(
@@ -231,11 +231,16 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
       "Start here for the national leadership view.",
     );
-    await expect(page.locator("select")).toHaveValue("all-layers");
+    await expect(page.locator("select")).toHaveValue("default-workbench");
+    await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
     await page.getByRole("button", { name: "Reset map" }).click();
-    await expect(page.locator("select")).toHaveValue("clean-map");
-    await expect(page.getByText("0 active of 18 layers.")).toBeVisible();
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
+    await expect(page.locator("select")).toHaveValue("default-workbench");
+    await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await page.getByRole("tab", { name: "Detail" }).click();
     await expect(page.getByText("No feature selected.")).toBeVisible();
@@ -246,17 +251,17 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
     await expect(page.getByRole("link", { name: /BioMed Layer Atlas/i })).toHaveAttribute("href", "/hub");
     await expect(page.getByText("Sign in to inspect the full layer atlas")).toBeVisible();
-    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-zoom[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
-    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("1/1");
+    await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",
     );
-    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
+    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("0/1");
     await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
       "Additional private BioMed source layer loaded with the Workbench layer stack.",
     );
@@ -264,8 +269,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("World Topo")).toHaveCount(0);
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(19);
-    await expect(page.getByText("Source layers", { exact: true })).toBeVisible();
-    await expect(page.getByText("Layer groups", { exact: true })).toBeVisible();
+    await expect(page.getByText("3 active of 19 layers.")).toBeVisible();
   });
 
   test("/ops is the short V2 workbench route", async ({ page }) => {

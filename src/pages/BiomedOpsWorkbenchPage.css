@@ -390,7 +390,6 @@
 }
 
 .opsv2__rollup-card,
-.opsv2__summary-card,
 .opsv2__subtotal-card {
   border: 1px solid #dfe4ea;
   border-radius: 8px;
@@ -401,11 +400,6 @@
   display: grid;
   gap: 16px;
   padding: 18px;
-}
-
-.opsv2__summary-card {
-  display: grid;
-  gap: 14px;
 }
 
 .opsv2__rollup-card h3 {
@@ -428,61 +422,6 @@
   font-size: 14px;
   font-weight: 750;
   line-height: 1.35;
-}
-
-.opsv2__summary-card {
-  padding: 18px;
-}
-
-.opsv2__summary-card h3 {
-  color: #11161d;
-  font-family: var(--font-body);
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1.08;
-}
-
-.opsv2__metric-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.opsv2__metric-grid div {
-  display: grid;
-  gap: 6px;
-  min-height: 86px;
-  border: 1px solid #dfe4ea;
-  border-radius: 8px;
-  background: #f9fafc;
-  padding: 14px;
-}
-
-.opsv2__metric-grid span {
-  color: #6a7380;
-  font-family: var(--font-data);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-}
-
-.opsv2__metric-grid strong {
-  align-self: end;
-  color: #d90820;
-  font-family: var(--font-data);
-  font-size: 30px;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-}
-
-.opsv2__metric-grid--compact div {
-  min-height: 74px;
-}
-
-.opsv2__metric-grid--compact strong {
-  font-size: 25px;
 }
 
 .opsv2__rollup-section {

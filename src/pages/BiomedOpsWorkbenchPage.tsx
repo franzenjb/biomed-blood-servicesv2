@@ -52,7 +52,7 @@ import { buildBioMedSpatialRollup, type BioMedSpatialRollupSummary } from "../ut
 import { summarizeMasterFeature, type MasterFeatureSummary } from "../utils/masterMapFeatures";
 import "./BiomedOpsWorkbenchPage.css";
 
-type WorkbenchPreset = BioMedPresenterModeId | "all-layers" | "clean-map";
+type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
 type RightTab = "current" | "detail" | "list";
 type ArcgisSearchElement = HTMLElement & {
@@ -86,6 +86,7 @@ type FeatureSearchResult = {
 const HOME_CENTER: [number, number] = [-96.2, 38.3];
 const CENTER = HOME_CENTER.join(",");
 const ZOOM = 4;
+const DEFAULT_WORKBENCH_PRESET: WorkbenchPreset = "default-workbench";
 const SEARCH_PER_LAYER_LIMIT = 4;
 const SEARCH_TOTAL_LIMIT = 24;
 const SEARCH_FIELD_HINTS = [
@@ -495,6 +496,10 @@ function isOperationalHitGraphic(graphic: Graphic | undefined, map?: ReturnType<
 }
 
 function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: WorkbenchPreset) {
+  const title = layer.title.toLowerCase();
+  if (nextPreset === "default-workbench") {
+    return title.includes("fixed site") || title.includes("distribution site") || title.includes("biomed regions");
+  }
   if (nextPreset === "clean-map") return false;
   if (nextPreset === "all-layers") return true;
   return shouldShowLayerForPresenterMode(layer, nextPreset);
@@ -559,25 +564,6 @@ function SpatialRollupPanel({
         <span>{rollup.message}</span>
       </header>
 
-      <div className="opsv2__metric-grid opsv2__metric-grid--compact">
-        <div>
-          <span>Feature matches</span>
-          <strong>{formatRollupNumber(rollup.featureCount)}</strong>
-        </div>
-        <div>
-          <span>Layers matched</span>
-          <strong>{rollup.matchedLayers}</strong>
-        </div>
-        <div>
-          <span>Layers checked</span>
-          <strong>{rollup.checkedLayers}</strong>
-        </div>
-        <div>
-          <span>Categories</span>
-          <strong>{rollup.categoryRows.length}</strong>
-        </div>
-      </div>
-
       <div className="opsv2__rollup-section">
         <header>
           <span>Category totals</span>
@@ -634,8 +620,13 @@ export default function BiomedOpsWorkbenchPage({
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const searchRef = useRef<ArcgisSearchElement | null>(null);
   const searchRunRef = useRef(0);
-  const [preset, setPreset] = useState<WorkbenchPreset>("all-layers");
-  const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() => previewLayerSnapshots(supplementalLayers));
+  const [preset, setPreset] = useState<WorkbenchPreset>(DEFAULT_WORKBENCH_PRESET);
+  const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() =>
+    previewLayerSnapshots(supplementalLayers).map((layer) => ({
+      ...layer,
+      visible: shouldShowLayerForPreset(layer, DEFAULT_WORKBENCH_PRESET),
+    })),
+  );
   const [query, setQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const [searchResults, setSearchResults] = useState<FeatureSearchResult[]>([]);
@@ -688,6 +679,7 @@ export default function BiomedOpsWorkbenchPage({
   );
 
   const presetLabel = useMemo(() => {
+    if (preset === "default-workbench") return "Default workbench";
     if (preset === "all-layers") return "All BioMed layers";
     if (preset === "clean-map") return "Clean map";
     return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom view";
@@ -1054,7 +1046,7 @@ export default function BiomedOpsWorkbenchPage({
     setSpatialRollup(null);
     setRightTab("current");
     closeSearchPopup();
-    applyPreset("clean-map");
+    applyPreset(DEFAULT_WORKBENCH_PRESET);
 
     const view = mapRef.current?.view as MapView | undefined;
     const map = getMapElementMap(mapRef.current);
@@ -1100,6 +1092,7 @@ export default function BiomedOpsWorkbenchPage({
         <label className="opsv2__preset">
           <span>Quick View</span>
           <select value={preset} onChange={(event) => applyPreset(event.target.value as WorkbenchPreset)}>
+            <option value="default-workbench">Default workbench</option>
             <option value="all-layers">All BioMed layers</option>
             <option value="clean-map">Clean map</option>
             {presenterModes.map((mode) => (
@@ -1320,29 +1313,6 @@ export default function BiomedOpsWorkbenchPage({
             {rightTab === "current" && (
               <>
                 <SpatialRollupPanel selectedFeature={selectedFeature} rollup={spatialRollup} />
-
-                <section className="opsv2__summary-card">
-                  <p className="opsv2__eyebrow">Current filter</p>
-                  <h3>{currentTitle}</h3>
-                  <div className="opsv2__metric-grid">
-                    <div>
-                      <span>Active layers</span>
-                      <strong>{layerCounts.visible}</strong>
-                    </div>
-                    <div>
-                      <span>Source layers</span>
-                      <strong>{layerCounts.total}</strong>
-                    </div>
-                    <div>
-                      <span>Search results</span>
-                      <strong>{searchResults.length}</strong>
-                    </div>
-                    <div>
-                      <span>Layer groups</span>
-                      <strong>{groupSummaries.length}</strong>
-                    </div>
-                  </div>
-                </section>
 
                 <section className="opsv2__subtotal-card">
                   <header>

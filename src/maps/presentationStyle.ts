@@ -29,7 +29,7 @@ type PresentationLayerStyle = {
   labelMaxScale?: number;
 };
 
-const QUIET_BASEMAP = "osm";
+const QUIET_BASEMAP = "gray-vector";
 
 const NO_FILL: Rgba = [255, 255, 255, 0];
 
