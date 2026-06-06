@@ -286,7 +286,18 @@ function featureKindLabel(feature: MasterFeatureSummary) {
 }
 
 const GEO_PILL_LABELS = new Set(["region", "district", "division", "chapter", "county", "state", "city", "zip"]);
-const STAT_ROW_LABELS = new Set(["collections", "units", "rbc donors", "drives", "drive distance", "drive time", "priority"]);
+const STAT_ROW_LABELS = new Set([
+  "collections",
+  "units",
+  "rbc donors",
+  "drives",
+  "red cells",
+  "wb units",
+  "sdp units",
+  "drive distance",
+  "drive time",
+  "priority",
+]);
 const JUNK_VALUES = new Set(["x", "xx", "n/a", "na", "none", "null", "tbd", "unknown", "#n/a", "n.a.", "."]);
 
 function isJunkValue(value: string) {
@@ -365,7 +376,12 @@ function featureInsight(feature: MasterFeatureSummary) {
   if (layerTitle.includes("warehouse")) return "Warehouse and logistics hub that stages product and supplies for the BioMed network.";
   if (layerTitle.includes("kitting")) return "Kitting site that assembles the supplies field collection teams rely on.";
   if (layerTitle.includes("irl")) return "Immunohematology reference lab providing specialized compatibility testing.";
-  if (layerTitle.includes("fixed site")) return "Fixed collection site where donors give blood that feeds the BioMed supply chain.";
+  if (layerTitle.includes("fixed site")) {
+    const products = featureDetailValue(feature, ["All Products Collected"]);
+    return products
+      ? `Fixed collection site collecting ${products.toLowerCase()} for the BioMed supply chain.`
+      : "Fixed collection site where donors give blood that feeds the BioMed supply chain.";
+  }
   if (layerTitle.includes("mobile")) return "Mobile staging site that launches blood drives directly into the community.";
 
   // Operations
@@ -697,41 +713,44 @@ function compactFeatureRows(feature: MasterFeatureSummary) {
     );
   }
 
-  if (layerTitle.includes("fixed site") || layerTitle.includes("distribution") || layerTitle.includes("mobile staging") || feature.category === "sites") {
+  if (layerTitle.includes("fixed site") || layerTitle.includes("distribution") || layerTitle.includes("mobile") || feature.category === "sites") {
     return compactRows(
       [
-        featureDetailRow(feature, "Site ID", ["Site External ID", "Site ID", "Facility ID", "FACILITY_ID"], { identifier: true }),
-        featureDetailRow(feature, "Account", ["Account Name", "Account", "Customer Name"]),
-        featureDetailRow(feature, "Role", ["Site Type", "Facility Type", "Type"], { requireNamedValue: true, rejectShortCode: true }),
-        featureDetailRow(feature, "Urbanicity", ["2024 Dominant Urbanicity Type Name", "Urbanicity"]),
-        featureDetailRow(feature, "Drive distance", ["Avg Drive Distance", "Drive Distance"]),
-        featureDetailRow(feature, "RBC donors", ["CY24 RBC Donors", "RBC Donors"]),
-        featureDetailRow(feature, "Collections", ["Collections", "Collection Count", "Total Collections"]),
-        featureDetailRow(feature, "Units", ["Units", "Total Units", "RBC Units"]),
+        // Real metric fields (Fixed Sites carries these; lean site layers don't)
+        featureDetailRow(feature, "Drives", ["FY25 Red Cell Drives"]),
+        featureDetailRow(feature, "Red cells", ["FY25 Total Red Cell Products"]),
+        featureDetailRow(feature, "WB units", ["FY25 WB Collected"]),
+        featureDetailRow(feature, "SDP units", ["FY25 SDP Units"]),
+        featureDetailRow(feature, "Account", ["Account Name", "Account", "Customer Name"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Coll op", ["Biomed Coll Op", "Collection Operation"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Products", ["All Products Collected"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Status", ["Integrated Status"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Mfg site", ["Biomed Manufacturing Location - FS/Aph (ORC)", "Manufacturing Location"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Division", ["Division", "Biomed Division"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "Region", ["Biomed Region"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "District", ["Biomed District"], { requireNamedValue: true, rejectShortCode: true }),
         featureDetailRow(feature, "City", ["City"]),
         featureDetailRow(feature, "State", ["State"], { identifier: true }),
-        featureDetailRow(feature, "ZIP", ["ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }),
-        featureDetailRow(feature, "Region", ["Region"], { requireNamedValue: true, rejectShortCode: true }),
-        featureDetailRow(feature, "District", ["District"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "ZIP", ["ZIP", "Zip Code", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }),
       ],
       displayTitle,
-      9,
+      11,
     );
   }
 
   if (feature.category === "manufacturing") {
     return compactRows(
       [
-        featureDetailRow(feature, "Facility ID", ["Facility ID", "Site External ID", "Site ID"], { identifier: true }),
-        featureDetailRow(feature, "Facility", ["Facility Name", "Facility", "Site Name"]),
-        featureDetailRow(feature, "Account", ["Account Name", "Account", "Customer Name"]),
+        featureDetailRow(feature, "Facility", ["Facility Name", "Facility", "Site Name"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Structure", ["Structure Details", "Structure Type"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Account", ["Account Name", "Account", "Customer Name"], { requireNamedValue: true }),
         featureDetailRow(feature, "City", ["City"]),
         featureDetailRow(feature, "State", ["State"], { identifier: true }),
-        featureDetailRow(feature, "ZIP", ["ZIP", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }),
-        featureDetailRow(feature, "Region", ["Region"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "ZIP", ["ZIP", "Zip Code", "ZipCode", "ZIP_CODE", "Postal"], { identifier: true }),
+        featureDetailRow(feature, "Region", ["Biomed Region"], { requireNamedValue: true, rejectShortCode: true }),
       ],
       displayTitle,
-      6,
+      7,
     );
   }
 

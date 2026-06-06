@@ -74,6 +74,7 @@ const placeTitleFields = [
   "HOSPITAL",
   "HospitalName",
   "Hospital Name",
+  "Site Name (Donor View)",
   "FacilityName",
   "Facility Name",
   "Facility",
