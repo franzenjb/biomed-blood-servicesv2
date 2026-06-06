@@ -261,10 +261,12 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",
     );
-    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toContainText("1/1");
-    await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toContainText(
-      "Additional private BioMed source layer loaded with the Workbench layer stack.",
+    await expect(page.getByRole("button", { name: "Distribution & Operations" })).toContainText("1/4");
+    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Trade Areas by ZIP" })).toContainText(
+      "ZIP donor-share shading, trade-area outline, and supporting BioMed source layer.",
     );
+    await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Supplemental BioMed source layer" })).toHaveCount(0);
     await expect(page.getByText("World Hillshade")).toHaveCount(0);
     await expect(page.getByText("World Topo")).toHaveCount(0);
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
