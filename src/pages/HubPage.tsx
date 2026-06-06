@@ -50,10 +50,8 @@ export default function HubPage() {
           </span>
         </a>
 
-        <a
-          href="https://biomed.jbf.com/biomed-ops-workbench"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/biomed-ops-workbench"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
           data-testid="hub-card-ops-workbench"
@@ -62,9 +60,9 @@ export default function HubPage() {
           <span className="hub__index mono">07</span>
           <span className="hub__body">
             <span className="hub__title">BioMed Ops Workbench</span>
-            <span className="hub__q">Internal layer toggles, feature counts, focus bookmarks.</span>
+            <span className="hub__q">Internal BioMed layer controls and selected feature review.</span>
           </span>
-        </a>
+        </Link>
 
         <a
           href="https://biomed.jbf.com/hospital-network"

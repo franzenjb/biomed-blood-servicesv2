@@ -26,6 +26,7 @@ test.describe("Hub", () => {
     for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
+    await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
@@ -171,8 +172,25 @@ test.describe("Maps (shared shell)", () => {
     await expect(page).toHaveURL(/\/hub$/);
   });
 
+  test("/biomed-ops-workbench renders V2 layer controls and selected feature shell", async ({ page }) => {
+    await page.goto("/biomed-ops-workbench");
+    await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
+    await expect(page.getByText("Quick View")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Selected feature" })).toBeVisible();
+    await expect(page.getByText("BioMed ownership first; HS boundaries only for alignment comparison.")).toBeVisible();
+    await expect(page.getByText("Start here for the national leadership view.")).toBeVisible();
+    await expect(page.getByText("No feature selected.")).toBeVisible();
+  });
+
+  test("/ops is the short V2 workbench route", async ({ page }) => {
+    await page.goto("/ops");
+    await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
+    await expect(page).toHaveURL(/\/ops$/);
+  });
+
   // Retired routes fall through to the home redirect.
-  for (const path of ["/map-v3", "/map-tool", "/ops", "/layers", "/maps-menu"]) {
+  for (const path of ["/map-v3", "/map-tool", "/layers", "/maps-menu"]) {
     test(`${path} redirects home`, async ({ page }) => {
       await page.goto(path);
       await expect(page).toHaveURL(/\/$/);

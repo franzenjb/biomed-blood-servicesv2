@@ -12,6 +12,7 @@ const VideoDemoPage = lazy(() => import("./pages/VideoDemoPage"));
 const InfographicsPage = lazy(() => import("./pages/InfographicsPage"));
 const DecksGalleryPage = lazy(() => import("./pages/DecksGalleryPage"));
 const RegionsPage = lazy(() => import("./pages/RegionsPage"));
+const BiomedOpsWorkbenchPage = lazy(() => import("./pages/BiomedOpsWorkbenchPage"));
 
 function Fallback() {
   return (
@@ -36,6 +37,8 @@ export default function App() {
           <Route path="/infographics" element={<InfographicsPage />} />
           <Route path="/decks" element={<DecksGalleryPage />} />
           <Route path="/regions" element={<RegionsPage />} />
+          <Route path="/biomed-ops-workbench" element={<BiomedOpsWorkbenchPage />} />
+          <Route path="/ops" element={<BiomedOpsWorkbenchPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

@@ -25,6 +25,8 @@ export type BioMedLayerSnapshot = {
   title: string;
   category: MasterLayerCategory;
   role: string;
+  summary: string;
+  useCase: string;
   visible: boolean;
   type: string;
   status: string;
@@ -103,28 +105,99 @@ export const sourceGroups: Array<{
   {
     id: "sites",
     label: "Facilities & Sites",
-    description: "Collection access, staging, logistics, and distribution.",
+    description: "Fixed donor access, staging, manufacturing, logistics, and distribution anchors.",
     icon: Building2
   },
   {
     id: "geography",
     label: "Jurisdictions & Regions",
-    description: "BioMed and HS operating geographies.",
+    description: "BioMed ownership first; HS boundaries only for alignment comparison.",
     icon: MapPinned
   },
   {
     id: "operations",
     label: "Distribution & Operations",
-    description: "FY25 operational and portfolio context.",
+    description: "FY25 ZIP, collection, and recruitment portfolio context.",
     icon: Activity
   },
   {
     id: "manufacturing",
     label: "Manufacturing",
-    description: "RBC, manufacturing, kitting, and IRL support.",
+    description: "Processing, kitting, IRL, and product-readiness infrastructure.",
     icon: Factory
   }
 ];
+
+const layerPresentation: Record<string, { summary: string; useCase: string }> = {
+  "Warehouse-Biomed": {
+    summary: "Warehouses and logistics anchors for BioMed supply movement.",
+    useCase: "Use for the infrastructure/backbone view."
+  },
+  "Mobile Staging Sites": {
+    summary: "Temporary staging locations that support mobile collection activity.",
+    useCase: "Use when explaining mobile collection support."
+  },
+  "Manufacturing Sites": {
+    summary: "Sites that process collected blood into patient-ready products.",
+    useCase: "Use for processing capacity and operational backbone."
+  },
+  "Kitting Sites": {
+    summary: "Kit preparation locations for collection operations.",
+    useCase: "Use for behind-the-scenes collection readiness."
+  },
+  "IRL Sites": {
+    summary: "Immunohematology reference lab locations.",
+    useCase: "Use for specialty lab capability."
+  },
+  "Distribution Sites": {
+    summary: "Fulfillment anchors that move products toward hospital support.",
+    useCase: "Use for distribution and patient-care readiness."
+  },
+  "Fixed Sites": {
+    summary: "Donor-facing fixed collection sites.",
+    useCase: "Use for local donor access."
+  },
+  "Counties": {
+    summary: "County geography for local stories, lookup, and community context.",
+    useCase: "Use as base geography, not as the ownership layer."
+  },
+  "DRD AM Portfolio": {
+    summary: "Donor recruitment portfolio assignments.",
+    useCase: "Use when the story needs recruitment coverage."
+  },
+  "Biomed Collection Operations": {
+    summary: "BioMed collection operations boundaries.",
+    useCase: "Use for collections ownership."
+  },
+  "Biomed Districts": {
+    summary: "BioMed district boundaries between regions and chapters.",
+    useCase: "Use for the district-level operating story."
+  },
+  "Biomed Regions": {
+    summary: "BioMed regional boundaries.",
+    useCase: "Use for regional ownership and rollup views."
+  },
+  "Biomed Divisions": {
+    summary: "BioMed division boundaries.",
+    useCase: "Start here for the national leadership view."
+  },
+  "HS Chapters": {
+    summary: "Humanitarian Services chapter boundaries.",
+    useCase: "Use only to compare BioMed and HS alignment."
+  },
+  "HS Regions": {
+    summary: "Humanitarian Services region boundaries.",
+    useCase: "Use only to compare BioMed and HS alignment."
+  },
+  "HS Divisions": {
+    summary: "Humanitarian Services division boundaries.",
+    useCase: "Use only to compare BioMed and HS alignment."
+  },
+  "FY25 Data/Zip Codes (04.2026)": {
+    summary: "ZIP-level FY25 collection and jurisdiction data.",
+    useCase: "Use for detailed data checks after the boundary story is clear."
+  }
+};
 
 export const focusStops = [
   { id: "national", label: "National", center: [-96.2, 38.3], zoom: 4 },
@@ -149,8 +222,17 @@ export function safeLayerTitle(layer: Layer) {
   return layer.title ?? layer.id ?? "Untitled BioMed layer";
 }
 
+export function getLayerPresentation(title: string) {
+  const configured = getConfiguredArcJurisdictionLayer(title);
+  const presentation = layerPresentation[configured?.title ?? title];
+  return {
+    summary: presentation?.summary ?? configured?.role ?? "BioMed map layer.",
+    useCase: presentation?.useCase ?? "Use only when it supports the current story."
+  };
+}
+
 export function getLayerRole(title: string) {
-  return getConfiguredArcJurisdictionLayer(title)?.role ?? "Private ArcGIS source layer";
+  return getLayerPresentation(title).summary;
 }
 
 export function collectArcJurisdictionLayers(map?: ArcGISMap): Layer[] {
@@ -182,11 +264,14 @@ export function buildLayerSnapshots(map?: ArcGISMap): BioMedLayerSnapshot[] {
     const title = safeLayerTitle(layer);
     const configured = getConfiguredArcJurisdictionLayer(title);
     const category = configured?.category ?? classifyMasterLayer(title);
+    const presentation = getLayerPresentation(title);
     return {
       id: layer.id,
       title,
       category,
-      role: configured?.role ?? getLayerRole(title),
+      role: presentation.summary,
+      summary: presentation.summary,
+      useCase: presentation.useCase,
       visible: layer.visible,
       type: layer.type ?? "layer",
       status: layer.loaded ? "Loaded" : "Loading"
@@ -195,18 +280,23 @@ export function buildLayerSnapshots(map?: ArcGISMap): BioMedLayerSnapshot[] {
 }
 
 export function previewLayerSnapshots(): BioMedLayerSnapshot[] {
-  return arcJurisdictionMapSource.operationalLayers.map((layer) => ({
-    id: layer.title,
-    title: layer.title,
-    category: layer.category,
-    role: layer.role,
-    visible: layer.defaultVisible,
-    type: "private feature layer",
-    status: "Sign in required"
-  }));
+  return arcJurisdictionMapSource.operationalLayers.map((layer) => {
+    const presentation = getLayerPresentation(layer.title);
+    return {
+      id: layer.title,
+      title: layer.title,
+      category: layer.category,
+      role: presentation.summary,
+      summary: presentation.summary,
+      useCase: presentation.useCase,
+      visible: layer.defaultVisible,
+      type: "private feature layer",
+      status: "Sign in required"
+    };
+  });
 }
 
 export function formatCount(value?: number) {
-  if (typeof value !== "number") return "Source";
+  if (typeof value !== "number") return "";
   return value.toLocaleString();
 }
