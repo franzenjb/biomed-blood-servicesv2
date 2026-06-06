@@ -130,6 +130,12 @@ function zoomTargetForGeometry(geometry: Geometry) {
   };
 }
 
+function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: WorkbenchPreset) {
+  if (nextPreset === "clean-map") return false;
+  if (nextPreset === "all-layers") return true;
+  return shouldShowLayerForPresenterMode(layer, nextPreset);
+}
+
 export default function BiomedOpsWorkbenchPage() {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
@@ -240,14 +246,17 @@ export default function BiomedOpsWorkbenchPage() {
     (nextPreset: WorkbenchPreset) => {
       setPreset(nextPreset);
       const map = getMapElementMap(mapRef.current);
-      if (!map) return;
+      const mapLayers = collectArcJurisdictionLayers(map);
+      if (!map || mapLayers.length === 0) {
+        setLayers((current) => current.map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, nextPreset) })));
+        return;
+      }
 
       const nextSnapshots = buildLayerSnapshots(map);
-      collectArcJurisdictionLayers(map).forEach((layer) => {
+      mapLayers.forEach((layer) => {
         const snapshot = nextSnapshots.find((item) => item.id === layer.id);
         if (!snapshot) return;
-        if (nextPreset === "clean-map") layer.visible = false;
-        else layer.visible = nextPreset === "all-layers" ? true : shouldShowLayerForPresenterMode(snapshot, nextPreset);
+        layer.visible = shouldShowLayerForPreset(snapshot, nextPreset);
       });
       refreshLayers();
     },
@@ -334,7 +343,7 @@ export default function BiomedOpsWorkbenchPage() {
 
     async function hydrateMap() {
       if (!isAuthenticated) {
-        setLayers(previewLayerSnapshots());
+        setLayers(previewLayerSnapshots().map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
         setSelectedFeature(null);
         return;
       }
@@ -429,12 +438,7 @@ export default function BiomedOpsWorkbenchPage() {
     setSearchStatus("idle");
     setSelectedFeature(null);
     closeSearchPopup();
-
-    const map = getMapElementMap(mapRef.current);
-    collectArcJurisdictionLayers(map).forEach((layer) => {
-      layer.visible = false;
-    });
-    refreshLayers();
+    applyPreset("clean-map");
 
     const view = mapRef.current?.view as MapView | undefined;
     if (!view) return;
