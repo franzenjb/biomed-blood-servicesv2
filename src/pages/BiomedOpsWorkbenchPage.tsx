@@ -6,7 +6,20 @@ import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Layer from "@arcgis/core/layers/Layer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
-import { ChevronDown, Filter, Layers, MapPinned, PanelLeftOpen, PanelRightOpen, RotateCcw, Search, ShieldCheck } from "lucide-react";
+import {
+  ChevronDown,
+  Filter,
+  Info,
+  Layers,
+  List,
+  MapPinned,
+  PanelLeftOpen,
+  PanelRightOpen,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import { arcJurisdictionMapSource } from "../config/arcgisLayers";
@@ -30,6 +43,7 @@ import "./BiomedOpsWorkbenchPage.css";
 
 type WorkbenchPreset = BioMedPresenterModeId | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
+type RightTab = "current" | "detail" | "list";
 type ArcgisSearchElement = HTMLElement & {
   popupDisabled?: boolean;
   popupTemplate?: unknown;
@@ -152,6 +166,7 @@ export default function BiomedOpsWorkbenchPage() {
   const [selectedFeature, setSelectedFeature] = useState<MasterFeatureSummary | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
+  const [rightTab, setRightTab] = useState<RightTab>("current");
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
 
   const filteredLayers = useMemo(
@@ -171,6 +186,34 @@ export default function BiomedOpsWorkbenchPage() {
       ),
     [layers],
   );
+
+  const activeLayers = useMemo(() => layers.filter((layer) => layer.visible), [layers]);
+  const inactiveLayers = useMemo(() => layers.filter((layer) => !layer.visible), [layers]);
+
+  const groupSummaries = useMemo(
+    () =>
+      sourceGroups.map((group) => {
+        const groupLayers = layers.filter((layer) => layer.category === group.id);
+        const activeCount = groupLayers.filter((layer) => layer.visible).length;
+        return {
+          ...group,
+          total: groupLayers.length,
+          active: activeCount,
+        };
+      }),
+    [layers],
+  );
+
+  const presetLabel = useMemo(() => {
+    if (preset === "all-layers") return "All BioMed layers";
+    if (preset === "clean-map") return "Clean map";
+    return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom view";
+  }, [preset]);
+
+  const currentTitle = query.trim() ? `Search: ${query.trim()}` : selectedFeature?.title ?? "Current filter";
+  const currentSubtitle = query.trim()
+    ? `${searchResults.length} feature result${searchResults.length === 1 ? "" : "s"}`
+    : presetLabel;
 
   const refreshLayers = useCallback(() => {
     setLayers(buildLayerSnapshots(getMapElementMap(mapRef.current)));
@@ -386,7 +429,10 @@ export default function BiomedOpsWorkbenchPage() {
             return Boolean(graphic?.attributes) && !title.toLowerCase().includes("light gray");
           }) as { graphic?: Graphic } | undefined;
           setSelectedFeature(result?.graphic ? summarizeMasterFeature(result.graphic) : null);
-          if (result?.graphic) setRightOpen(true);
+          if (result?.graphic) {
+            setRightOpen(true);
+            setRightTab("detail");
+          }
         } catch {
           setSelectedFeature(null);
         }
@@ -419,6 +465,7 @@ export default function BiomedOpsWorkbenchPage() {
     setSelectedFeature(summarizeMasterFeature(result.graphic, result.layerTitle));
     setExpandedGroups((current) => ({ ...current, [result.category]: true }));
     setRightOpen(true);
+    setRightTab("detail");
 
     const view = mapRef.current?.view as MapView | undefined;
     const geometry = result.graphic.geometry as Geometry | null | undefined;
@@ -437,6 +484,7 @@ export default function BiomedOpsWorkbenchPage() {
     setSearchResults([]);
     setSearchStatus("idle");
     setSelectedFeature(null);
+    setRightTab("current");
     closeSearchPopup();
     applyPreset("clean-map");
 
@@ -471,6 +519,9 @@ export default function BiomedOpsWorkbenchPage() {
         <Link to="/hub" className="opsv2__brand">
           <RcMark size={30} />
           <strong>BioMed Ops Workbench</strong>
+        </Link>
+        <Link to="/hub" className="opsv2__button opsv2__button--hub" data-testid="ops-back-hub">
+          Hub
         </Link>
         <label className="opsv2__preset">
           <span>Quick View</span>
@@ -637,25 +688,181 @@ export default function BiomedOpsWorkbenchPage() {
       )}
 
       {rightOpen ? (
-        <aside className="opsv2__panel opsv2__panel--right" aria-label="Selected feature">
+        <aside className="opsv2__panel opsv2__panel--right" aria-label="Workbench results">
           <div className="opsv2__panel-head">
             <MapPinned aria-hidden="true" size={18} />
             <div>
-              <h2>Selected feature</h2>
-              <p>Click a point or boundary.</p>
+              <p className="opsv2__panel-kicker">Results</p>
+              <h2>{currentTitle}</h2>
+              <p>{currentSubtitle}</p>
             </div>
-            <button type="button" aria-label="Hide selected feature" onClick={() => setRightOpen(false)}>
+            <button type="button" aria-label="Hide workbench results" onClick={() => setRightOpen(false)}>
               <PanelRightOpen aria-hidden="true" size={17} />
             </button>
           </div>
-          <section className="opsv2__selected-card">
-            <p className="opsv2__eyebrow">Selected feature</p>
-            {selectedFeature ? (
-              <h1>{selectedFeature.title}</h1>
-            ) : (
-              <p className="opsv2__empty">No feature selected.</p>
+          <div className="opsv2__right-tabs" role="tablist" aria-label="Workbench result views">
+            <button
+              type="button"
+              className={rightTab === "current" ? "is-active" : ""}
+              onClick={() => setRightTab("current")}
+              role="tab"
+              aria-selected={rightTab === "current"}
+            >
+              <SlidersHorizontal aria-hidden="true" size={17} />
+              Current
+            </button>
+            <button
+              type="button"
+              className={rightTab === "detail" ? "is-active" : ""}
+              onClick={() => setRightTab("detail")}
+              role="tab"
+              aria-selected={rightTab === "detail"}
+            >
+              <Info aria-hidden="true" size={17} />
+              Detail
+            </button>
+            <button
+              type="button"
+              className={rightTab === "list" ? "is-active" : ""}
+              onClick={() => setRightTab("list")}
+              role="tab"
+              aria-selected={rightTab === "list"}
+            >
+              <List aria-hidden="true" size={17} />
+              List
+            </button>
+          </div>
+
+          <div className="opsv2__right-body">
+            {rightTab === "current" && (
+              <>
+                <section className="opsv2__summary-card">
+                  <p className="opsv2__eyebrow">Current filter</p>
+                  <h3>{currentTitle}</h3>
+                  <div className="opsv2__metric-grid">
+                    <div>
+                      <span>Active layers</span>
+                      <strong>{layerCounts.visible}</strong>
+                    </div>
+                    <div>
+                      <span>Source layers</span>
+                      <strong>{layerCounts.total}</strong>
+                    </div>
+                    <div>
+                      <span>Search results</span>
+                      <strong>{searchResults.length}</strong>
+                    </div>
+                    <div>
+                      <span>Layer groups</span>
+                      <strong>{groupSummaries.length}</strong>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="opsv2__subtotal-card">
+                  <header>
+                    <span>Layer group subtotals</span>
+                    <b>{groupSummaries.length}</b>
+                    <ChevronDown aria-hidden="true" size={17} />
+                  </header>
+                  <div className="opsv2__subtotal-list">
+                    {groupSummaries.map((group) => (
+                      <article key={group.id}>
+                        <div>
+                          <strong>{group.label}</strong>
+                          <span>{group.description}</span>
+                        </div>
+                        <b>{group.active}/{group.total}</b>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              </>
             )}
-          </section>
+
+            {rightTab === "detail" && (
+              <section className="opsv2__selected-card">
+                <p className="opsv2__eyebrow">Selected feature</p>
+                {selectedFeature ? (
+                  <>
+                    <h1>{selectedFeature.title}</h1>
+                    <dl className="opsv2__detail-grid">
+                      <div>
+                        <dt>Layer</dt>
+                        <dd>{selectedFeature.layerTitle}</dd>
+                      </div>
+                      <div>
+                        <dt>Type</dt>
+                        <dd>{selectedFeature.category}</dd>
+                      </div>
+                      {selectedFeature.geography.map((item) => (
+                        <div key={`${item.label}-${item.value}`}>
+                          <dt>{item.label}</dt>
+                          <dd>{item.value}</dd>
+                        </div>
+                      ))}
+                      {selectedFeature.metrics.map((item) => (
+                        <div key={`${item.label}-${item.value}`}>
+                          <dt>{item.label}</dt>
+                          <dd>{item.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                ) : (
+                  <p className="opsv2__empty">No feature selected.</p>
+                )}
+              </section>
+            )}
+
+            {rightTab === "list" && (
+              <>
+                <section className="opsv2__subtotal-card">
+                  <header>
+                    <span>Active layer stack</span>
+                    <b>{activeLayers.length}</b>
+                    <ChevronDown aria-hidden="true" size={17} />
+                  </header>
+                  <div className="opsv2__subtotal-list">
+                    {(activeLayers.length ? activeLayers : inactiveLayers.slice(0, 8)).map((layer) => (
+                      <article key={layer.id}>
+                        <div>
+                          <strong>{layer.title}</strong>
+                          <span>{layer.summary}</span>
+                        </div>
+                        <b>{layer.visible ? "On" : "Off"}</b>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="opsv2__subtotal-card">
+                  <header>
+                    <span>Search results</span>
+                    <b>{searchResults.length}</b>
+                    <ChevronDown aria-hidden="true" size={17} />
+                  </header>
+                  <div className="opsv2__subtotal-list">
+                    {searchResults.length ? (
+                      searchResults.map((result) => (
+                        <article key={result.id}>
+                          <div>
+                            <strong>{result.title}</strong>
+                            <span>{result.layerTitle}</span>
+                          </div>
+                          <button type="button" onClick={() => void selectSearchResult(result)}>
+                            Zoom
+                          </button>
+                        </article>
+                      ))
+                    ) : (
+                      <p className="opsv2__empty">Search the layer controls to populate this list.</p>
+                    )}
+                  </div>
+                </section>
+              </>
+            )}
+          </div>
         </aside>
       ) : (
         <button type="button" className="opsv2__reopen opsv2__reopen--right" onClick={() => setRightOpen(true)}>

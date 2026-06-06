@@ -49,6 +49,12 @@ type QueryableLayer = Layer & {
   }) => Promise<{ features?: Array<{ attributes?: Record<string, unknown> }> }>;
 };
 
+type VisibleLayer = Layer & {
+  blendMode?: string;
+  effect?: string;
+  opacity?: number;
+};
+
 // The hit-test graphic only carries render/popup fields. Re-query the source
 // feature for the COMPLETE attribute record.
 async function enrichGraphic(graphic: Graphic): Promise<Graphic> {
@@ -71,6 +77,26 @@ function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : `${error}`;
   if (/abort|cancel|closed/i.test(message)) return "Sign-in was closed before it completed.";
   return "ArcGIS sign-in did not complete. Try again.";
+}
+
+function enhanceHospitalLayerVisibility(map?: ArcGISMap) {
+  collectArcJurisdictionLayers(map).forEach((layer) => {
+    const title = safeLayerTitle(layer).toLowerCase();
+    const isHospitalPointLayer =
+      title.includes("hospital portfolio") ||
+      title.includes("hospital network") ||
+      title.includes("hospital points") ||
+      title.includes("workingcopy");
+    const isFootprint = title.includes("footprint");
+
+    if (!isHospitalPointLayer || isFootprint) return;
+
+    const visibleLayer = layer as VisibleLayer;
+    visibleLayer.effect =
+      "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.78)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.95))";
+    visibleLayer.blendMode = "normal";
+    visibleLayer.opacity = Math.max(visibleLayer.opacity ?? 1, 1);
+  });
 }
 
 export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapItemId }: Props) {
@@ -125,6 +151,8 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
 
       await addMasterMapSupplementalLayers(getMapElementMap(mapElement));
       if (cancelled) return;
+
+      enhanceHospitalLayerVisibility(getMapElementMap(mapElement));
 
       // Manufacturing belongs on the bottom Z so points/geography draw above it.
       const baseMap = getMapElementMap(mapElement) as (ArcGISMap & { reorder?: (layer: Layer, index: number) => void }) | undefined;

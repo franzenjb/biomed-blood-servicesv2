@@ -21,7 +21,7 @@
   right: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(220px, 320px) auto minmax(210px, auto);
+  grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 320px) auto minmax(210px, auto);
   align-items: center;
   gap: 12px;
   min-height: 72px;
@@ -101,6 +101,11 @@
   padding: 0 14px;
 }
 
+.opsv2__button--hub {
+  justify-content: center;
+  text-decoration: none;
+}
+
 .opsv2__button:hover,
 .opsv2__auth button:hover,
 .opsv2__signin button:hover,
@@ -154,7 +159,8 @@
 
 .opsv2__panel--right {
   right: 0;
-  width: 380px;
+  width: 460px;
+  max-width: min(720px, 52vw);
   resize: horizontal;
   border-width: 0 0 0 1px;
 }
@@ -172,6 +178,16 @@
   font-family: var(--font-body);
   font-size: 18px;
   font-weight: 900;
+}
+
+.opsv2__panel-kicker {
+  margin: 0 0 4px !important;
+  font-family: var(--font-data);
+  color: #6b7480 !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
 }
 
 .opsv2__panel-head p {
@@ -277,6 +293,183 @@
   border: 1px solid #e1e5ea;
   border-radius: 8px;
   background: #fff;
+}
+
+.opsv2__right-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border-bottom: 1px solid #dfe4ea;
+  background: rgba(255, 255, 255, 0.98);
+  padding: 14px 16px;
+}
+
+.opsv2__right-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  border: 1px solid #d7dee6;
+  border-radius: 8px;
+  background: #fff;
+  color: #56616f;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.opsv2__right-tabs button.is-active {
+  border-color: #12161c;
+  background: #12161c;
+  color: #fff;
+}
+
+.opsv2__right-body {
+  display: grid;
+  gap: 16px;
+  overflow: auto;
+  padding: 18px;
+}
+
+.opsv2__summary-card,
+.opsv2__subtotal-card {
+  border: 1px solid #dfe4ea;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.opsv2__summary-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.opsv2__summary-card h3 {
+  color: #11161d;
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.opsv2__metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.opsv2__metric-grid div {
+  display: grid;
+  gap: 6px;
+  min-height: 86px;
+  border: 1px solid #dfe4ea;
+  border-radius: 8px;
+  background: #f9fafc;
+  padding: 14px;
+}
+
+.opsv2__metric-grid span {
+  color: #6a7380;
+  font-family: var(--font-data);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.opsv2__metric-grid strong {
+  align-self: end;
+  color: #d90820;
+  font-family: var(--font-data);
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.opsv2__subtotal-card {
+  overflow: hidden;
+}
+
+.opsv2__subtotal-card > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid #e6eaf0;
+  padding: 14px 16px;
+}
+
+.opsv2__subtotal-card > header span {
+  color: #68717d;
+  font-family: var(--font-data);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.opsv2__subtotal-card > header b {
+  color: #d90820;
+  font-family: var(--font-data);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.opsv2__subtotal-card > header svg {
+  color: #7a8490;
+}
+
+.opsv2__subtotal-list {
+  display: grid;
+}
+
+.opsv2__subtotal-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #edf0f4;
+  padding: 14px 16px;
+}
+
+.opsv2__subtotal-list article:last-child {
+  border-bottom: 0;
+}
+
+.opsv2__subtotal-list strong {
+  display: block;
+  color: #11161d;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.opsv2__subtotal-list span {
+  display: block;
+  margin-top: 3px;
+  color: #68717d;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.opsv2__subtotal-list b {
+  color: #d90820;
+  font-family: var(--font-data);
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.opsv2__subtotal-list button {
+  min-height: 34px;
+  border: 1px solid #d7dee6;
+  border-radius: 999px;
+  background: #fff;
+  color: #12161c;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 0 12px;
 }
 
 .opsv2__layer-groups {

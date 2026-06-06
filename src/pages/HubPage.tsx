@@ -64,10 +64,8 @@ export default function HubPage() {
           </span>
         </Link>
 
-        <a
-          href="https://biomed.jbf.com/hospital-network"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/hospital-network"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/hospital-network.jpg)" }}
           data-testid="hub-card-hospital-network"
@@ -78,7 +76,7 @@ export default function HubPage() {
             <span className="hub__title">Hospital Network</span>
             <span className="hub__q">Tier, distribution sites, portfolio footprint &amp; coverage.</span>
           </span>
-        </a>
+        </Link>
 
         <Link
           to="/regions"
