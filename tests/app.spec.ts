@@ -203,6 +203,7 @@ test.describe("Maps (shared shell)", () => {
     );
     expect(opsWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
+    await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
@@ -230,6 +231,11 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
       "Start here for the national leadership view.",
     );
+    await expect(page.locator("select")).toHaveValue("all-layers");
+    await page.getByRole("button", { name: "Reset map" }).click();
+    await expect(page.locator("select")).toHaveValue("all-layers");
+    await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "osm");
+    await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await page.getByRole("tab", { name: "Detail" }).click();
     await expect(page.getByText("No feature selected.")).toBeVisible();
   });
@@ -255,6 +261,7 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.getByText("World Hillshade")).toHaveCount(0);
     await expect(page.getByText("World Topo")).toHaveCount(0);
+    await expect(page.getByText("Open Street Map")).toHaveCount(0);
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(19);
     await expect(page.getByText("Source layers", { exact: true })).toBeVisible();
     await expect(page.getByText("Layer groups", { exact: true })).toBeVisible();

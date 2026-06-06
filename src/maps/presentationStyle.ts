@@ -3,6 +3,7 @@ import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type Layer from "@arcgis/core/layers/Layer";
 import type MapView from "@arcgis/core/views/MapView";
+import Basemap from "@arcgis/core/Basemap";
 import { collectArcJurisdictionLayers, hideBasemapUtilityLayers, safeLayerTitle } from "../utils/biomedMapSuite";
 
 type Rgba = [number, number, number, number];
@@ -223,7 +224,7 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
   if (!map) return;
 
   hideBasemapUtilityLayers(map);
-  map.basemap = QUIET_BASEMAP;
+  map.basemap = Basemap.fromId(QUIET_BASEMAP) ?? QUIET_BASEMAP;
   if (view) {
     view.background = { color: [244, 247, 244, 1] };
     (view as MapView & { highlightOptions?: unknown }).highlightOptions = {

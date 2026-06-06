@@ -219,11 +219,18 @@ const layerPresentation: Record<string, { summary: string; useCase: string }> = 
   }
 };
 
-const BASEMAP_UTILITY_LAYER_TITLES = new Set([
+const HIDDEN_BASEMAP_UTILITY_LAYER_TITLES = new Set([
   "light gray reference",
   "light gray base",
   "world hillshade",
   "world topo"
+]);
+
+const SIDEBAR_EXCLUDED_BASEMAP_LAYER_TITLES = new Set([
+  ...HIDDEN_BASEMAP_UTILITY_LAYER_TITLES,
+  "open street map",
+  "openstreetmap",
+  "osm"
 ]);
 
 export const focusStops = [
@@ -248,9 +255,11 @@ function normalizedLayerTitle(value: string) {
 export function isBasemapUtilityLayerTitle(title: string) {
   const normalized = normalizedLayerTitle(title);
   return (
-    BASEMAP_UTILITY_LAYER_TITLES.has(normalized) ||
+    SIDEBAR_EXCLUDED_BASEMAP_LAYER_TITLES.has(normalized) ||
     normalized === "hillshade" ||
     normalized === "topo" ||
+    normalized.endsWith(" open street map") ||
+    normalized.endsWith(" openstreetmap") ||
     normalized.endsWith(" hillshade") ||
     normalized.endsWith(" topo")
   );
@@ -263,7 +272,6 @@ export function isBasemapUtilityLayer(layer: Layer) {
 export function hideBasemapUtilityLayers(map?: ArcGISMap) {
   ((map?.allLayers?.toArray?.() ?? []) as Layer[]).forEach((layer) => {
     if (!isBasemapUtilityLayer(layer)) return;
-    layer.visible = false;
     if ("listMode" in layer) {
       (layer as Layer & { listMode?: "show" | "hide" }).listMode = "hide";
     }

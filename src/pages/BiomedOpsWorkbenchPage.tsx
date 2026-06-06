@@ -226,7 +226,10 @@ function formatCompactValue(value: unknown, maximumFractionDigits = 1) {
 }
 
 function hospitalAttribute(feature: MasterFeatureSummary, candidates: string[]) {
-  return formatCompactValue(featureAttributeValue(feature, candidates), 2);
+  const raw = featureAttributeValue(feature, candidates);
+  if (raw == null) return "";
+  if (candidates.some((candidate) => /zip|postal|(^|\s)id$|code/i.test(candidate))) return `${raw}`.trim();
+  return formatCompactValue(raw, 2);
 }
 
 function hospitalDriveTime(feature: MasterFeatureSummary) {
@@ -357,6 +360,15 @@ function zoomTargetForGeometry(geometry: Geometry) {
     target: geometry,
     zoom: 9
   };
+}
+
+function isOperationalHitGraphic(graphic: Graphic | undefined, map?: ReturnType<typeof getMapElementMap>) {
+  const layer = graphic?.layer as Layer | undefined;
+  if (!graphic?.attributes || !layer || !map) return false;
+  if (isBasemapUtilityLayerTitle(safeLayerTitle(layer))) return false;
+
+  const operationalLayers = collectArcJurisdictionLayers(map);
+  return operationalLayers.some((candidate) => candidate === layer || candidate.id === layer.id);
 }
 
 function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: WorkbenchPreset) {
@@ -782,10 +794,10 @@ export default function BiomedOpsWorkbenchPage({
         try {
           view.popup?.close?.();
           const hit = await view.hitTest(event);
+          const currentMap = getMapElementMap(mapElement);
           const result = hit.results.find((candidate: unknown) => {
             const graphic = (candidate as { graphic?: Graphic }).graphic;
-            const title = graphic?.layer ? safeLayerTitle(graphic.layer as Layer) : "";
-            return Boolean(graphic?.attributes) && !isBasemapUtilityLayerTitle(title);
+            return isOperationalHitGraphic(graphic, currentMap);
           }) as { graphic?: Graphic } | undefined;
           const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
           const summary = enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null;
@@ -911,7 +923,6 @@ export default function BiomedOpsWorkbenchPage({
   }
 
   async function resetMap() {
-    setPreset("clean-map");
     setQuery("");
     setSearchResults([]);
     setSearchStatus("idle");
@@ -920,7 +931,7 @@ export default function BiomedOpsWorkbenchPage({
     setSpatialRollup(null);
     setRightTab("current");
     closeSearchPopup();
-    applyPreset("clean-map");
+    applyPreset(preset);
 
     const view = mapRef.current?.view as MapView | undefined;
     const map = getMapElementMap(mapRef.current);

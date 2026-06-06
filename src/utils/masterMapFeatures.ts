@@ -226,9 +226,12 @@ function formatFieldLabel(fieldName: string) {
 
 function isJunkAttributeField(fieldName: string) {
   const normalized = fieldName.toLowerCase();
+  const readable = normalize(fieldName);
   return (
     normalized.startsWith("objectid") ||
     normalized.includes("globalid") ||
+    /^name[_-][a-z]{2,3}([_-][a-z])?$/.test(normalized) ||
+    /^name [a-z]{2,3}( [a-z])?$/.test(readable) ||
     normalized === "lat" ||
     normalized === "latitude" ||
     normalized === "lon" ||
