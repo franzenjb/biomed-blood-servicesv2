@@ -64,12 +64,32 @@ const layerStyles = {
     outlineWidth: 0.8,
     opacity: 0.8
   },
-  hsBoundary: {
-    fill: NO_FILL,
-    outline: [116, 88, 125, 0.34],
-    outlineStyle: "short-dash" as const,
-    outlineWidth: 0.9,
-    opacity: 0.82
+  hsDivision: {
+    fill: [63, 95, 159, 0.07],
+    outline: [39, 60, 103, 0.78],
+    outlineWidth: 1.8,
+    opacity: 0.98,
+    labelHints: ["division"],
+    labelSize: 12.5
+  },
+  hsRegion: {
+    fill: [109, 81, 165, 0.06],
+    outline: [73, 52, 115, 0.74],
+    outlineWidth: 1.35,
+    opacity: 0.96,
+    labelHints: ["region"],
+    labelSize: 10.5,
+    labelMaxScale: 0,
+    labelMinScale: 12000000
+  },
+  hsChapter: {
+    fill: [0, 127, 103, 0.05],
+    outline: [0, 90, 73, 0.7],
+    outlineWidth: 1,
+    opacity: 0.94,
+    labelHints: ["chapter"],
+    labelSize: 9,
+    labelMinScale: 5000000
   },
   county: {
     fill: [190, 225, 242, 0.22],
@@ -129,7 +149,9 @@ export function quietOpsBasemapId() {
 export function getPresentationStyleForLayer(title: string): PresentationLayerStyle {
   const normalized = normalize(title);
   if (normalized.includes("tradearea") || normalized.includes("trade area") || normalized.includes("fsrsmo")) return layerStyles.tradeArea;
-  if (normalized.includes("hs ")) return layerStyles.hsBoundary;
+  if (normalized.includes("hs ") && normalized.includes("division")) return layerStyles.hsDivision;
+  if (normalized.includes("hs ") && normalized.includes("region")) return layerStyles.hsRegion;
+  if (normalized.includes("hs ") && normalized.includes("chapter")) return layerStyles.hsChapter;
   if (normalized.includes("division")) return layerStyles.biomedDivision;
   if (normalized.includes("region")) return layerStyles.biomedRegion;
   if (normalized.includes("district")) return layerStyles.biomedDistrict;
