@@ -41,6 +41,7 @@ import {
   type BioMedLayerSnapshot,
   type BioMedPresenterModeId,
 } from "../utils/biomedMapSuite";
+import { buildBioMedSpatialRollup, type BioMedSpatialRollupSummary } from "../utils/biomedRollups";
 import { summarizeMasterFeature, type MasterFeatureSummary } from "../utils/masterMapFeatures";
 import "./BiomedOpsWorkbenchPage.css";
 
@@ -218,6 +219,128 @@ function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: Workbe
   return shouldShowLayerForPresenterMode(layer, nextPreset);
 }
 
+function formatRollupNumber(value: number) {
+  return Number.isInteger(value) ? value.toLocaleString() : value.toLocaleString(undefined, { maximumFractionDigits: 1 });
+}
+
+function SpatialRollupPanel({
+  selectedFeature,
+  rollup
+}: {
+  selectedFeature: MasterFeatureSummary | null;
+  rollup: BioMedSpatialRollupSummary | null;
+}) {
+  if (!selectedFeature) {
+    return (
+      <section className="opsv2__rollup-card">
+        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <h3>Select a boundary</h3>
+        <p className="opsv2__rollup-note">Click a BioMed division, region, district, chapter, or county to compute live intersections across the source layers.</p>
+      </section>
+    );
+  }
+
+  if (selectedFeature.category !== "geography") {
+    return (
+      <section className="opsv2__rollup-card">
+        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <h3>{featureDisplayTitle(selectedFeature)}</h3>
+        <p className="opsv2__rollup-note">Select a geography boundary to roll up facilities, operations, and jurisdiction layers.</p>
+      </section>
+    );
+  }
+
+  if (!rollup || rollup.status === "loading") {
+    return (
+      <section className="opsv2__rollup-card">
+        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <h3>{featureDisplayTitle(selectedFeature)}</h3>
+        <p className="opsv2__rollup-note">Building live layer intersections...</p>
+      </section>
+    );
+  }
+
+  if (rollup.status === "empty" || rollup.status === "error") {
+    return (
+      <section className="opsv2__rollup-card">
+        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <h3>{featureDisplayTitle(selectedFeature)}</h3>
+        <p className="opsv2__rollup-note">{rollup.message ?? "No matching source layers were found inside this boundary."}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="opsv2__rollup-card">
+      <header className="opsv2__rollup-head">
+        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <h3>{featureDisplayTitle(selectedFeature)}</h3>
+        <span>{rollup.message}</span>
+      </header>
+
+      <div className="opsv2__metric-grid opsv2__metric-grid--compact">
+        <div>
+          <span>Feature matches</span>
+          <strong>{formatRollupNumber(rollup.featureCount)}</strong>
+        </div>
+        <div>
+          <span>Layers matched</span>
+          <strong>{rollup.matchedLayers}</strong>
+        </div>
+        <div>
+          <span>Layers checked</span>
+          <strong>{rollup.checkedLayers}</strong>
+        </div>
+        <div>
+          <span>Categories</span>
+          <strong>{rollup.categoryRows.length}</strong>
+        </div>
+      </div>
+
+      <div className="opsv2__rollup-section">
+        <header>
+          <span>Category totals</span>
+          <b>{rollup.categoryRows.length}</b>
+        </header>
+        <div className="opsv2__rollup-list">
+          {rollup.categoryRows.map((row) => (
+            <article key={row.id}>
+              <div>
+                <strong>{row.title}</strong>
+                <span>{row.categoryLabel}</span>
+              </div>
+              <b>{formatRollupNumber(row.count)}</b>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="opsv2__rollup-section">
+        <header>
+          <span>Layer matches</span>
+          <b>{rollup.layerRows.length}</b>
+        </header>
+        <div className="opsv2__rollup-list">
+          {rollup.layerRows.map((row) => (
+            <article key={row.id}>
+              <div>
+                <strong>{row.title}</strong>
+                <span>{row.categoryLabel}</span>
+                {row.metrics.length > 0 && (
+                  <small>
+                    {row.metrics.map((metric) => `${metric.label}: ${formatRollupNumber(metric.value)}`).join(" · ")}
+                  </small>
+                )}
+              </div>
+              <b>{formatRollupNumber(row.count)}</b>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function BiomedOpsWorkbenchPage() {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
@@ -232,6 +355,8 @@ export default function BiomedOpsWorkbenchPage() {
     Object.fromEntries(sourceGroups.map((group) => [group.id, true])),
   );
   const [selectedFeature, setSelectedFeature] = useState<MasterFeatureSummary | null>(null);
+  const [selectedGraphic, setSelectedGraphic] = useState<Graphic | null>(null);
+  const [spatialRollup, setSpatialRollup] = useState<BioMedSpatialRollupSummary | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
@@ -278,7 +403,7 @@ export default function BiomedOpsWorkbenchPage() {
     return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom view";
   }, [preset]);
 
-  const currentTitle = query.trim() ? `Search: ${query.trim()}` : selectedFeature?.title ?? "Current filter";
+  const currentTitle = query.trim() ? `Search: ${query.trim()}` : selectedFeature ? featureDisplayTitle(selectedFeature) : "Current filter";
   const currentSubtitle = query.trim()
     ? `${searchResults.length} feature result${searchResults.length === 1 ? "" : "s"}`
     : presetLabel;
@@ -456,6 +581,8 @@ export default function BiomedOpsWorkbenchPage() {
       if (!isAuthenticated) {
         setLayers(previewLayerSnapshots().map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
         setSelectedFeature(null);
+        setSelectedGraphic(null);
+        setSpatialRollup(null);
         return;
       }
 
@@ -501,13 +628,16 @@ export default function BiomedOpsWorkbenchPage() {
             return Boolean(graphic?.attributes) && !title.toLowerCase().includes("light gray");
           }) as { graphic?: Graphic } | undefined;
           const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
-          setSelectedFeature(enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null);
-          if (result?.graphic) {
+          const summary = enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null;
+          setSelectedFeature(summary);
+          setSelectedGraphic(enrichedGraphic);
+          if (summary) {
             setRightOpen(true);
-            setRightTab("detail");
+            setRightTab(summary.category === "geography" ? "current" : "detail");
           }
         } catch {
           setSelectedFeature(null);
+          setSelectedGraphic(null);
         }
       });
       handles.push(clickHandle);
@@ -523,6 +653,73 @@ export default function BiomedOpsWorkbenchPage() {
     };
   }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function buildRollup() {
+      if (!isAuthenticated || !selectedFeature || !selectedGraphic || selectedFeature.category !== "geography") {
+        setSpatialRollup(null);
+        return;
+      }
+
+      const map = getMapElementMap(mapRef.current);
+      if (!map) {
+        setSpatialRollup({
+          status: "error",
+          focusTitle: selectedFeature.title,
+          focusLayer: selectedFeature.layerTitle,
+          checkedLayers: 0,
+          matchedLayers: 0,
+          featureCount: 0,
+          failedLayers: 0,
+          categoryRows: [],
+          layerRows: [],
+          message: "Map layers are not ready for live rollup yet."
+        });
+        return;
+      }
+
+      setSpatialRollup({
+        status: "loading",
+        focusTitle: selectedFeature.title,
+        focusLayer: selectedFeature.layerTitle,
+        checkedLayers: 0,
+        matchedLayers: 0,
+        featureCount: 0,
+        failedLayers: 0,
+        categoryRows: [],
+        layerRows: [],
+        message: "Building live layer intersections..."
+      });
+
+      try {
+        const result = await buildBioMedSpatialRollup(map, selectedGraphic, selectedFeature);
+        if (!cancelled) setSpatialRollup(result);
+      } catch {
+        if (!cancelled) {
+          setSpatialRollup({
+            status: "error",
+            focusTitle: selectedFeature.title,
+            focusLayer: selectedFeature.layerTitle,
+            checkedLayers: 0,
+            matchedLayers: 0,
+            featureCount: 0,
+            failedLayers: 0,
+            categoryRows: [],
+            layerRows: [],
+            message: "Live rollup failed for this selection."
+          });
+        }
+      }
+    }
+
+    void buildRollup();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, selectedFeature, selectedGraphic]);
+
   function toggleLayer(layerId: string) {
     const map = getMapElementMap(mapRef.current);
     if (!map) return;
@@ -535,10 +732,12 @@ export default function BiomedOpsWorkbenchPage() {
   async function selectSearchResult(result: FeatureSearchResult) {
     result.layer.visible = true;
     refreshLayers();
-    setSelectedFeature(summarizeMasterFeature(result.graphic, result.layerTitle, true));
+    const summary = summarizeMasterFeature(result.graphic, result.layerTitle, true);
+    setSelectedFeature(summary);
+    setSelectedGraphic(result.graphic);
     setExpandedGroups((current) => ({ ...current, [result.category]: true }));
     setRightOpen(true);
-    setRightTab("detail");
+    setRightTab(summary.category === "geography" ? "current" : "detail");
 
     const view = mapRef.current?.view as MapView | undefined;
     const geometry = result.graphic.geometry as Geometry | null | undefined;
@@ -557,6 +756,8 @@ export default function BiomedOpsWorkbenchPage() {
     setSearchResults([]);
     setSearchStatus("idle");
     setSelectedFeature(null);
+    setSelectedGraphic(null);
+    setSpatialRollup(null);
     setRightTab("current");
     closeSearchPopup();
     applyPreset("clean-map");
@@ -819,6 +1020,8 @@ export default function BiomedOpsWorkbenchPage() {
           <div className="opsv2__right-body">
             {rightTab === "current" && (
               <>
+                <SpatialRollupPanel selectedFeature={selectedFeature} rollup={spatialRollup} />
+
                 <section className="opsv2__summary-card">
                   <p className="opsv2__eyebrow">Current filter</p>
                   <h3>{currentTitle}</h3>
