@@ -664,6 +664,30 @@ function reorderPresentationLayers(map: ArcGISMap) {
   });
 }
 
+// Point/site layers can live inside different web-map group layers, and ArcGIS
+// only reorders within a single parent — so per-host reorder can't keep icons
+// above polygon fills from another group. Reparent every point/site layer to the
+// map root and append it (root tail = drawn on top), so site icons are never
+// buried under jurisdiction/ZIP polygons in the all-layers view.
+function liftPointLayersToTop(map: ArcGISMap) {
+  type LayerHost = { layers?: { remove?: (layer: Layer) => void } };
+  collectArcJurisdictionLayers(map)
+    .filter((layer) => layerDrawRank(layer) >= 90)
+    .forEach((layer) => {
+      try {
+        const parent = (layer as Layer & { parent?: LayerHost }).parent;
+        if (parent && (parent as unknown) !== (map as unknown) && parent.layers?.remove) {
+          parent.layers.remove(layer);
+        } else {
+          (map as unknown as LayerHost).layers?.remove?.(layer);
+        }
+        map.add(layer); // append to root collection = top of the draw order
+      } catch {
+        // Some web-map sublayers cannot be reparented; leave them in place.
+      }
+    });
+}
+
 export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView) {
   if (!map) return;
 
@@ -680,4 +704,5 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
 
   await Promise.allSettled(collectArcJurisdictionLayers(map).map((layer) => applyLayerStyle(layer, map)));
   reorderPresentationLayers(map);
+  liftPointLayersToTop(map);
 }
