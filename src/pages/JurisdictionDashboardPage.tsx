@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Geometry from "@arcgis/core/geometry/Geometry";
-import type Extent from "@arcgis/core/geometry/Extent";
+import Extent from "@arcgis/core/geometry/Extent";
 import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Layer from "@arcgis/core/layers/Layer";
 import type Field from "@arcgis/core/layers/support/Field";
@@ -240,6 +240,58 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
 }
 
 type SiteRow = { id: string; title: string; subtitle: string; graphic: Graphic; layerTitle: string };
+
+// Continental US bounding box (lon/lat). Used to drop AK/HI/territory outliers
+// so a division zooms to its live lower-48 icons, not its full polygon extent.
+const CONUS_BBOX = { xmin: -125, ymin: 24, xmax: -66.5, ymax: 49.7 };
+
+// Extent (in lon/lat) of the visible point "icon" layers for a selection,
+// clipped to the continental US. Returns an Extent ready for view.goTo, or null.
+async function computeLiveIconExtent(
+  map: ArcGISMap,
+  selection: Selection,
+  chosen: Partial<Record<LevelId, string>>,
+) {
+  const pointLayers = collectArcJurisdictionLayers(map)
+    .filter(isQueryableFeatureLayer)
+    .filter((layer) => layer.geometryType === "point" && layer.visible);
+
+  let box: { xmin: number; ymin: number; xmax: number; ymax: number } | null = null;
+  for (const layer of pointLayers) {
+    try {
+      const query = layer.createQuery();
+      query.where = buildWhereForLayer(layer, selection, chosen);
+      query.returnGeometry = true;
+      query.outFields = [];
+      (query as { outSpatialReference?: unknown }).outSpatialReference = { wkid: 4326 };
+      query.num = 4000;
+      const result = await layer.queryFeatures(query);
+      for (const feature of result.features) {
+        const point = feature.geometry as { x?: number; y?: number } | null | undefined;
+        const x = point?.x;
+        const y = point?.y;
+        if (typeof x !== "number" || typeof y !== "number") continue;
+        if (x < CONUS_BBOX.xmin || x > CONUS_BBOX.xmax || y < CONUS_BBOX.ymin || y > CONUS_BBOX.ymax) continue;
+        box = box
+          ? { xmin: Math.min(box.xmin, x), ymin: Math.min(box.ymin, y), xmax: Math.max(box.xmax, x), ymax: Math.max(box.ymax, y) }
+          : { xmin: x, ymin: y, xmax: x, ymax: y };
+      }
+    } catch {
+      // skip this layer
+    }
+  }
+
+  if (!box) return null;
+  const padX = Math.max((box.xmax - box.xmin) * 0.12, 0.45);
+  const padY = Math.max((box.ymax - box.ymin) * 0.12, 0.45);
+  return new Extent({
+    xmin: box.xmin - padX,
+    ymin: box.ymin - padY,
+    xmax: box.xmax + padX,
+    ymax: box.ymax + padY,
+    spatialReference: { wkid: 4326 },
+  });
+}
 
 function zoomTargetForGeometry(geometry: Geometry) {
   const extent = geometry.extent as Extent | null | undefined;
@@ -850,15 +902,22 @@ export default function JurisdictionDashboardPage() {
         }
       });
 
-    // Zoom to the extent of the filtered backbone features.
+    // Zoom to the LIVE ICONS (point sites) in the selection, clipped to the
+    // continental US so Alaska/Hawaii/territory outliers don't blow out the view.
     const layer = sourceLayerRef.current;
     const hasSelection = LEVELS.some((level) => sel[level]);
-    if (view && layer && hasSelection) {
+    if (view && hasSelection) {
       try {
-        const extentResult = await (layer as FeatureLayer & {
-          queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
-        }).queryExtent?.({ where: buildWhereForLayer(layer, sel, chosenFieldRef.current) });
-        if (extentResult?.extent) await view.goTo(extentResult.extent.clone().expand(1.15), { duration: 650 });
+        const iconExtent = await computeLiveIconExtent(map, sel, chosenFieldRef.current);
+        if (iconExtent) {
+          await view.goTo(iconExtent, { duration: 650 });
+        } else if (layer) {
+          // Fallback: no point icons in scope — use the filtered backbone extent.
+          const extentResult = await (layer as FeatureLayer & {
+            queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
+          }).queryExtent?.({ where: buildWhereForLayer(layer, sel, chosenFieldRef.current) });
+          if (extentResult?.extent) await view.goTo(extentResult.extent.clone().expand(1.15), { duration: 650 });
+        }
       } catch {
         // Navigation can be interrupted; selection still applies.
       }
