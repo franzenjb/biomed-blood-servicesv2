@@ -863,13 +863,26 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
 
   return (
     <div className="opsv2__feature-body" data-tone={hospitalTone}>
-      <header className="opsv2__feature-hero opsv2__feature-hero--hospital">
+      <header className={`opsv2__feature-hero opsv2__feature-hero--hospital${tierNum ? " opsv2__feature-hero--tiered" : ""}`}>
         <p className="opsv2__eyebrow">Selected hospital</p>
         <h2>{title}</h2>
         <span className="opsv2__feature-badge">
           <i aria-hidden="true" />
           {tierNum ? `Tier ${tierNum} hospital` : "Hospital location"}
         </span>
+        {tierNum && (
+          <div className="opsv2__tier-crest" aria-hidden="true">
+            <span className="opsv2__tier-crest-medal">
+              <em>Tier</em>
+              <b>{tierNum}</b>
+            </span>
+            <span className="opsv2__tier-pips">
+              {[0, 1, 2].map((index) => (
+                <i key={index} data-on={index < 3 - Number(tierNum) + 1 ? "true" : "false"} />
+              ))}
+            </span>
+          </div>
+        )}
       </header>
 
       <p className="opsv2__feature-insight">{insight}</p>
