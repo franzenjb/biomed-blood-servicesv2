@@ -46,14 +46,15 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
           </div>
 
           <p>
-            Sections 01–05 are guided chapters that explain blood donation and supply. Sections 06–09 are the live,
-            sign-in BioMed tools — the Jurisdiction Dashboard, Ops Workbench, Hospital Network, and Explore Regions.
+            Sections 01–05 are guided chapters that explain blood donation and supply. Sections 06–08 are the live,
+            sign-in BioMed tools — the Jurisdiction Dashboard, Ops Workbench, and Hospital Network. Section 09,
+            Explore Regions, brings the story home region by region — no sign-in required.
           </p>
 
           <div className="jd__modal-callout jd__modal-callout--alert">
             <LogIn size={26} aria-hidden="true" />
             <div>
-              <strong>Sections 06–09 Require a Red Cross ArcGIS Sign-In</strong>
+              <strong>Sections 06–08 Require a Red Cross ArcGIS Sign-In</strong>
               <span>
                 Open them with your Red Cross ArcGIS Online account. Visitors without org access will see the
                 ArcGIS sign-in prompt and cannot load the live layers.
@@ -204,7 +205,7 @@ export default function HubPage() {
         </Link>
 
         <Link
-          to="/biomed-layer-atlas"
+          to="/regions"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/explore-regions-map.png)" }}
           data-testid="hub-card-explore-regions"
@@ -213,7 +214,7 @@ export default function HubPage() {
           <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
-            <span className="hub__q">Inspect the full BioMed layer atlas with live map controls.</span>
+            <span className="hub__q">Pick a region — donors, hospitals, fixed-site trade areas, and community impact.</span>
           </span>
         </Link>
       </nav>

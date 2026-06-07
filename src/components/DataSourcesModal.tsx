@@ -266,6 +266,7 @@ const DOCK_HIDDEN_PREFIXES = [
   "/hospital-network",
   "/map",
   "/dashboard",
+  "/regions", // Explore Regions carries its own "About the Data" in the header
 ];
 
 /**

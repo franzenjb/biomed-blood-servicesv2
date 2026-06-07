@@ -24,7 +24,7 @@ test.describe("Hub", () => {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
-    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Inspect the full BioMed layer atlas with live map controls.");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Pick a region — donors, hospitals, fixed-site trade areas, and community impact.");
     await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
@@ -35,7 +35,7 @@ test.describe("Hub", () => {
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/jurisdiction-dashboard");
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
-    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/biomed-layer-atlas");
+    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/regions");
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("style", /dashboard-preview\.svg/);
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("style", /explore-regions-map\.png/);
     await page.getByTestId("hub-card-distribution").click();
@@ -382,5 +382,33 @@ test.describe("Data Sources & Methodology modal", () => {
   test("dock is hidden on map tiles that carry their own help", async ({ page }) => {
     await page.goto("/jurisdiction-dashboard");
     await expect(page.getByTestId("about-the-data")).toHaveCount(0);
+  });
+});
+
+test.describe("Explore Regions", () => {
+  test("hub tile 09 opens the regional story", async ({ page }) => {
+    await page.goto("/hub");
+    await page.getByTestId("hub-card-explore-regions").click();
+    await expect(page).toHaveURL(/\/regions$/);
+    await expect(page.getByTestId("regions")).toBeVisible();
+  });
+
+  test("region selector drives KPIs and fixed-site drill-down", async ({ page }) => {
+    await page.goto("/regions");
+    await expect(page.getByTestId("region-selector")).toBeVisible();
+    await expect(page.getByTestId("region-kpis")).toBeVisible();
+
+    // Select a fixed site -> market reach panel appears.
+    const firstSite = page.getByTestId("region-sites").locator(".regions__site").first();
+    await firstSite.click();
+    await expect(page.getByTestId("region-market")).toBeVisible();
+    await expect(page.getByText("Fixed Site Market Reach")).toBeVisible();
+
+    // Changing region resets the selected fixed site.
+    await page.locator("#region-select").selectOption({ index: 2 });
+    await expect(page.getByTestId("region-market")).toHaveCount(0);
+
+    // About the Data is reachable from Explore Regions.
+    await expect(page.getByTestId("about-the-data")).toBeVisible();
   });
 });
