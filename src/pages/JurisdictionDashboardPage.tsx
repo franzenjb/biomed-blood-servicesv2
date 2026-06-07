@@ -256,7 +256,15 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   return t.includes("biomed division") || t.includes("biomed region") || isFixed;
 }
 
-type SiteRow = { id: string; title: string; subtitle: string; graphic: Graphic; layerTitle: string };
+type SiteRow = {
+  id: string;
+  title: string;
+  subtitle: string;
+  graphic: Graphic;
+  layerTitle: string;
+  drives: number | null;
+  volume: number | null;
+};
 
 // Continental US bounding box (lon/lat). Used to drop AK/HI/territory outliers
 // so a division zooms to its live lower-48 icons, not its full polygon extent.
@@ -368,10 +376,31 @@ function isExcludedMetricKey(normalized: string) {
     normalized.includes("master") ||
     normalized.includes("external") ||
     /\byear\b/.test(normalized) ||
+    normalized.includes("time") ||
     /\b(zip|postal|fips|geoid|code|objectid|globalid|fid)\b/.test(normalized) ||
     /\b(lat|lon|long|latitude|longitude)\b/.test(normalized)
   );
 }
+
+// Pull a single numeric value from a feature's attributes by token match,
+// rejecting IDs/dates/years/codes/times and oversized values.
+function rawNumber(raw: Record<string, unknown> | undefined, groups: string[][]) {
+  if (!raw) return null;
+  for (const tokens of groups) {
+    for (const [key, value] of Object.entries(raw)) {
+      const num = typeof value === "number" ? value : Number(`${value}`.replace(/,/g, ""));
+      if (!Number.isFinite(num)) continue;
+      const normalized = key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (isExcludedMetricKey(normalized)) continue;
+      if (Math.abs(num) > 5_000_000) continue;
+      if (tokens.every((token) => normalized.includes(token))) return num;
+    }
+  }
+  return null;
+}
+
+const SITE_DRIVES_TOKENS = [["red", "cell", "drive"], ["total", "drive"], ["drive"]];
+const SITE_VOLUME_TOKENS = [["total", "red", "cell", "product"], ["red", "cell", "product"], ["total", "coll"], ["rbc", "product"], ["collection"]];
 
 function metricRank(normalized: string) {
   const index = METRIC_HINT_ORDER.findIndex((hint) => normalized.includes(hint));
@@ -999,7 +1028,15 @@ export default function JurisdictionDashboardPage() {
         const city = cityField ? `${attrs[cityField.name] ?? ""}`.trim() : "";
         const state = stateField ? `${attrs[stateField.name] ?? ""}`.trim() : "";
         const subtitle = [city, state].filter(Boolean).join(", ");
-        return { id: `${layer.id}-${index}-${title}`, title, subtitle, graphic, layerTitle };
+        return {
+          id: `${layer.id}-${index}-${title}`,
+          title,
+          subtitle,
+          graphic,
+          layerTitle,
+          drives: rawNumber(attrs, SITE_DRIVES_TOKENS),
+          volume: rawNumber(attrs, SITE_VOLUME_TOKENS),
+        };
       });
       setSites(rows);
     } catch {
@@ -1215,6 +1252,19 @@ export default function JurisdictionDashboardPage() {
     if (!term) return sites;
     return sites.filter((row) => `${row.title} ${row.subtitle}`.toLowerCase().includes(term));
   }, [sites, siteQuery]);
+
+  // Max per metric across the visible list, so the mini bars compare like-for-like.
+  const siteMax = useMemo(
+    () => ({
+      drives: Math.max(1, ...filteredSites.map((row) => row.drives ?? 0)),
+      volume: Math.max(1, ...filteredSites.map((row) => row.volume ?? 0)),
+    }),
+    [filteredSites],
+  );
+  const anySiteMetrics = useMemo(
+    () => filteredSites.some((row) => row.drives != null || row.volume != null),
+    [filteredSites],
+  );
 
   const activeFilterChips = useMemo(
     () => LEVELS.filter((level) => selection[level]).map((level) => ({ level, value: selection[level] })),
@@ -1510,11 +1560,35 @@ export default function JurisdictionDashboardPage() {
                     <p className="jd__empty">No fixed sites in this selection.</p>
                   ) : (
                     <div className="jd__site-list" data-testid="jd-site-list">
+                      {anySiteMetrics && (
+                        <div className="jd__site-legend">
+                          <span><i className="jd__site-key jd__site-key--drives" />Drives</span>
+                          <span><i className="jd__site-key jd__site-key--volume" />Red cell volume</span>
+                        </div>
+                      )}
                       {filteredSites.map((row) => (
                         <button key={row.id} type="button" className="jd__site" onClick={() => void selectSite(row)}>
-                          <span>
-                            <strong>{row.title}</strong>
-                            {row.subtitle && <small>{row.subtitle}</small>}
+                          <span className="jd__site-main">
+                            <span className="jd__site-text">
+                              <strong>{row.title}</strong>
+                              {row.subtitle && <small>{row.subtitle}</small>}
+                            </span>
+                            {(row.drives != null || row.volume != null) && (
+                              <span className="jd__site-bars">
+                                <span className="jd__site-bar">
+                                  <i className="jd__site-bar-track">
+                                    <i className="jd__site-bar-fill jd__site-bar-fill--drives" style={{ width: `${Math.round(((row.drives ?? 0) / siteMax.drives) * 100)}%` }} />
+                                  </i>
+                                  <b>{row.drives != null ? row.drives.toLocaleString() : "—"}</b>
+                                </span>
+                                <span className="jd__site-bar">
+                                  <i className="jd__site-bar-track">
+                                    <i className="jd__site-bar-fill jd__site-bar-fill--volume" style={{ width: `${Math.round(((row.volume ?? 0) / siteMax.volume) * 100)}%` }} />
+                                  </i>
+                                  <b>{row.volume != null ? row.volume.toLocaleString() : "—"}</b>
+                                </span>
+                              </span>
+                            )}
                           </span>
                           <ChevronRight aria-hidden="true" size={16} />
                         </button>
