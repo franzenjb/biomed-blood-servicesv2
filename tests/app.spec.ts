@@ -190,8 +190,8 @@ test.describe("Maps (shared shell)", () => {
     expect(dashBackBox).not.toBeNull();
     expect(dashBackBox!.x).toBeGreaterThan(40);
     expect(dashBackBox!.x).toBeLessThan(80);
-    expect(dashBackBox!.y).toBeGreaterThan(180);
-    expect(dashBackBox!.y).toBeLessThan(220);
+    expect(dashBackBox!.y).toBeGreaterThan(80);
+    expect(dashBackBox!.y).toBeLessThan(115);
     expect(dashBackBox!.width).toBeLessThanOrEqual(44);
     await page.getByTestId("dash-back").click();
     await expect(page).toHaveURL(/\/hub$/);
