@@ -36,6 +36,8 @@ test.describe("Hub", () => {
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/biomed-layer-atlas");
+    await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("style", /dashboard-preview\.svg/);
+    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("style", /explore-regions-map\.png/);
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
@@ -183,7 +185,7 @@ test.describe("Maps (shared shell)", () => {
     await page.goto("/dashboard");
     await expect(page.getByTestId("dashboard")).toBeVisible();
     await expect(page.getByTestId("dash-frame")).toHaveAttribute("src", /arcgis\.com\/apps\/dashboards/);
-    await expect(page.getByTestId("dash-back")).toContainText("Home");
+    await expect(page.getByTestId("dash-back")).toHaveAttribute("aria-label", "Return to hub");
     await page.getByTestId("dash-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });

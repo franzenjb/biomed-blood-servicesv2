@@ -40,7 +40,7 @@ export default function HubPage() {
           target="_blank"
           rel="noreferrer"
           className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/dashboard.jpg)" }}
+          style={{ backgroundImage: "url(/covers/tools/dashboard-preview.svg)" }}
           data-testid="hub-card-map-dashboard"
         >
           <span className="hub__scrim" />
@@ -82,7 +82,7 @@ export default function HubPage() {
         <Link
           to="/biomed-layer-atlas"
           className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
+          style={{ backgroundImage: "url(/covers/tools/explore-regions-map.png)" }}
           data-testid="hub-card-explore-regions"
         >
           <span className="hub__scrim" />

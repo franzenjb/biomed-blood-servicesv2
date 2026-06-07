@@ -10,9 +10,9 @@ export default function DashboardPage() {
   }
   return (
     <section className="dash" data-testid="dashboard">
-      <Link to="/hub" className="dash__back" data-testid="dash-back">
-        <Home aria-hidden="true" size={16} />
-        Home
+      <Link to="/hub" className="dash__back" aria-label="Return to hub" title="Return to hub" data-testid="dash-back">
+        <Home aria-hidden="true" size={17} />
+        <span className="visually-hidden">Return to hub</span>
       </Link>
       <iframe
         className="dash__frame"
