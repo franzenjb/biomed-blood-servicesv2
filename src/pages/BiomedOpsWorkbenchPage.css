@@ -1311,27 +1311,54 @@
   font-size: 15px;
 }
 
+/* Drawer-handle tabs anchored to the vertical middle of each edge, so they
+   never collide with the map's corner controls (home/zoom top-left, search
+   top-right). */
 .opsv2__reopen {
   position: absolute;
-  top: 88px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 16;
-  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
   border: 1px solid #d5dbe2;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 255, 255, 0.97);
   color: #12161c;
   font-size: 12px;
   font-weight: 900;
-  padding: 0 14px;
   box-shadow: 0 12px 30px rgba(18, 22, 28, 0.16);
 }
 
 .opsv2__reopen--left {
-  left: 14px;
+  left: 0;
+  border-left: 0;
+  border-radius: 0 12px 12px 0;
+  padding: 0 13px 0 9px;
 }
 
 .opsv2__reopen--right {
-  right: 14px;
+  right: 0;
+  flex-direction: row-reverse;
+  border-right: 0;
+  border-radius: 12px 0 0 12px;
+  padding: 0 9px 0 13px;
+}
+
+/* Keep the map's own controls off the header edge and the panel tabs. */
+.opsv2__map-shell arcgis-home,
+.opsv2__map-shell arcgis-zoom {
+  margin-left: 4px;
+}
+
+.opsv2__map-shell arcgis-home {
+  margin-top: 6px;
+}
+
+.opsv2__map-shell arcgis-search {
+  margin-top: 6px;
+  margin-right: 6px;
 }
 
 .opsv2__signin {
