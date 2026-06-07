@@ -82,13 +82,14 @@ export default function HubPage() {
         <Link
           to="/biomed-layer-atlas"
           className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/regions.jpg)" }}
+          style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
           data-testid="hub-card-explore-regions"
         >
           <span className="hub__scrim" />
+          <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
-            <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>
+            <span className="hub__q">Inspect the full BioMed layer atlas with live map controls.</span>
           </span>
         </Link>
       </nav>
