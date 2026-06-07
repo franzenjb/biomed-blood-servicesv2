@@ -1569,9 +1569,16 @@ export default function BiomedOpsWorkbenchPage({
       const view = mapElement?.view as (MapView & { popupEnabled?: boolean; popup?: { close?: () => void } }) | undefined;
       if (!mapElement || !view) return;
 
-      await view.when?.();
+      // The view is already ready here (this runs on arcgisViewReadyChange / once
+      // mapElement.view exists). Do NOT block on view.when(): with this 18-layer
+      // web map it can stall for 8s+, the loader fails open, and the surface is
+      // revealed unpainted (blank). Race when() against a short cap so one hung
+      // layer load can never gate the reveal.
+      await Promise.race([
+        Promise.resolve(view.when?.()).catch(() => undefined),
+        new Promise((resolve) => window.setTimeout(resolve, 1500)),
+      ]);
       if (cancelled) return;
-      setMapReady(true); // map surface is live; reveal it (loader fades out)
 
       const map = getMapElementMap(mapElement);
       await addArcgisPortalLayers(map, supplementalLayers);
@@ -1581,6 +1588,18 @@ export default function BiomedOpsWorkbenchPage({
       await applyPresentationMapStyle(map, view);
       await applyPresentationMarkers(map);
       if (cancelled) return;
+
+      // Force the first frame. An authenticated web-map view can finish loading
+      // without ever painting until a camera change nudges it — the same reason
+      // "Reset map" makes the blank screen appear. goTo guarantees a draw; only
+      // then reveal the surface so the loader never fades onto a blank map.
+      try {
+        await view.goTo({ center: HOME_CENTER, zoom: ZOOM }, { animate: false });
+      } catch {
+        // interrupted by user interaction; the view still paints
+      }
+      if (cancelled) return;
+      setMapReady(true); // painted surface is live; loader fades out
 
       collectArcJurisdictionLayers(map).forEach((layer) => {
         if ("popupEnabled" in layer) {
