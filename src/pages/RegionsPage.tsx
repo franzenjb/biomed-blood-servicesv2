@@ -2,6 +2,10 @@ import JurisdictionDashboardPage, {
   DEFAULT_JURISDICTION_BRAND,
   type JurisdictionBrand,
 } from "./JurisdictionDashboardPage";
+import {
+  jurisdictionDashboardSupplementalLayers,
+  supplementalBiomedSourceLayer,
+} from "../config/arcgisLayers";
 
 /* Explore Regions — Tile 9 (spec §23–25, §29).
 
@@ -47,6 +51,10 @@ const EXPLORE_REGIONS_BRAND: JurisdictionBrand = {
   calloutTitle: "Bring BioMed Home",
   calloutSub: "Region selection, live metrics, and community impact in one place.",
   aboutExtra: communityImpact,
+  // Explore Regions carries Troy's Fixed Site Map Layer on top of mobile
+  // collections so fixed-site reach is part of the regional drill-down.
+  // (Red Cell trade-area polygon layer to be added once its AGOL item id is known.)
+  supplementalLayers: [...jurisdictionDashboardSupplementalLayers, supplementalBiomedSourceLayer],
 };
 
 export default function RegionsPage() {

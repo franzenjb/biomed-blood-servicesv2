@@ -23,7 +23,11 @@ import {
   X,
 } from "lucide-react";
 import RcMark from "../components/RcMark";
-import { arcJurisdictionMapSource, jurisdictionDashboardSupplementalLayers } from "../config/arcgisLayers";
+import {
+  arcJurisdictionMapSource,
+  jurisdictionDashboardSupplementalLayers,
+  type ArcJurisdictionSupplementalLayerSource,
+} from "../config/arcgisLayers";
 import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
@@ -760,6 +764,8 @@ export type JurisdictionBrand = {
   calloutSub: string;
   /** Extra sections injected into the About modal (e.g. community impact). */
   aboutExtra?: ReactNode;
+  /** Portal layers to add on top of the web map (defaults to mobile collections). */
+  supplementalLayers?: ArcJurisdictionSupplementalLayerSource[];
 };
 
 export const DEFAULT_JURISDICTION_BRAND: JurisdictionBrand = {
@@ -773,6 +779,7 @@ export const DEFAULT_JURISDICTION_BRAND: JurisdictionBrand = {
     "A single, authoritative view of BioMed operational geography — boundaries, territories, fixed and mobile collection sites, and FY25 performance — that anyone can read without GIS training.",
   calloutTitle: "BioMed Operating Picture",
   calloutSub: "Boundaries, territory counts, and clickable sites in one place.",
+  supplementalLayers: jurisdictionDashboardSupplementalLayers,
 };
 
 export default function JurisdictionDashboardPage({
@@ -1243,8 +1250,8 @@ export default function JurisdictionDashboardPage({
         const map = getMapElementMap(mapElement);
         if (!map) return;
 
-        // Add supplemental portal layers (mobile collections) first.
-        await addArcgisPortalLayers(map, jurisdictionDashboardSupplementalLayers);
+        // Add supplemental portal layers (brand-specific; defaults to mobile collections).
+        await addArcgisPortalLayers(map, brand.supplementalLayers ?? jurisdictionDashboardSupplementalLayers);
         if (cancelled) return;
 
         // Load EVERY operational feature layer before styling so none flash with
