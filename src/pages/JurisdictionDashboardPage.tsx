@@ -26,7 +26,8 @@ import {
   X,
 } from "lucide-react";
 import RcMark from "../components/RcMark";
-import { arcJurisdictionMapSource } from "../config/arcgisLayers";
+import { arcJurisdictionMapSource, jurisdictionDashboardSupplementalLayers } from "../config/arcgisLayers";
+import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
@@ -680,6 +681,10 @@ export default function JurisdictionDashboardPage() {
 
       const map = getMapElementMap(mapElement);
       if (!map) return;
+
+      // Pull in supplemental portal layers (mobile collections) before styling.
+      await addArcgisPortalLayers(map, jurisdictionDashboardSupplementalLayers);
+      if (cancelled) return;
 
       hideBasemapUtilityLayers(map);
       await applyPresentationMapStyle(map, view);

@@ -282,6 +282,24 @@ export const biomedWorkbenchSupplementalLayers = [
   hospitalLocationsLayerSource
 ] satisfies ArcJurisdictionSupplementalLayerSource[];
 
+// Mobile BioMed collections — added to the Jurisdiction Dashboard so the
+// "Mobile + fixed sites" Quick View has real mobile coverage. Title carries
+// "mobile" so the preset matcher and KPIs pick it up automatically.
+export const mobileCollectionsLayerSource = {
+  title: "Mobile BioMed Collections",
+  itemId: "b33432c2e89041899ba2315f24a619b8",
+  category: "operations",
+  role: "Mobile BioMed blood collections.",
+  defaultVisible: false,
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=b33432c2e89041899ba2315f24a619b8",
+  mapViewerUrl:
+    "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=b33432c2e89041899ba2315f24a619b8"
+} satisfies ArcJurisdictionSupplementalLayerSource;
+
+export const jurisdictionDashboardSupplementalLayers = [
+  mobileCollectionsLayerSource
+] satisfies ArcJurisdictionSupplementalLayerSource[];
+
 export const biomedLayerAtlasSource = {
   title: "Explore Regions",
   routePath: "/biomed-layer-atlas",
