@@ -9,6 +9,7 @@ import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronDown,
   Filter,
+  HelpCircle,
   Home,
   Info,
   Layers,
@@ -22,6 +23,7 @@ import {
   Search,
   ShieldCheck,
   SlidersHorizontal,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
@@ -1291,6 +1293,85 @@ function SpatialRollupPanel({
   );
 }
 
+function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const mailSubject = encodeURIComponent(`${title} — question/suggestion`);
+
+  return (
+    <div className="jd__modal" role="dialog" aria-modal="true" aria-label={`About ${title}`} onClick={onClose}>
+      <div className="jd__modal-card" onClick={(event) => event.stopPropagation()}>
+        <header className="jd__modal-head">
+          <span className="jd__modal-mark"><RcMark size={22} /></span>
+          <p className="jd__modal-eyebrow">{title}</p>
+          <button type="button" className="jd__modal-x" aria-label="Close" onClick={onClose}>
+            <X aria-hidden="true" size={18} />
+          </button>
+        </header>
+
+        <div className="jd__modal-body">
+          <p className="jd__modal-meta">Live Red Cross ArcGIS · FY25 reporting</p>
+          <h2 className="jd__modal-title">About {title}</h2>
+          <p className="jd__modal-lead">
+            An internal BioMed operating map — sign in with your Red Cross ArcGIS account to load the live private
+            layers, then explore sites, geography, and FY25 collection data.
+          </p>
+
+          <div className="jd__modal-callout">
+            <RcMark size={30} />
+            <div>
+              <strong>BioMed operating picture</strong>
+              <span>Sites, boundaries, and live geography rollups in one place.</span>
+            </div>
+          </div>
+
+          <p>
+            The map and counts read live from the published Red Cross ArcGIS web map. When the source layers update,
+            this view updates with them — there is nothing to refresh by hand.
+          </p>
+
+          <h3>How to use it</h3>
+          <ul>
+            <li><b>Sign in</b> — top-right, with your Red Cross ArcGIS account, to load the live web map.</li>
+            <li><b>Quick View</b> — preset layer sets: Default workbench, All BioMed layers, Clean map, or a presenter story.</li>
+            <li><b>Layer controls</b> — the left rail toggles individual layers; it collapses to free up the map.</li>
+            <li><b>Click anything</b> — sites and boundaries open a clean detail card on the right (no raw ArcGIS popups).</li>
+            <li><b>Live geography rollup</b> — click a Division, Region, District, Chapter, or County to total the layers inside it.</li>
+            <li><b>Search</b> — find counties, regions, and sites, then click a result to zoom.</li>
+          </ul>
+
+          <div className="jd__modal-cards">
+            <div className="jd__modal-stat"><span>Quick View</span><strong>Presets</strong></div>
+            <div className="jd__modal-stat"><span>Layers</span><strong>Toggle</strong></div>
+            <div className="jd__modal-stat"><span>Rollup</span><strong>Live</strong></div>
+            <div className="jd__modal-stat"><span>Popups</span><strong>Clean cards</strong></div>
+          </div>
+
+          <h3>Map controls</h3>
+          <p>
+            Home and Zoom sit top-left, the Basemap gallery bottom-right. <b>Reset map</b> returns to the default view
+            and clears the current selection.
+          </p>
+
+          <h3>Definitions</h3>
+          <p>Geography is always shown by name — Chapter, Region, Division — never internal codes.</p>
+
+          <p className="jd__modal-foot">
+            Question or suggestion?{" "}
+            <a href={`mailto:jeff.franzen2@redcross.org?subject=${mailSubject}`}>Email Jeff Franzen</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BiomedOpsWorkbenchPage({
   title = "BioMed Ops Workbench",
   resultLabel = "Workbench",
@@ -1329,6 +1410,7 @@ export default function BiomedOpsWorkbenchPage({
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
   const [mapReady, setMapReady] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
 
   // Show the loader only while the authenticated map hydrates; fail open after 8s
@@ -1845,10 +1927,15 @@ export default function BiomedOpsWorkbenchPage({
             ))}
           </select>
         </label>
-        <button type="button" className="opsv2__button" onClick={() => void resetMap()}>
-          <RotateCcw aria-hidden="true" size={16} />
-          Reset map
-        </button>
+        <div className="opsv2__actions">
+          <button type="button" className="opsv2__button" onClick={() => void resetMap()}>
+            <RotateCcw aria-hidden="true" size={16} />
+            Reset map
+          </button>
+          <button type="button" className="opsv2__help-btn" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
+            <HelpCircle aria-hidden="true" size={20} />
+          </button>
+        </div>
         <div className="opsv2__auth" data-authenticated={isAuthenticated ? "true" : "false"}>
           <span />
           <strong>{authLabel}</strong>
@@ -2183,6 +2270,8 @@ export default function BiomedOpsWorkbenchPage({
           {error && <small>{error}</small>}
         </div>
       )}
+
+      {helpOpen && <WorkbenchHelpModal title={title} onClose={() => setHelpOpen(false)} />}
     </section>
   );
 }
