@@ -11,8 +11,8 @@ import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronRight,
   Droplet,
+  HelpCircle,
   Home,
-  Info,
   Layers,
   ListFilter,
   MapPin,
@@ -1242,9 +1242,14 @@ export default function JurisdictionDashboardPage() {
           <RotateCcw aria-hidden="true" size={15} />
           Reset
         </button>
-        <button type="button" className="jd__ghost" onClick={() => setAboutOpen(true)}>
-          <Info aria-hidden="true" size={15} />
-          About boundaries
+        <button
+          type="button"
+          className="jd__help"
+          onClick={() => setAboutOpen(true)}
+          aria-label="About this tool"
+          title="About this tool"
+        >
+          <HelpCircle aria-hidden="true" size={18} />
         </button>
         <div className="jd__auth" data-on={isAuthenticated ? "true" : "false"}>
           <span />
@@ -1513,23 +1518,75 @@ export default function JurisdictionDashboardPage() {
       )}
 
       {aboutOpen && (
-        <div className="jd__modal" role="dialog" aria-modal="true" aria-label="About these boundaries">
-          <div className="jd__modal-card">
-            <header>
-              <h2>About these boundaries</h2>
-              <button type="button" aria-label="Close" onClick={() => setAboutOpen(false)}>
+        <div className="jd__modal" role="dialog" aria-modal="true" aria-label="About the Jurisdiction Dashboard" onClick={() => setAboutOpen(false)}>
+          <div className="jd__modal-card" onClick={(event) => event.stopPropagation()}>
+            <header className="jd__modal-head">
+              <span className="jd__modal-mark"><RcMark size={22} /></span>
+              <p className="jd__modal-eyebrow">Jurisdiction Dashboard</p>
+              <button type="button" className="jd__modal-x" aria-label="Close" onClick={() => setAboutOpen(false)}>
                 <X aria-hidden="true" size={18} />
               </button>
             </header>
+
             <div className="jd__modal-body">
-              <h3>Data sources</h3>
+              <p className="jd__modal-meta">Live Red Cross ArcGIS · FY25 reporting</p>
+              <h2 className="jd__modal-title">About the Jurisdiction Dashboard</h2>
+              <p className="jd__modal-lead">
+                A single, authoritative view of BioMed operational geography — boundaries, territories, fixed and mobile
+                collection sites, and FY25 performance — that anyone can read without GIS training.
+              </p>
+
+              <div className="jd__modal-callout">
+                <RcMark size={30} />
+                <div>
+                  <strong>BioMed operating picture</strong>
+                  <span>Boundaries, territory counts, and clickable sites in one place.</span>
+                </div>
+              </div>
+
+              <p>
+                The map and counts read live from the published Red Cross ArcGIS web map. When the source layers update,
+                this dashboard updates with them — there is nothing to refresh by hand.
+              </p>
+
+              <h3>How to use it</h3>
+              <ul>
+                <li><b>KPI band</b> — FY25 totals (red cell drives, collections, SDP, plasma) and fixed-site count, recomputed as you filter.</li>
+                <li><b>Filter by geography</b> — drill Division → Region → District; the map flies to the live icons in that scope and the counts follow.</li>
+                <li><b>Quick View</b> — preset layer combinations (boundaries, fixed sites, mobile + fixed, FY25 collections, all, clean).</li>
+                <li><b>Layers tab</b> — turn individual map layers on and off; the view starts minimal.</li>
+                <li><b>Click anything</b> — sites and boundaries open a clean detail card on the right; clicking a Division, Region, or District shows that area’s FY25 totals.</li>
+              </ul>
+
+              <div className="jd__modal-cards">
+                <div className="jd__modal-stat"><span>Filter</span><strong>Div · Reg · Dist</strong></div>
+                <div className="jd__modal-stat"><span>Quick View</span><strong>6 presets</strong></div>
+                <div className="jd__modal-stat"><span>Layers</span><strong>Toggle</strong></div>
+                <div className="jd__modal-stat"><span>Popups</span><strong>Clean cards</strong></div>
+              </div>
+
+              <h3>Data &amp; boundaries</h3>
               <p>{arcJurisdictionMapSource.summary}</p>
-              <h3>Refresh schedule</h3>
-              <p>Boundaries and FY25 counts are read live from the published Red Cross ArcGIS web map. When the source layer updates, this dashboard updates.</p>
+
               <h3>Definitions</h3>
-              <p>Counts are summed across the FY25 source layer for the selected division, region, or district. Fixed Sites counts physical donor-facing collection sites in scope.</p>
+              <p>
+                Counts are summed across the FY25 source layer for the selected geography. Fixed Sites counts physical
+                donor-facing collection sites in scope. Geographies are shown by name, never code.
+              </p>
+
               <h3>Known limitations</h3>
-              <p>BioMed operational territories can differ from Humanitarian Services jurisdictions. Geographies are named, not coded, for clarity.</p>
+              <p>
+                BioMed operational territories can differ from Humanitarian Services jurisdictions. Per-site counts appear
+                only where the source layer carries them; otherwise see the network totals in the KPI band.
+              </p>
+
+              <p className="jd__modal-foot">
+                Question or suggestion?{" "}
+                <a href="mailto:jeff.franzen2@redcross.org?subject=Jurisdiction%20Dashboard%20%E2%80%94%20question%2Fsuggestion">
+                  Email Jeff Franzen
+                </a>
+                .
+              </p>
             </div>
           </div>
         </div>
