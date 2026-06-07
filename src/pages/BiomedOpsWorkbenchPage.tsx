@@ -1047,6 +1047,48 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   );
 }
 
+function WorkbenchMapLoader({ pendingVisibleLayerCount }: { pendingVisibleLayerCount: number }) {
+  return (
+    <div className="opsv2__map-loading" role="status" aria-live="polite">
+      <svg className="opsv2__loading-scene" viewBox="0 0 360 180" aria-hidden="true">
+        <defs>
+          <filter id="opsv2-loader-shadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#111827" floodOpacity="0.18" />
+          </filter>
+        </defs>
+        <path className="opsv2__loading-road" d="M58 124 C118 86 178 88 232 108 S302 104 328 68" />
+        <g className="opsv2__loading-node opsv2__loading-node--source" transform="translate(38 94)">
+          <circle cx="24" cy="24" r="23" />
+          <path d="M10 35h28V19L24 10 10 19z" />
+          <path d="M15 35V23h8v12M27 35V23h8v12" />
+        </g>
+        <g className="opsv2__loading-node opsv2__loading-node--hospital" transform="translate(292 38)">
+          <circle cx="24" cy="24" r="23" />
+          <path d="M11 36h27V15H11z" />
+          <path d="M21 19h7v6h6v7h-6v6h-7v-6h-6v-7h6z" />
+        </g>
+        <g className="opsv2__loading-van" filter="url(#opsv2-loader-shadow)">
+          <rect className="opsv2__loading-van-body" x="0" y="0" width="64" height="34" rx="6" />
+          <path className="opsv2__loading-van-cab" d="M44 8h13l9 10v16H44z" />
+          <path className="opsv2__loading-van-window" d="M49 12h8l5 7H49z" />
+          <path className="opsv2__loading-cross-h" d="M17 12h14v8H17z" />
+          <path className="opsv2__loading-cross-v" d="M20 9h8v14h-8z" />
+          <circle className="opsv2__loading-wheel" cx="16" cy="36" r="7" />
+          <circle className="opsv2__loading-wheel" cx="51" cy="36" r="7" />
+          <circle className="opsv2__loading-hub" cx="16" cy="36" r="3" />
+          <circle className="opsv2__loading-hub" cx="51" cy="36" r="3" />
+        </g>
+      </svg>
+      <strong>Preparing Workbench map</strong>
+      <span>
+        {pendingVisibleLayerCount > 0
+          ? `Loading ${pendingVisibleLayerCount} visible source layer${pendingVisibleLayerCount === 1 ? "" : "s"} from ArcGIS.`
+          : "Applying the clean layer style before showing source geography."}
+      </span>
+    </div>
+  );
+}
+
 function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   if (isTradeAreaLayerTitle(feature.layerTitle)) return <TradeAreaFeatureCard feature={feature} />;
 
@@ -1361,6 +1403,7 @@ export default function BiomedOpsWorkbenchPage({
   const [selectedFeature, setSelectedFeature] = useState<MasterFeatureSummary | null>(null);
   const [selectedGraphic, setSelectedGraphic] = useState<Graphic | null>(null);
   const [spatialRollup, setSpatialRollup] = useState<BioMedSpatialRollupSummary | null>(null);
+  const [mapLoadingGateExpired, setMapLoadingGateExpired] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
@@ -1393,7 +1436,7 @@ export default function BiomedOpsWorkbenchPage({
     () => (isAuthenticated ? layers.filter((layer) => layer.visible && layer.status !== "Loaded").length : 0),
     [isAuthenticated, layers],
   );
-  const mapIsInitializing = isAuthenticated && (styledMapKey !== activeArcgisMapKey || pendingVisibleLayerCount > 0);
+  const mapIsInitializing = isAuthenticated && !mapLoadingGateExpired && styledMapKey !== activeArcgisMapKey;
   const activeLayers = useMemo(() => layers.filter((layer) => layer.visible), [layers]);
   const inactiveLayers = useMemo(() => layers.filter((layer) => !layer.visible), [layers]);
 
@@ -1424,6 +1467,19 @@ export default function BiomedOpsWorkbenchPage({
   const currentSubtitle = query.trim()
     ? `${searchResults.length} feature result${searchResults.length === 1 ? "" : "s"}`
     : presetLabel;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMapLoadingGateExpired(false);
+      return;
+    }
+
+    setMapLoadingGateExpired(false);
+    const timeout = window.setTimeout(() => {
+      setMapLoadingGateExpired(true);
+    }, 8000);
+    return () => window.clearTimeout(timeout);
+  }, [activeArcgisMapKey, isAuthenticated]);
 
   const refreshLayers = useCallback(() => {
     const map = getMapElementMap(mapRef.current);
@@ -1978,14 +2034,7 @@ export default function BiomedOpsWorkbenchPage({
           ],
         )}
         {mapIsInitializing && (
-          <div className="opsv2__map-loading" role="status" aria-live="polite">
-            <strong>Preparing Workbench map</strong>
-            <span>
-              {pendingVisibleLayerCount > 0
-                ? `Loading ${pendingVisibleLayerCount} visible source layer${pendingVisibleLayerCount === 1 ? "" : "s"} from ArcGIS.`
-                : "Applying the clean layer style before showing source geography."}
-            </span>
-          </div>
+          <WorkbenchMapLoader pendingVisibleLayerCount={pendingVisibleLayerCount} />
         )}
       </div>
 
