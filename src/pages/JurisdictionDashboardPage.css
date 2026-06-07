@@ -208,16 +208,99 @@
   opacity: 0.45;
 }
 
-/* ---- Stage ------------------------------------------------------------ */
+/* ---- Stage (collapsible grid shell, livessaved model) ----------------- */
 .jd__stage {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--jd-left, 340px) minmax(0, 1fr) var(--jd-right, 380px);
   min-height: 0;
   overflow: hidden;
 }
 
+.jd[data-left-open="false"] .jd__stage {
+  grid-template-columns: 52px minmax(0, 1fr) var(--jd-right, 380px);
+}
+
+.jd[data-right-open="false"] .jd__stage {
+  grid-template-columns: var(--jd-left, 340px) minmax(0, 1fr) 52px;
+}
+
+.jd[data-left-open="false"][data-right-open="false"] .jd__stage {
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+}
+
 .jd__map {
   position: relative;
+  min-width: 0;
+}
+
+/* ---- Collapsed rail --------------------------------------------------- */
+.jd__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  height: 100%;
+}
+
+.jd__rail-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--arc-gray-100, #e5e5e5);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jd__rail-btn:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
+.jd__rail-home {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--arc-gray-700, #4a4a4a);
+}
+
+.jd__rail-home:hover {
+  color: var(--arc-red, #ed1b2e);
+}
+
+.jd__rail-label {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--arc-gray-500, #737373);
+}
+
+.jd__panel-home {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--arc-gray-100, #e5e5e5);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  flex-shrink: 0;
+}
+
+.jd__panel-home:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
+.jd__panel-head-text {
   flex: 1;
   min-width: 0;
 }
@@ -380,7 +463,7 @@
 
 .jd__panel-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 14px 16px 12px;
   border-bottom: 1px solid var(--arc-gray-100, #e5e5e5);

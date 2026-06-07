@@ -1,4 +1,5 @@
 import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import RcAppBar from "../components/RcAppBar";
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
@@ -9,15 +10,13 @@ import type Layer from "@arcgis/core/layers/Layer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
 import {
+  ChevronLeft,
   ChevronRight,
   HelpCircle,
+  Home,
   Layers,
   ListFilter,
   MapPin,
-  PanelLeftClose,
-  PanelLeftOpen,
-  PanelRightClose,
-  PanelRightOpen,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -723,8 +722,8 @@ export default function JurisdictionDashboardPage() {
   const [mapReady, setMapReady] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  const [leftWidth, setLeftWidth] = useState(340);
-  const [rightWidth, setRightWidth] = useState(380);
+  const leftWidth = 340;
+  const rightWidth = 380;
 
   const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION);
   const [options, setOptions] = useState<Record<LevelId, string[]>>({ division: [], region: [], district: [] });
@@ -796,28 +795,6 @@ export default function JurisdictionDashboardPage() {
       refreshLayerSnaps();
     },
     [refreshLayerSnaps],
-  );
-
-  // ---- Resizable panels -------------------------------------------------
-  const startResize = useCallback(
-    (side: "left" | "right") => (event: React.PointerEvent) => {
-      event.preventDefault();
-      const startX = event.clientX;
-      const startW = side === "left" ? leftWidth : rightWidth;
-      const move = (e: PointerEvent) => {
-        const delta = side === "left" ? e.clientX - startX : startX - e.clientX;
-        const next = Math.min(560, Math.max(260, startW + delta));
-        if (side === "left") setLeftWidth(next);
-        else setRightWidth(next);
-      };
-      const up = () => {
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
-      };
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", up);
-    },
-    [leftWidth, rightWidth],
   );
 
   // ---- Discover layers + filter options on first hydrate ----------------
@@ -1383,16 +1360,30 @@ export default function JurisdictionDashboardPage() {
 
       <div className="jd__stage">
         {/* LEFT — filters */}
-        {leftOpen ? (
-          <aside className="jd__panel jd__panel--left" style={{ width: "var(--jd-left)" }} aria-label="Jurisdiction filters">
+        <aside className="jd__panel jd__panel--left" aria-label="Filters" data-collapsed={leftOpen ? "false" : "true"}>
+          {!leftOpen && (
+            <div className="jd__rail">
+              <button type="button" className="jd__rail-btn" aria-label="Open filters" onClick={() => setLeftOpen(true)}>
+                <ChevronRight aria-hidden="true" size={18} />
+              </button>
+              <Link to="/hub" className="jd__rail-home" aria-label="Home" title="Home">
+                <Home aria-hidden="true" size={18} />
+              </Link>
+              <span className="jd__rail-label">Filters</span>
+            </div>
+          )}
+          {leftOpen && (
+          <>
             <div className="jd__panel-head">
-              {leftTab === "filters" ? <ListFilter aria-hidden="true" size={17} /> : <Layers aria-hidden="true" size={17} />}
-              <div>
-                <h2>{leftTab === "filters" ? "Filter by geography" : "Map layers"}</h2>
+              <Link to="/hub" className="jd__panel-home" aria-label="Home" title="Home">
+                <Home aria-hidden="true" size={16} />
+              </Link>
+              <div className="jd__panel-head-text">
+                <h2>{leftTab === "filters" ? "Filter by Geography" : "Map Layers"}</h2>
                 <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
-              <button type="button" aria-label="Hide filters" onClick={() => setLeftOpen(false)}>
-                <PanelLeftClose aria-hidden="true" size={17} />
+              <button type="button" className="jd__rail-btn" aria-label="Collapse filters" onClick={() => setLeftOpen(false)}>
+                <ChevronLeft aria-hidden="true" size={18} />
               </button>
             </div>
 
@@ -1492,15 +1483,9 @@ export default function JurisdictionDashboardPage() {
             </p>
               </>
             )}
-          </aside>
-        ) : (
-          <button type="button" className="jd__reopen jd__reopen--left" onClick={() => setLeftOpen(true)}>
-            <PanelLeftOpen aria-hidden="true" size={16} />
-            Filters
-          </button>
-        )}
-
-        {leftOpen && <div className="jd__resizer jd__resizer--left" onPointerDown={startResize("left")} role="separator" aria-label="Resize filters" />}
+          </>
+          )}
+        </aside>
 
         {/* MAP */}
         <div className="jd__map">
@@ -1532,19 +1517,25 @@ export default function JurisdictionDashboardPage() {
           {isAuthenticated && !mapReady && <JdMapLoader />}
         </div>
 
-        {rightOpen && <div className="jd__resizer jd__resizer--right" onPointerDown={startResize("right")} role="separator" aria-label="Resize details" />}
-
         {/* RIGHT — sites + detail */}
-        {rightOpen ? (
-          <aside className="jd__panel jd__panel--right" style={{ width: "var(--jd-right)" }} aria-label="Sites and detail">
+        <aside className="jd__panel jd__panel--right" aria-label="Sites and detail" data-collapsed={rightOpen ? "false" : "true"}>
+          {!rightOpen && (
+            <div className="jd__rail">
+              <button type="button" className="jd__rail-btn" aria-label="Open sites" onClick={() => setRightOpen(true)}>
+                <ChevronLeft aria-hidden="true" size={18} />
+              </button>
+              <span className="jd__rail-label">Sites</span>
+            </div>
+          )}
+          {rightOpen && (
+          <>
             <div className="jd__panel-head">
-              <MapPin aria-hidden="true" size={17} />
-              <div>
-                <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed site list"}</h2>
+              <div className="jd__panel-head-text">
+                <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed Site List"}</h2>
                 <p>{rightTab === "detail" && activeFeature ? activeFeature.layerTitle : "Click a site to fly to it"}</p>
               </div>
-              <button type="button" aria-label="Hide details" onClick={() => setRightOpen(false)}>
-                <PanelRightClose aria-hidden="true" size={17} />
+              <button type="button" className="jd__rail-btn" aria-label="Collapse sites" onClick={() => setRightOpen(false)}>
+                <ChevronRight aria-hidden="true" size={18} />
               </button>
             </div>
 
@@ -1617,13 +1608,9 @@ export default function JurisdictionDashboardPage() {
                 <p className="jd__empty">Click a feature on the map, or pick a site, to see a clean detail card here.</p>
               )}
             </div>
-          </aside>
-        ) : (
-          <button type="button" className="jd__reopen jd__reopen--right" onClick={() => setRightOpen(true)}>
-            <PanelRightOpen aria-hidden="true" size={16} />
-            Sites
-          </button>
-        )}
+          </>
+          )}
+        </aside>
       </div>
 
       {!isAuthenticated && (
@@ -1660,7 +1647,7 @@ export default function JurisdictionDashboardPage() {
               <div className="jd__modal-callout">
                 <RcMark size={30} />
                 <div>
-                  <strong>BioMed operating picture</strong>
+                  <strong>BioMed Operating Picture</strong>
                   <span>Boundaries, territory counts, and clickable sites in one place.</span>
                 </div>
               </div>

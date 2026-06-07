@@ -199,8 +199,8 @@ test.describe("Maps (shared shell)", () => {
 
   test("map back link returns to hub", async ({ page }) => {
     await page.goto("/map");
-    await expect(page.getByTestId("map-back")).toContainText("Home");
-    await page.getByTestId("map-back").click();
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    await page.locator(".rcbar__home").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
 
@@ -340,17 +340,17 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("tab", { name: /Sites/ })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Sign in to load the Jurisdiction Dashboard" })).toBeVisible({ timeout: 20_000 });
-    // Retractable + resizable panel affordances are present
-    await expect(page.getByRole("button", { name: "Hide filters" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Hide details" })).toBeVisible();
-    await expect(page.locator(".jd__resizer")).toHaveCount(2);
+    // Collapsible sidebars (livessaved rail model) + Home in the left sidebar
+    await expect(page.getByRole("button", { name: "Collapse filters" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Collapse sites" })).toBeVisible();
+    await expect(page.locator(".jd__panel-home")).toHaveAttribute("href", "/hub");
   });
 
   test("/hospital-network renders the hospital portfolio map shell", async ({ page }) => {
     await page.goto("/hospital-network");
     await expect(page.getByTestId("map-shell")).toBeVisible();
     await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("heading", { name: "Hospital Network" })).toBeVisible();
+    await expect(page.getByTestId("map-panel").getByRole("heading", { name: "Hospital Network" })).toBeVisible();
   });
 
   // Retired routes fall through to the home redirect.
