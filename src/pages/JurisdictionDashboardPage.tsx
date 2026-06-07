@@ -181,6 +181,36 @@ function hitGraphicPriority(graphic: Graphic) {
   return 60; // other operational polygons sit above jurisdiction boundaries
 }
 
+type CoincidentHit = { key: string; graphic: Graphic; title: string; layerTitle: string };
+
+// All distinct operational features under the click pixel, de-duped by layer + object id
+// and ranked by hitGraphicPriority (points first). Drives the stacked-marker picker.
+function collectCoincidentHits(
+  results: Array<{ type: string; graphic?: Graphic }>,
+  opLayerIds: Set<string>,
+): CoincidentHit[] {
+  const seen = new Set<string>();
+  const ranked: Array<{ hit: CoincidentHit; priority: number; index: number }> = [];
+  results.forEach((result, index) => {
+    if (result.type !== "graphic" || !result.graphic) return;
+    const graphic = result.graphic;
+    const layer = ((graphic as Graphic & { sourceLayer?: Layer }).sourceLayer ?? graphic.layer) as FeatureLayer | undefined;
+    if (!layer || !opLayerIds.has(String(layer.id))) return;
+    const objectId = layer.objectIdField ? graphic.attributes?.[layer.objectIdField] : undefined;
+    const key = `${layer.id}::${objectId ?? `idx-${index}`}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const layerTitle = (layer as { title?: string }).title ?? "Feature";
+    const summary = summarizeMasterFeature(graphic, layerTitle);
+    ranked.push({
+      hit: { key, graphic, title: summary.title || layerTitle, layerTitle: summary.layerTitle || layerTitle },
+      priority: hitGraphicPriority(graphic),
+      index,
+    });
+  });
+  return ranked.sort((a, b) => b.priority - a.priority || a.index - b.index).map((entry) => entry.hit);
+}
+
 function escapeSql(value: string) {
   return value.replace(/'/g, "''");
 }
@@ -734,6 +764,8 @@ export default function JurisdictionDashboardPage() {
   const [sites, setSites] = useState<SiteRow[]>([]);
   const [siteQuery, setSiteQuery] = useState("");
   const [activeFeature, setActiveFeature] = useState<MasterFeatureSummary | null>(null);
+  const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
+  const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
   const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
   const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
@@ -1107,6 +1139,8 @@ export default function JurisdictionDashboardPage() {
 
   const resetAll = useCallback(() => {
     setSelection(EMPTY_SELECTION);
+    setCoincidentHits([]);
+    setActiveHitKey(null);
     setActiveFeature(null);
     setSiteQuery("");
     setRightTab("sites");
@@ -1115,8 +1149,28 @@ export default function JurisdictionDashboardPage() {
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
   }, [refreshOptionsFor, applyPreset]);
 
+  // Enrich one graphic and show it in the detail card. Shared by map clicks and the
+  // coincident-feature picker so both produce the same readout.
+  const applyGraphicSelection = useCallback(async (graphic: Graphic) => {
+    const enriched = await enrichGraphic(graphic);
+    const summary = summarizeMasterFeature(enriched, undefined, true);
+    setActiveFeature(summary);
+    setRightTab("detail");
+    setRightOpen(true);
+  }, []);
+
+  const selectCoincidentHit = useCallback(
+    (hit: CoincidentHit) => {
+      setActiveHitKey(hit.key);
+      void applyGraphicSelection(hit.graphic);
+    },
+    [applyGraphicSelection],
+  );
+
   const selectSite = useCallback(async (row: SiteRow) => {
     const summary = summarizeMasterFeature(row.graphic, row.layerTitle, true);
+    setCoincidentHits([]);
+    setActiveHitKey(null);
     setActiveFeature(summary);
     setRightTab("detail");
     setRightOpen(true);
@@ -1212,28 +1266,28 @@ export default function JurisdictionDashboardPage() {
           const hit = await view.hitTest(event);
           // Only real operational layers — drop the cleaned-boundary overlays and
           // basemap so a click never resolves to "... (clean)" with no data.
+          // Only real operational layers — drop cleaned-boundary overlays and basemap.
           const opLayerIds = new Set(collectArcJurisdictionLayers(getMapElementMap(mapElement)).map((layer) => String(layer.id)));
-          const graphics = (hit.results as Array<{ type: string; graphic?: Graphic }>)
-            .filter((result) => result.type === "graphic" && result.graphic)
-            .map((result) => result.graphic as Graphic)
-            .filter((graphic) => {
-              const layer = (graphic as Graphic & { sourceLayer?: Layer }).sourceLayer ?? graphic.layer;
-              return layer != null && opLayerIds.has(String(layer.id));
-            });
-          // Most specific feature wins (point > ZIP > county > ... > division).
-          const best = graphics
-            .map((graphic, index) => ({ graphic, index, priority: hitGraphicPriority(graphic) }))
-            .sort((a, b) => b.priority - a.priority || a.index - b.index)[0]?.graphic;
-          if (!best) {
+          const hits = collectCoincidentHits(hit.results as Array<{ type: string; graphic?: Graphic }>, opLayerIds);
+          if (hits.length > 1) {
+            // Stacked / coincident markers: let the user pick which one.
+            setCoincidentHits(hits);
+            setActiveHitKey(null);
             setActiveFeature(null);
-            return;
+            setRightTab("detail");
+            setRightOpen(true);
+          } else {
+            setCoincidentHits([]);
+            setActiveHitKey(null);
+            if (hits[0]) {
+              await applyGraphicSelection(hits[0].graphic);
+            } else {
+              setActiveFeature(null);
+            }
           }
-          const enriched = await enrichGraphic(best);
-          const summary = summarizeMasterFeature(enriched, undefined, true);
-          setActiveFeature(summary);
-          setRightTab("detail");
-          setRightOpen(true);
         } catch {
+          setCoincidentHits([]);
+          setActiveHitKey(null);
           setActiveFeature(null);
         }
       });
@@ -1248,7 +1302,7 @@ export default function JurisdictionDashboardPage() {
       cancelled = true;
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [isAuthenticated, discoverLayers, refreshOptionsFor, computeKpis, loadSites, applyPreset, refreshLayerSnaps]);
+  }, [isAuthenticated, discoverLayers, refreshOptionsFor, computeKpis, loadSites, applyPreset, refreshLayerSnaps, applyGraphicSelection]);
 
   const filteredSites = useMemo(() => {
     const term = siteQuery.trim().toLowerCase();
@@ -1636,10 +1690,40 @@ export default function JurisdictionDashboardPage() {
                     </div>
                   )}
                 </>
-              ) : activeFeature ? (
-                <CleanFeatureCard feature={activeFeature} geoStats={geoStats} />
               ) : (
-                <p className="jd__empty">Click a feature on the map, or pick a site, to see a clean detail card here.</p>
+                <>
+                  {coincidentHits.length > 1 && (
+                    <section className="jd__coincident" data-testid="jd-coincident-picker" aria-label="Overlapping features at this point">
+                      <header className="jd__coincident-head">
+                        <strong>{coincidentHits.length} features here</strong>
+                        <span>Stacked markers — pick one</span>
+                      </header>
+                      <div className="jd__coincident-list">
+                        {coincidentHits.map((hit) => (
+                          <button
+                            key={hit.key}
+                            type="button"
+                            className={`jd__coincident-item${hit.key === activeHitKey ? " is-active" : ""}`}
+                            aria-pressed={hit.key === activeHitKey}
+                            onClick={() => selectCoincidentHit(hit)}
+                          >
+                            <strong>{hit.title}</strong>
+                            <span>{hit.layerTitle}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                  {activeFeature ? (
+                    <CleanFeatureCard feature={activeFeature} geoStats={geoStats} />
+                  ) : (
+                    <p className="jd__empty">
+                      {coincidentHits.length > 1
+                        ? "Select one of the stacked features above."
+                        : "Click a feature on the map, or pick a site, to see a clean detail card here."}
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </>
