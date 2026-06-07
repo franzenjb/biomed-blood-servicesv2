@@ -30,6 +30,7 @@
   gap: 10px;
   background: #eef2f4;
   color: #12161c;
+  pointer-events: none;
   text-align: center;
 }
 

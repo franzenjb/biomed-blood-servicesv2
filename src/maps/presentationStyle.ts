@@ -7,7 +7,13 @@ import Basemap from "@arcgis/core/Basemap";
 import Graphic from "@arcgis/core/Graphic";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import Polygon from "@arcgis/core/geometry/Polygon";
-import { CLEANED_OVERLAY_PREFIX, collectArcJurisdictionLayers, hideBasemapUtilityLayers, safeLayerTitle } from "../utils/biomedMapSuite";
+import {
+  CLEANED_OVERLAY_PREFIX,
+  collectArcJurisdictionLayers,
+  hideBasemapUtilityLayers,
+  keepOperationalGroupLayersVisible,
+  safeLayerTitle
+} from "../utils/biomedMapSuite";
 
 type Rgba = [number, number, number, number];
 
@@ -668,6 +674,7 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
   if (!map) return;
 
   hideBasemapUtilityLayers(map);
+  keepOperationalGroupLayersVisible(map);
   map.basemap = Basemap.fromId(QUIET_BASEMAP) ?? QUIET_BASEMAP;
   if (view) {
     view.background = { color: [244, 247, 244, 1] };
@@ -679,5 +686,6 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
   }
 
   await Promise.allSettled(collectArcJurisdictionLayers(map).map((layer) => applyLayerStyle(layer, map)));
+  keepOperationalGroupLayersVisible(map);
   reorderPresentationLayers(map);
 }

@@ -44,6 +44,7 @@ import {
   getMapElementMap,
   hideBasemapUtilityLayers,
   isBasemapUtilityLayerTitle,
+  keepOperationalGroupLayersVisible,
   presenterModes,
   previewLayerSnapshots,
   safeLayerTitle,
@@ -1488,6 +1489,23 @@ export default function BiomedOpsWorkbenchPage({
     setLayers((current) => mergeWorkbenchLayerSnapshots({ current, live, expected, isAuthenticated }));
   }, [isAuthenticated, preset, supplementalLayers]);
 
+  useEffect(() => {
+    if (!mapLoadingGateExpired || !isAuthenticated) return;
+    const map = getMapElementMap(mapRef.current);
+    keepOperationalGroupLayersVisible(map);
+    const mapLayers = collectArcJurisdictionLayers(map);
+    if (mapLayers.length > 0) {
+      const nextSnapshots = buildLayerSnapshots(map, supplementalLayers);
+      mapLayers.forEach((layer) => {
+        const snapshot = nextSnapshots.find((item) => item.id === layer.id);
+        if (!snapshot) return;
+        layer.visible = shouldShowLayerForPreset(snapshot, preset);
+      });
+      keepOperationalGroupLayersVisible(map);
+      refreshLayers();
+    }
+  }, [isAuthenticated, mapLoadingGateExpired, preset, refreshLayers, supplementalLayers]);
+
   const closeSearchPopup = useCallback(() => {
     const view = mapRef.current?.view as (MapView & { popup?: { close?: () => void } }) | undefined;
     view?.popup?.close?.();
@@ -1559,6 +1577,7 @@ export default function BiomedOpsWorkbenchPage({
       setPreset(nextPreset);
       const map = getMapElementMap(mapRef.current);
       hideBasemapUtilityLayers(map);
+      keepOperationalGroupLayersVisible(map);
       const mapLayers = collectArcJurisdictionLayers(map);
       if (!map || mapLayers.length === 0) {
         setLayers((current) =>
@@ -1578,6 +1597,7 @@ export default function BiomedOpsWorkbenchPage({
         if (!snapshot) return;
         layer.visible = shouldShowLayerForPreset(snapshot, nextPreset);
       });
+      keepOperationalGroupLayersVisible(map);
       refreshLayers();
     },
     [isAuthenticated, refreshLayers, supplementalLayers],
