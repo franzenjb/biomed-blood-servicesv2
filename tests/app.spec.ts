@@ -27,7 +27,7 @@ test.describe("Hub", () => {
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Local story and community impact — by Red Cross region and chapter.");
     await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("BioMed Map & Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
-    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveCount(0);
     // stale separated/legacy map links are gone from the hub
     for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);

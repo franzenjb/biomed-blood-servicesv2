@@ -86,7 +86,6 @@ export default function HubPage() {
           data-testid="hub-card-explore-regions"
         >
           <span className="hub__scrim" />
-          <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
             <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>
