@@ -55,7 +55,7 @@ import {
   type BioMedPresenterModeId,
 } from "../utils/biomedMapSuite";
 import { buildBioMedSpatialRollup, type BioMedSpatialRollupSummary } from "../utils/biomedRollups";
-import { classifyMasterLayer, summarizeMasterFeature, type MasterFeatureSummary } from "../utils/masterMapFeatures";
+import { classifyMasterLayer, summarizeMasterFeature, type MasterFeatureSummary, type MasterLayerCategory } from "../utils/masterMapFeatures";
 import "./BiomedOpsWorkbenchPage.css";
 
 type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
@@ -1198,6 +1198,44 @@ function selectBestOperationalHit(results: unknown[], map?: ReturnType<typeof ge
     .sort((a, b) => hitGraphicPriority(b.candidate.graphic) - hitGraphicPriority(a.candidate.graphic) || a.index - b.index)[0]?.candidate;
 }
 
+type CoincidentHit = {
+  key: string;
+  graphic: Graphic;
+  title: string;
+  layerTitle: string;
+  category: MasterLayerCategory;
+};
+
+// All distinct operational features under the click pixel, de-duped by layer + object id
+// and ordered the same way as the single-best pick (points first, then by priority).
+function collectOperationalHits(results: unknown[], map?: ReturnType<typeof getMapElementMap>): CoincidentHit[] {
+  const seen = new Set<string>();
+  const ranked: Array<{ hit: CoincidentHit; priority: number; index: number }> = [];
+  results.forEach((candidate, index) => {
+    const graphic = (candidate as { graphic?: Graphic })?.graphic;
+    if (!graphic || !isOperationalHitGraphic(graphic, map)) return;
+    const layer = hitGraphicSourceLayer(graphic) as FeatureLayer | undefined;
+    const objectId = layer?.objectIdField ? graphic.attributes?.[layer.objectIdField] : undefined;
+    const key = `${layer?.id ?? "layer"}::${objectId ?? `idx-${index}`}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    const layerTitle = hitGraphicLayerTitle(graphic);
+    const summary = summarizeMasterFeature(graphic, layerTitle);
+    ranked.push({
+      hit: {
+        key,
+        graphic,
+        title: featureDisplayTitle(summary) || layerTitle || "Feature",
+        layerTitle: summary.layerTitle || layerTitle,
+        category: summary.category,
+      },
+      priority: hitGraphicPriority(graphic),
+      index,
+    });
+  });
+  return ranked.sort((a, b) => b.priority - a.priority || a.index - b.index).map((entry) => entry.hit);
+}
+
 function shouldShowLayerForPreset(layer: BioMedLayerSnapshot, nextPreset: WorkbenchPreset) {
   const title = layer.title.toLowerCase();
   if (nextPreset === "default-workbench") {
@@ -1438,6 +1476,27 @@ export default function BiomedOpsWorkbenchPage({
   );
   const [selectedFeature, setSelectedFeature] = useState<MasterFeatureSummary | null>(null);
   const [selectedGraphic, setSelectedGraphic] = useState<Graphic | null>(null);
+  const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
+
+  // Enrich a single graphic and show it in the detail card. Shared by map clicks and
+  // the coincident-feature picker so both produce the same selected-feature readout.
+  const applyGraphicSelection = useCallback(async (graphic: Graphic) => {
+    const enriched = await enrichGraphicAttributes(graphic);
+    const summary = summarizeMasterFeature(enriched, undefined, true);
+    setSelectedFeature(summary);
+    setSelectedGraphic(enriched);
+    if (summary) {
+      setRightOpen(true);
+      setRightTab(summary.category === "geography" ? "current" : "detail");
+    }
+  }, []);
+
+  const selectCoincidentHit = useCallback(
+    (hit: CoincidentHit) => {
+      void applyGraphicSelection(hit.graphic);
+    },
+    [applyGraphicSelection],
+  );
   const [spatialRollup, setSpatialRollup] = useState<BioMedSpatialRollupSummary | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
@@ -1504,10 +1563,10 @@ export default function BiomedOpsWorkbenchPage({
   );
 
   const presetLabel = useMemo(() => {
-    if (preset === "default-workbench") return "Default workbench";
-    if (preset === "all-layers") return "All BioMed layers";
-    if (preset === "clean-map") return "Clean map";
-    return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom view";
+    if (preset === "default-workbench") return "Default Workbench";
+    if (preset === "all-layers") return "All BioMed Layers";
+    if (preset === "clean-map") return "Clean Map";
+    return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom View";
   }, [preset]);
 
   const currentTitle = query.trim() ? `Search: ${query.trim()}` : selectedFeature ? featureDisplayTitle(selectedFeature) : "Current filter";
@@ -1768,16 +1827,25 @@ export default function BiomedOpsWorkbenchPage({
           view.popup?.close?.();
           const hit = await view.hitTest(event);
           const currentMap = getMapElementMap(mapElement);
-          const result = selectBestOperationalHit(hit.results, currentMap);
-          const enrichedGraphic = result?.graphic ? await enrichGraphicAttributes(result.graphic) : null;
-          const summary = enrichedGraphic ? summarizeMasterFeature(enrichedGraphic, undefined, true) : null;
-          setSelectedFeature(summary);
-          setSelectedGraphic(enrichedGraphic);
-          if (summary) {
+          const hits = collectOperationalHits(hit.results, currentMap);
+          if (hits.length > 1) {
+            // Stacked / coincident markers: let the user pick which one instead of guessing.
+            setCoincidentHits(hits);
+            setSelectedFeature(null);
+            setSelectedGraphic(null);
             setRightOpen(true);
-            setRightTab(summary.category === "geography" ? "current" : "detail");
+            setRightTab("detail");
+          } else {
+            setCoincidentHits([]);
+            if (hits[0]) {
+              await applyGraphicSelection(hits[0].graphic);
+            } else {
+              setSelectedFeature(null);
+              setSelectedGraphic(null);
+            }
           }
         } catch {
+          setCoincidentHits([]);
           setSelectedFeature(null);
           setSelectedGraphic(null);
         }
@@ -1980,9 +2048,9 @@ export default function BiomedOpsWorkbenchPage({
         <label className="rcbar__field">
           Quick View
           <select value={preset} onChange={(event) => applyPreset(event.target.value as WorkbenchPreset)}>
-            <option value="default-workbench">Default workbench</option>
-            <option value="all-layers">All BioMed layers</option>
-            <option value="clean-map">Clean map</option>
+            <option value="default-workbench">Default Workbench</option>
+            <option value="all-layers">All BioMed Layers</option>
+            <option value="clean-map">Clean Map</option>
             {presenterModes.map((mode) => (
               <option key={mode.id} value={mode.id}>
                 {mode.label}
