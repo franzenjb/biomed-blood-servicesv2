@@ -271,7 +271,7 @@ function labelClassForField(field: Field, style: PresentationLayerStyle) {
       haloColor: [249, 250, 248, 0.92] as Rgba,
       haloSize: 1.35,
       font: {
-        family: "Avenir Next",
+        family: "Noto Sans",
         size: style.labelSize ?? 10,
         weight: "bold" as const
       }
@@ -356,7 +356,7 @@ function tradeAreaZipLabelClass(field: Field) {
       haloColor: [255, 255, 255, 0.94] as Rgba,
       haloSize: 1.45,
       font: {
-        family: "Avenir Next",
+        family: "Noto Sans",
         size: 11.5,
         weight: "bold" as const
       }
