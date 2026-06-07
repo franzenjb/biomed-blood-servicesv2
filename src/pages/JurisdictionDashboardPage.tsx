@@ -1269,6 +1269,40 @@ export default function JurisdictionDashboardPage() {
     [filteredSites],
   );
 
+  // Zoom the map back out to frame every site in the current list.
+  const zoomToSites = useCallback(async () => {
+    const view = mapRef.current?.view as MapView | undefined;
+    if (!view) return;
+    const points = filteredSites
+      .map((row) => row.graphic?.geometry as { x?: number; y?: number; spatialReference?: unknown } | null | undefined)
+      .filter((geom): geom is { x: number; y: number; spatialReference?: unknown } => typeof geom?.x === "number" && typeof geom?.y === "number");
+    if (points.length === 0) return;
+    if (points.length === 1) {
+      const only = filteredSites.find((row) => row.graphic?.geometry)?.graphic.geometry as Geometry | undefined;
+      if (only) await view.goTo(zoomTargetForGeometry(only), { duration: 650 }).catch(() => {});
+      return;
+    }
+    const box = points.reduce(
+      (acc, p) => ({
+        xmin: Math.min(acc.xmin, p.x),
+        ymin: Math.min(acc.ymin, p.y),
+        xmax: Math.max(acc.xmax, p.x),
+        ymax: Math.max(acc.ymax, p.y),
+      }),
+      { xmin: Infinity, ymin: Infinity, xmax: -Infinity, ymax: -Infinity },
+    );
+    const padX = Math.max((box.xmax - box.xmin) * 0.14, 0.4);
+    const padY = Math.max((box.ymax - box.ymin) * 0.14, 0.4);
+    const extent = new Extent({
+      xmin: box.xmin - padX,
+      ymin: box.ymin - padY,
+      xmax: box.xmax + padX,
+      ymax: box.ymax + padY,
+      spatialReference: points[0].spatialReference as never,
+    });
+    await view.goTo(extent, { duration: 650 }).catch(() => {});
+  }, [filteredSites]);
+
   const activeFilterChips = useMemo(
     () => LEVELS.filter((level) => selection[level]).map((level) => ({ level, value: selection[level] })),
     [selection],
@@ -1540,7 +1574,7 @@ export default function JurisdictionDashboardPage() {
             </div>
 
             <div className="jd__tabs" role="tablist">
-              <button type="button" role="tab" aria-selected={rightTab === "sites"} className={rightTab === "sites" ? "is-active" : ""} onClick={() => setRightTab("sites")}>
+              <button type="button" role="tab" aria-selected={rightTab === "sites"} className={rightTab === "sites" ? "is-active" : ""} onClick={() => { setRightTab("sites"); void zoomToSites(); }}>
                 Sites {sites.length > 0 && <b>{sites.length}</b>}
               </button>
               <button type="button" role="tab" aria-selected={rightTab === "detail"} className={rightTab === "detail" ? "is-active" : ""} onClick={() => setRightTab("detail")}>

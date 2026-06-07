@@ -882,8 +882,8 @@
 .jd__site-bar b {
   font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 11px;
-  font-weight: 500;
-  color: var(--arc-gray-700, #4a4a4a);
+  font-weight: 800;
+  color: var(--arc-black, #1a1a1a);
   min-width: 42px;
   text-align: right;
 }
