@@ -10,7 +10,6 @@ import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronRight,
-  Droplet,
   HelpCircle,
   Home,
   Layers,
@@ -645,6 +644,45 @@ function CleanFeatureCard({
       {stats.length === 0 && !isGeo && (
         <p className="jd-card__note">No per-site counts on this layer — network counts are in the KPI band above.</p>
       )}
+    </div>
+  );
+}
+
+// Red Cross van driving source → hospital — same loader as the Ops Workbench.
+function JdMapLoader() {
+  return (
+    <div className="jd__loading" role="status" aria-live="polite">
+      <svg className="jd__loading-scene" viewBox="0 0 360 180" aria-hidden="true">
+        <defs>
+          <filter id="jd-loader-shadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#111827" floodOpacity="0.18" />
+          </filter>
+        </defs>
+        <path className="jd__loading-road" d="M58 124 C118 86 178 88 232 108 S302 104 328 68" />
+        <g className="jd__loading-node jd__loading-node--source" transform="translate(38 94)">
+          <circle cx="24" cy="24" r="23" />
+          <path d="M10 35h28V19L24 10 10 19z" />
+          <path d="M15 35V23h8v12M27 35V23h8v12" />
+        </g>
+        <g className="jd__loading-node jd__loading-node--hospital" transform="translate(292 38)">
+          <circle cx="24" cy="24" r="23" />
+          <path d="M11 36h27V15H11z" />
+          <path d="M21 19h7v6h6v7h-6v6h-7v-6h-6v-7h6z" />
+        </g>
+        <g className="jd__loading-van" filter="url(#jd-loader-shadow)">
+          <rect className="jd__loading-van-body" x="0" y="0" width="64" height="34" rx="6" />
+          <path className="jd__loading-van-cab" d="M44 8h13l9 10v16H44z" />
+          <path className="jd__loading-van-window" d="M49 12h8l5 7H49z" />
+          <path className="jd__loading-cross-h" d="M17 12h14v8H17z" />
+          <path className="jd__loading-cross-v" d="M20 9h8v14h-8z" />
+          <circle className="jd__loading-wheel" cx="16" cy="36" r="7" />
+          <circle className="jd__loading-wheel" cx="51" cy="36" r="7" />
+          <circle className="jd__loading-hub" cx="16" cy="36" r="3" />
+          <circle className="jd__loading-hub" cx="51" cy="36" r="3" />
+        </g>
+      </svg>
+      <strong>Loading BioMed jurisdiction map…</strong>
+      <span>Connecting to the live Red Cross ArcGIS layers.</span>
     </div>
   );
 }
@@ -1426,13 +1464,7 @@ export default function JurisdictionDashboardPage() {
             ],
           )}
 
-          {isAuthenticated && !mapReady && (
-            <div className="jd__loading" role="status" aria-live="polite">
-              <Droplet aria-hidden="true" size={26} />
-              <strong>Loading BioMed jurisdiction map…</strong>
-              <span>Connecting to the live Red Cross ArcGIS layers.</span>
-            </div>
-          )}
+          {isAuthenticated && !mapReady && <JdMapLoader />}
         </div>
 
         {rightOpen && <div className="jd__resizer jd__resizer--right" onPointerDown={startResize("right")} role="separator" aria-label="Resize details" />}

@@ -243,13 +243,9 @@
   z-index: 3;
 }
 
-.jd__loading svg {
-  color: var(--arc-red, #ed1b2e);
-  animation: jd-pulse 1.3s ease-in-out infinite;
-}
-
 .jd__loading strong {
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--arc-black, #1a1a1a);
 }
 
@@ -257,9 +253,113 @@
   font-size: 13px;
 }
 
-@keyframes jd-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.18); opacity: 1; }
+/* Red Cross van loader (mirrors the Ops Workbench scene) */
+.jd__loading-scene {
+  width: min(420px, 46vw);
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 4px;
+  overflow: visible;
+}
+
+.jd__loading-road {
+  fill: none;
+  stroke: #d30f24;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 10 13;
+  animation: jd-loading-road 1.8s linear infinite;
+}
+
+.jd__loading-node circle {
+  fill: #ffffff;
+  stroke: #ccd5de;
+  stroke-width: 2;
+}
+
+.jd__loading-node path {
+  fill: #182230;
+}
+
+.jd__loading-node--source path {
+  fill: #384454;
+}
+
+.jd__loading-node--hospital path {
+  fill: #d30f24;
+}
+
+.jd__loading-van {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: jd-loading-van 3.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.jd__loading-van-body,
+.jd__loading-van-cab {
+  fill: #d30f24;
+}
+
+.jd__loading-van-window {
+  fill: #eef6ff;
+}
+
+.jd__loading-cross-h,
+.jd__loading-cross-v {
+  fill: #ffffff;
+}
+
+.jd__loading-wheel {
+  fill: #182230;
+}
+
+.jd__loading-hub {
+  fill: #ffffff;
+}
+
+@keyframes jd-loading-road {
+  to {
+    stroke-dashoffset: -23;
+  }
+}
+
+@keyframes jd-loading-van {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate(46px, 96px) scale(0.94);
+  }
+  16% {
+    opacity: 1;
+    transform: translate(62px, 88px) rotate(-8deg) scale(1);
+  }
+  46% {
+    opacity: 1;
+    transform: translate(152px, 70px) rotate(3deg) scale(1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate(244px, 82px) rotate(-7deg) scale(1);
+  }
+  92% {
+    opacity: 1;
+    transform: translate(292px, 48px) rotate(-18deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(316px, 36px) rotate(-18deg) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jd__loading-road,
+  .jd__loading-van {
+    animation: none;
+  }
+  .jd__loading-van {
+    opacity: 1;
+    transform: translate(184px, 76px);
+  }
 }
 
 /* ---- Panels ----------------------------------------------------------- */
