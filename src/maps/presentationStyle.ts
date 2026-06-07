@@ -461,8 +461,9 @@ function ringSignedArea(ring: number[][]) {
   return sum / 2;
 }
 
-// Drop simplification specks / tiny coastal slivers (deg²). Real islands clear it.
-const MIN_RING_AREA = 0.001;
+// Keep only rings at least this fraction of the feature's largest piece — the
+// *_SimplifyPolyg layers explode each shape into one body + thousands of specks.
+const RING_KEEP_RATIO = 0.01;
 
 function isSimplifiedJurisdictionTitle(title: string) {
   const n = normalize(title);
@@ -470,41 +471,15 @@ function isSimplifiedJurisdictionTitle(title: string) {
   return n.includes("division") || n.includes("region") || n.includes("district") || n.includes("chapter");
 }
 
+function isSimplifiedPolygonLayer(layer: FeatureLayer) {
+  const url = `${layer.url ?? ""} ${(layer as FeatureLayer & { sourceJSON?: { name?: string } }).sourceJSON?.name ?? ""}`;
+  return /simplifypolyg/i.test(url);
+}
+
 const cleanedOverlays = new Map<string, GraphicsLayer>();
+const builtOverlays = new Set<string>();
 
-// The *_SimplifyPolyg jurisdiction layers ship with spurious interior holes and
-// fragments from over-simplification. Keep the source layer for labels, hit-test
-// and rollups, but paint a hole-free copy (exterior rings only) on an overlay.
-async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: ArcGISMap, style: PresentationLayerStyle) {
-  const labelField = pickLabelField(featureLayer.fields, style.labelHints);
-  featureLayer.labelsVisible = Boolean(labelField);
-  featureLayer.labelingInfo = labelField ? [labelClassForField(labelField, style)] : [];
-  featureLayer.renderer = {
-    type: "simple",
-    symbol: {
-      type: "simple-fill",
-      color: [255, 255, 255, 0.01], // invisible but keeps the feature hit-testable
-      outline: { type: "simple-line", color: [0, 0, 0, 0], width: 0 }
-    }
-  };
-  featureLayer.opacity = 1;
-  featureLayer.effect = undefined;
-
-  let overlay = cleanedOverlays.get(featureLayer.id);
-  if (!overlay) {
-    overlay = new GraphicsLayer({
-      id: `${CLEANED_OVERLAY_PREFIX}${featureLayer.id}`,
-      title: `${safeLayerTitle(featureLayer)} (clean)`,
-      listMode: "hide"
-    });
-    cleanedOverlays.set(featureLayer.id, overlay);
-    map.add(overlay, 0);
-    (featureLayer as Layer & { watch?: (n: string, cb: () => void) => unknown }).watch?.("visible", () => {
-      if (overlay) overlay.visible = featureLayer.visible;
-    });
-  }
-  overlay.visible = featureLayer.visible;
-
+async function buildCleanedOverlay(featureLayer: StyledFeatureLayer, overlay: GraphicsLayer, style: PresentationLayerStyle) {
   try {
     const query = featureLayer.createQuery();
     query.where = "1=1";
@@ -522,9 +497,15 @@ async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: 
     for (const feature of result.features) {
       const geom = feature.geometry as { rings?: number[][][]; spatialReference?: unknown } | undefined;
       if (!geom?.rings?.length) continue;
-      const exteriorAll = geom.rings.filter((ring) => ringSignedArea(ring) < 0); // exterior (CW)
-      const exterior = exteriorAll.filter((ring) => Math.abs(ringSignedArea(ring)) >= MIN_RING_AREA);
-      const rings = exterior.length ? exterior : exteriorAll; // never drop everything
+      const exterior = geom.rings
+        .map((ring) => {
+          const signed = ringSignedArea(ring);
+          return { ring, area: Math.abs(signed), isExterior: signed < 0 };
+        })
+        .filter((entry) => entry.isExterior); // drop holes (CCW)
+      if (!exterior.length) continue;
+      const maxArea = Math.max(...exterior.map((entry) => entry.area));
+      const rings = exterior.filter((entry) => entry.area >= maxArea * RING_KEEP_RATIO).map((entry) => entry.ring);
       if (!rings.length) continue;
       overlay.add(
         new Graphic({
@@ -534,8 +515,52 @@ async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: 
       );
     }
   } catch {
-    // If the query fails, fall back to a plain (holey) fill so the layer still shows.
-    featureLayer.renderer = { type: "simple", symbol: simpleFillSymbol(style) };
+    // Leave the overlay empty; the source layer stays invisible rather than messy.
+  }
+}
+
+// The *_SimplifyPolyg layers ship with spurious interior holes and thousands of
+// sliver fragments. Keep the source layer for labels, hit-test and rollups, but
+// paint a cleaned copy (body rings only) on an overlay — built lazily on first
+// show so hidden layers cost nothing.
+async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: ArcGISMap, style: PresentationLayerStyle) {
+  const labelField = pickLabelField(featureLayer.fields, style.labelHints);
+  featureLayer.labelsVisible = Boolean(labelField);
+  featureLayer.labelingInfo = labelField ? [labelClassForField(labelField, style)] : [];
+  featureLayer.renderer = {
+    type: "simple",
+    symbol: {
+      type: "simple-fill",
+      color: [255, 255, 255, 0.01], // invisible but keeps the feature hit-testable
+      outline: { type: "simple-line", color: [0, 0, 0, 0], width: 0 }
+    }
+  };
+  featureLayer.opacity = 1;
+  featureLayer.effect = undefined;
+
+  const key = featureLayer.id;
+  let overlay = cleanedOverlays.get(key);
+  if (!overlay) {
+    overlay = new GraphicsLayer({
+      id: `${CLEANED_OVERLAY_PREFIX}${key}`,
+      title: `${safeLayerTitle(featureLayer)} (clean)`,
+      listMode: "hide"
+    });
+    cleanedOverlays.set(key, overlay);
+    map.add(overlay, 0);
+    const built = overlay;
+    (featureLayer as Layer & { watch?: (n: string, cb: () => void) => unknown }).watch?.("visible", () => {
+      built.visible = featureLayer.visible;
+      if (featureLayer.visible && !builtOverlays.has(key)) {
+        builtOverlays.add(key);
+        void buildCleanedOverlay(featureLayer, built, style);
+      }
+    });
+  }
+  overlay.visible = featureLayer.visible;
+  if (featureLayer.visible && !builtOverlays.has(key)) {
+    builtOverlays.add(key);
+    await buildCleanedOverlay(featureLayer, overlay, style);
   }
 }
 
@@ -560,7 +585,7 @@ async function applyLayerStyle(layer: Layer, map?: ArcGISMap) {
   if (featureLayer.geometryType === "polygon" && isCollectionZipLayerTitle(title) && applyCollectionZipStyle(featureLayer)) return;
 
   const style = getPresentationStyleForLayer(title);
-  if (map && featureLayer.geometryType === "polygon" && isSimplifiedJurisdictionTitle(title)) {
+  if (map && featureLayer.geometryType === "polygon" && (isSimplifiedPolygonLayer(featureLayer) || isSimplifiedJurisdictionTitle(title))) {
     await applyHoleStrippedBoundary(featureLayer, map, style);
     return;
   }
