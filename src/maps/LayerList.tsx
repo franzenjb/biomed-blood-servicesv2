@@ -8,11 +8,11 @@ type Props = {
 };
 
 const CATEGORY_LABELS: Record<MasterLayerCategory, string> = {
-  sites: "Facilities & sites",
-  geography: "Jurisdictions & geography",
-  operations: "Operations & distribution",
+  sites: "Facilities & Sites",
+  geography: "Jurisdictions & Geography",
+  operations: "Operations & Distribution",
   manufacturing: "Manufacturing",
-  hospitals: "Hospitals & patient care",
+  hospitals: "Hospitals & Patient Care",
   reference: "Reference",
 };
 

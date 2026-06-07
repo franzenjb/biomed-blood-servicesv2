@@ -6,8 +6,9 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { Link } from "react-router-dom";
-import { Home } from "lucide-react";
+import { HelpCircle, X } from "lucide-react";
+import RcAppBar from "../components/RcAppBar";
+import RcMark from "../components/RcMark";
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Layer from "@arcgis/core/layers/Layer";
@@ -30,10 +31,16 @@ import FeatureDetails from "./FeatureDetails";
 import { applyPresentationMarkers } from "./presentationMarkers";
 import "./mapShell.css";
 
+type AboutPoint = { label: string; text: string };
+
 type Props = {
   eyebrow?: string;
   title: string;
   webMapItemId: string;
+  /** Optional About-modal copy. Sensible defaults are derived from the title. */
+  aboutMeta?: string;
+  aboutLead?: string;
+  aboutPoints?: AboutPoint[];
 };
 
 type AuthStatus = "checking" | "signed-out" | "signing-in" | "signed-in" | "error";
@@ -75,7 +82,14 @@ function errorMessage(error: unknown): string {
   return "ArcGIS sign-in did not complete. Try again.";
 }
 
-export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapItemId }: Props) {
+export default function MapShell({
+  eyebrow = "Live ArcGIS map",
+  title,
+  webMapItemId,
+  aboutMeta = "Live Red Cross ArcGIS",
+  aboutLead,
+  aboutPoints,
+}: Props) {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const viewRef = useRef<MapView | null>(null);
@@ -88,8 +102,30 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
   const [activeTab, setActiveTab] = useState("layers");
   const [placeQuery, setPlaceQuery] = useState("");
   const [placeStatus, setPlaceStatus] = useState("");
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const isAuthenticated = authStatus === "signed-in";
+
+  const authLabel =
+    authStatus === "checking"
+      ? "Checking ArcGIS…"
+      : authStatus === "signing-in"
+        ? "Signing in…"
+        : isAuthenticated
+          ? "Signed in"
+          : "Sign in for live data";
+
+  const aboutLeadCopy =
+    aboutLead ??
+    `${title} reads live from the published Red Cross ArcGIS web map. When the source layers update, this view updates with them — there is nothing to refresh by hand.`;
+
+  const aboutPointsCopy: AboutPoint[] =
+    aboutPoints ?? [
+      { label: "Layers tab", text: "Turn individual map layers on and off, grouped by category." },
+      { label: "Find a place", text: "Jump the map to any city, county, or state." },
+      { label: "Click anything", text: "Sites and boundaries open a clean detail card in the side panel — never a raw Esri popup." },
+      { label: "Map controls", text: "Home, zoom, scale bar, and a basemap gallery sit on the map itself." },
+    ];
 
   const refreshSnapshots = useCallback(() => {
     setSnapshots(buildLayerSnapshots(getMapElementMap(mapRef.current)));
@@ -232,6 +268,33 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
 
   return (
     <section className="map-shell" data-testid="map-shell" aria-label={title}>
+      <RcAppBar title={title}>
+        <button
+          type="button"
+          className="rcbar__icon"
+          onClick={() => setAboutOpen(true)}
+          aria-label="About this tool"
+          title="About this tool"
+          data-testid="map-about"
+        >
+          <HelpCircle aria-hidden="true" size={18} />
+        </button>
+        <div className="rcbar__auth" data-on={isAuthenticated ? "true" : "false"}>
+          <span />
+          <strong>{authLabel}</strong>
+          {!isAuthenticated && (
+            <button
+              type="button"
+              onClick={signIn}
+              disabled={authStatus === "checking" || authStatus === "signing-in"}
+            >
+              Sign in
+            </button>
+          )}
+        </div>
+      </RcAppBar>
+
+      <div className="map-shell__stage">
       <div className="map-shell__canvas">
         {createElement(
           "arcgis-map",
@@ -257,11 +320,6 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
           ]
         )}
       </div>
-
-      <Link to="/hub" className="map-shell__back" data-testid="map-back">
-        <Home aria-hidden="true" size={16} />
-        Home
-      </Link>
 
       <MapPanel
         eyebrow={eyebrow}
@@ -309,6 +367,48 @@ export default function MapShell({ eyebrow = "Live ArcGIS map", title, webMapIte
               {authStatus === "signing-in" ? "Signing in…" : authStatus === "checking" ? "Checking…" : "Sign in to ArcGIS"}
             </button>
             {authError && <p className="map-gate__error">{authError}</p>}
+          </div>
+        </div>
+      )}
+      </div>
+
+      {aboutOpen && (
+        <div
+          className="map-about"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`About ${title}`}
+          onClick={() => setAboutOpen(false)}
+        >
+          <div className="map-about__card" onClick={(event) => event.stopPropagation()}>
+            <header className="map-about__head">
+              <span className="map-about__mark"><RcMark size={22} /></span>
+              <p className="map-about__eyebrow">{title}</p>
+              <button type="button" className="map-about__x" aria-label="Close" onClick={() => setAboutOpen(false)}>
+                <X aria-hidden="true" size={18} />
+              </button>
+            </header>
+
+            <div className="map-about__body">
+              <p className="map-about__meta">{aboutMeta}</p>
+              <h2 className="map-about__title">About {title}</h2>
+              <p className="map-about__lead">{aboutLeadCopy}</p>
+
+              <h3>How to use it</h3>
+              <ul>
+                {aboutPointsCopy.map((point) => (
+                  <li key={point.label}><b>{point.label}</b> — {point.text}</li>
+                ))}
+              </ul>
+
+              <p className="map-about__foot">
+                <span className="map-about__foot-q">Question or suggestions?</span>{" "}
+                <a href={`mailto:jeff.franzen2@redcross.org?subject=${encodeURIComponent(`${title} — question/suggestion`)}`}>
+                  Email Jeff Franzen
+                </a>
+                .
+              </p>
+            </div>
           </div>
         </div>
       )}

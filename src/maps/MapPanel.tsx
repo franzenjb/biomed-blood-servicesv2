@@ -1,4 +1,5 @@
 import { useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { PanelRightClose, PanelRightOpen } from "lucide-react";
 
 type Tab = { id: string; label: string };
 
@@ -37,7 +38,8 @@ export default function MapPanel({ eyebrow, title, tabs, activeTab, onTabChange,
         aria-label="Show panel"
         data-testid="map-panel-open"
       >
-        ‹ {tabs.find((t) => t.id === activeTab)?.label ?? "Panel"}
+        <PanelRightOpen aria-hidden="true" size={16} />
+        {tabs.find((t) => t.id === activeTab)?.label ?? "Panel"}
       </button>
     );
   }
@@ -58,7 +60,7 @@ export default function MapPanel({ eyebrow, title, tabs, activeTab, onTabChange,
           aria-label="Hide panel"
           data-testid="map-panel-collapse"
         >
-          ›
+          <PanelRightClose aria-hidden="true" size={18} />
         </button>
       </header>
 
