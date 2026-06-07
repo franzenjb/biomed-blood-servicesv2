@@ -229,7 +229,8 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   const isBoundary = t.includes("biomed division") || t.includes("biomed region") || t.includes("biomed district");
   const isFixed = t.includes("fixed site");
   const isMobile = t.includes("mobile");
-  const isCollections = t.includes("zip") || t.includes("fy25") || t.includes("collection operations");
+  // FY25 collections = ZIP/FY25 data only — NOT the Biomed Collection Operations layer.
+  const isCollections = t.includes("zip") || t.includes("fy25");
 
   if (preset === "boundaries") return isBoundary;
   if (preset === "fixed") return isFixed || t.includes("biomed region");
