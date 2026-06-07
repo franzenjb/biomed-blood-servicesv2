@@ -376,61 +376,133 @@ function composeSiteAddress(raw?: Record<string, unknown>) {
   return [street, locality, zip].filter(Boolean).join(", ").replace(/\s+,/g, ",").trim();
 }
 
+// Friendly type label per feature category — every popup leads with one.
+function typeLabel(feature: MasterFeatureSummary) {
+  const t = feature.layerTitle.toLowerCase();
+  if (feature.category === "geography") {
+    if (t.includes("division")) return "BioMed Division";
+    if (t.includes("region")) return "BioMed Region";
+    if (t.includes("district")) return "BioMed District";
+    if (t.includes("chapter")) return "Chapter";
+    if (t.includes("count")) return "County";
+    return "Geography";
+  }
+  if (t.includes("hospital")) return "Hospital";
+  if (t.includes("fixed site")) return "Fixed Collection Site";
+  if (t.includes("mobile")) return "Mobile Blood Drive";
+  if (t.includes("distribution")) return "Distribution Site";
+  if (t.includes("manufactur") || t.includes("warehouse") || t.includes("kitting") || t.includes("irl")) return "Manufacturing & Logistics";
+  return feature.layerTitle;
+}
+
 function cardInsight(feature: MasterFeatureSummary) {
   const t = feature.layerTitle.toLowerCase();
   if (t.includes("fixed site")) return "Fixed donor collection site feeding the BioMed supply chain.";
   if (t.includes("mobile")) return "Mobile BioMed blood drive in the community.";
   if (t.includes("distribution")) return "Distribution anchor routing blood products to hospitals.";
+  if (t.includes("hospital")) return "Hospital receiving Red Cross blood products.";
+  if (t.includes("manufactur") || t.includes("warehouse") || t.includes("kitting") || t.includes("irl"))
+    return "Processing and logistics capacity in the BioMed network.";
   if (feature.category === "geography") return feature.impact;
   return feature.talkingPoint;
 }
 
-function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+type CardModel = {
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  chips: Array<{ label: string; value: string }>;
+  stats: Array<{ label: string; value: string }>;
+  insight: string;
+  address: string;
+  pills: Array<{ label: string; value: string }>;
+  facts: Array<{ label: string; value: string }>;
+};
+
+const norm = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+// One model, filled the same way for every feature type → symmetric popups.
+function buildCardModel(feature: MasterFeatureSummary): CardModel {
   const raw = feature.rawAttributes;
-  const isGeography = feature.category === "geography";
+  const isGeo = feature.category === "geography";
+  const eyebrow = typeLabel(feature);
 
   const city = rawGet(raw, ["site city", "city"]);
   const stateFull = stateFullName(rawGet(raw, ["site state", "state", "st"]));
   const placeName = rawGet(raw, ["site name donor view", "facility name", "site name", "donation center", "name"]);
+  const hospitalName = rawGet(raw, ["hospital name", "hospital"]);
   const venue = rawGet(raw, ["account name", "account"]);
-  const title = isGeography
-    ? feature.title
-    : city && stateFull
-      ? `${city}, ${stateFull}`
-      : placeName || feature.title;
+  const division = rawGet(raw, ["biomed division", "division"]);
+  const region = rawGet(raw, ["biomed region", "region"]);
 
-  const zip = rawGet(raw, ["zip", "zip code", "postal"]).replace(/[^0-9-]/g, "");
-  const year = rawGet(raw, ["year"]).replace(/[^0-9]/g, "");
-  const status = rawGet(raw, ["status"]);
-  const chips = [
-    zip ? { label: "ZIP", value: zip } : null,
-    year ? { label: "Year", value: year } : null,
-    status ? { label: "Status", value: status } : null,
-  ].filter(Boolean) as Array<{ label: string; value: string }>;
+  // Title = primary identity; subtitle = supporting descriptor.
+  let title: string;
+  let subtitle: string;
+  if (isGeo) {
+    title = feature.title;
+    subtitle = !/division/i.test(eyebrow) && division ? `${division} Division` : "";
+  } else if (/hospital/i.test(eyebrow)) {
+    title = hospitalName || placeName || feature.title;
+    subtitle = [city, stateFull].filter(Boolean).join(", ");
+  } else {
+    title = city && stateFull ? `${city}, ${stateFull}` : placeName || feature.title;
+    subtitle = venue;
+  }
 
-  const address = isGeography ? "" : composeSiteAddress(raw);
-  const directionsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
-  const metrics = extractSiteMetrics(raw);
+  // Identity chips.
+  const chips: Array<{ label: string; value: string }> = [];
+  if (isGeo) {
+    if (/region|district|chapter|county/i.test(eyebrow) && division) chips.push({ label: "Division", value: division });
+    if (/district|chapter|county/i.test(eyebrow) && region) chips.push({ label: "Region", value: region });
+    if (/county/i.test(eyebrow) && stateFull) chips.push({ label: "State", value: stateFull });
+  } else {
+    const zip = rawGet(raw, ["zip", "zip code", "postal"]).replace(/[^0-9-]/g, "");
+    const year = rawGet(raw, ["year"]).replace(/[^0-9]/g, "");
+    const tier = rawGet(raw, ["final tier", "tier"]).match(/[123]/)?.[0] ?? "";
+    const status = rawGet(raw, ["status"]);
+    if (zip) chips.push({ label: "ZIP", value: zip });
+    if (year) chips.push({ label: "Year", value: year });
+    if (tier) chips.push({ label: "Tier", value: tier });
+    if (status) chips.push({ label: "Status", value: status });
+  }
 
-  const geo = feature.geography.filter((row) => row.value && row.value.trim()).filter((row) => !isCodeRow(row));
-  const usedValues = new Set([title, venue, address, city, stateFull, ...chips.map((c) => c.value)].map((v) => v.toLowerCase().replace(/[^a-z0-9]+/g, "")));
+  const stats = extractSiteMetrics(raw);
+  const address = isGeo ? "" : composeSiteAddress(raw);
+
+  const used = new Set(
+    [title, subtitle, address, city, stateFull, ...chips.map((c) => c.value)].filter(Boolean).map(norm),
+  );
+
+  const pills = feature.geography
+    .filter((row) => row.value && row.value.trim() && !isCodeRow(row))
+    .filter((row) => !used.has(norm(row.value)));
+  pills.forEach((row) => used.add(norm(row.value)));
+
   const facts = feature.sourceFields
     .filter((row) => row.value && row.value.trim())
     .filter((row) => !isCodeRow(row) && !isJunkFactRow(row))
-    .filter((row) => !geo.some((g) => g.value === row.value))
-    .filter((row) => !usedValues.has(row.value.toLowerCase().replace(/[^a-z0-9]+/g, "")))
-    .filter((row) => !/^(city|state|st|zip|year|status|account name)$/i.test(row.label.trim()))
+    .filter((row) => !used.has(norm(row.value)))
+    .filter((row) => !/^(city|state|st|zip|year|status|account name|division|region|district)$/i.test(row.label.trim()))
     .slice(0, 5);
+
+  return { eyebrow, title, subtitle, chips, stats, insight: cardInsight(feature), address, pills, facts };
+}
+
+function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+  const model = buildCardModel(feature);
+  const directionsUrl = model.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(model.address)}`
+    : "";
 
   return (
     <div className="jd-card">
       <header className="jd-card__hero">
-        <p className="jd-card__eyebrow">{feature.layerTitle}</p>
-        <h3>{title}</h3>
-        {venue && !isGeography && <p className="jd-card__venue">{venue}</p>}
-        {chips.length > 0 && (
+        <p className="jd-card__eyebrow">{model.eyebrow}</p>
+        <h3>{model.title}</h3>
+        {model.subtitle && <p className="jd-card__venue">{model.subtitle}</p>}
+        {model.chips.length > 0 && (
           <div className="jd-card__chips">
-            {chips.map((chip) => (
+            {model.chips.map((chip) => (
               <span key={chip.label} className="jd-card__chip">
                 <em>{chip.label}</em>
                 {chip.value}
@@ -442,9 +514,9 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
 
       <div className="jd-card__rule" aria-hidden="true" />
 
-      {metrics.length > 0 && (
-        <div className="jd-card__stats" data-count={metrics.length}>
-          {metrics.map((row, index) => (
+      {model.stats.length > 0 && (
+        <div className="jd-card__stats" data-count={model.stats.length}>
+          {model.stats.map((row, index) => (
             <div key={`${row.label}-${row.value}`} className="jd-card__stat" data-accent={index === 0 ? "true" : "false"}>
               <strong>{row.value}</strong>
               <span>{row.label}</span>
@@ -453,12 +525,12 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </div>
       )}
 
-      <p className="jd-card__insight">{cardInsight(feature)}</p>
+      <p className="jd-card__insight">{model.insight}</p>
 
-      {address && (
+      {model.address && (
         <div className="jd-card__address">
           <MapPin aria-hidden="true" size={15} />
-          <span>{address}</span>
+          <span>{model.address}</span>
           {directionsUrl && (
             <a href={directionsUrl} target="_blank" rel="noreferrer">
               Directions ↗
@@ -467,9 +539,9 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </div>
       )}
 
-      {geo.length > 0 && (
+      {model.pills.length > 0 && (
         <div className="jd-card__pills" aria-label="Geographic context">
-          {geo.map((row) => (
+          {model.pills.map((row) => (
             <span key={`${row.label}-${row.value}`} className="jd-card__pill">
               <em>{row.label}</em>
               {row.value}
@@ -478,9 +550,9 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </div>
       )}
 
-      {facts.length > 0 && (
+      {model.facts.length > 0 && (
         <dl className="jd-card__facts">
-          {facts.map((row) => (
+          {model.facts.map((row) => (
             <div key={`${row.label}-${row.value}`}>
               <dt>{row.label}</dt>
               <dd>{row.value}</dd>
@@ -489,7 +561,7 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </dl>
       )}
 
-      {metrics.length === 0 && !isGeography && (
+      {model.stats.length === 0 && feature.category !== "geography" && (
         <p className="jd-card__note">No per-site counts on this layer — network counts are in the KPI band above.</p>
       )}
     </div>
