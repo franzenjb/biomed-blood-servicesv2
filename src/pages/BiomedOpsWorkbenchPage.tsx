@@ -79,6 +79,9 @@ type BiomedOpsWorkbenchPageProps = {
   signInHeading?: string;
   signInCopy?: string;
   testId?: string;
+  /** Initial + Home/Reset map view. Defaults to the national CONUS framing. */
+  homeCenter?: [number, number];
+  homeZoom?: number;
 };
 type FeatureSearchResult = {
   id: string;
@@ -90,7 +93,6 @@ type FeatureSearchResult = {
 };
 
 const HOME_CENTER: [number, number] = [-96.2, 38.3];
-const CENTER = HOME_CENTER.join(",");
 const ZOOM = 4;
 const DEFAULT_WORKBENCH_PRESET: WorkbenchPreset = "default-workbench";
 const TRADE_AREA_COMBO_LAYER_ID = "trade-area-by-zip-combo";
@@ -1375,9 +1377,12 @@ export default function BiomedOpsWorkbenchPage({
   supplementalLayers = biomedWorkbenchSupplementalLayers,
   signInHeading = "Sign in to inspect live workbench layers",
   signInCopy = "Layer inventory is visible. Counts, toggles, and selected features require the private Red Cross ArcGIS web map.",
-  testId = "biomed-ops-workbench"
+  testId = "biomed-ops-workbench",
+  homeCenter = HOME_CENTER,
+  homeZoom = ZOOM
 }: BiomedOpsWorkbenchPageProps = {}) {
   useArcgisComponents();
+  const homeCenterStr = homeCenter.join(",");
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const searchRef = useRef<ArcgisSearchElement | null>(null);
   const searchRunRef = useRef(0);
@@ -1679,7 +1684,7 @@ export default function BiomedOpsWorkbenchPage({
       // "Reset map" makes the blank screen appear. goTo guarantees a draw; only
       // then reveal the surface so the loader never fades onto a blank map.
       try {
-        await view.goTo({ center: HOME_CENTER, zoom: ZOOM }, { animate: false });
+        await view.goTo({ center: homeCenter, zoom: homeZoom }, { animate: false });
       } catch {
         // interrupted by user interaction; the view still paints
       }
@@ -1909,7 +1914,7 @@ export default function BiomedOpsWorkbenchPage({
     if (!view) return;
 
     try {
-      await view.goTo({ center: HOME_CENTER, zoom: ZOOM }, { duration: 650 });
+      await view.goTo({ center: homeCenter, zoom: homeZoom }, { duration: 650 });
     } catch {
       // Navigation can be interrupted by user pan/zoom; reset still clears layers.
     }
@@ -1973,8 +1978,8 @@ export default function BiomedOpsWorkbenchPage({
             ref: mapRef,
             itemId: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : undefined,
             basemap: isAuthenticated ? undefined : quietOpsBasemapId(),
-            center: CENTER,
-            zoom: ZOOM,
+            center: homeCenterStr,
+            zoom: homeZoom,
             className: "opsv2__arcgis",
             "data-testid": "biomed-ops-arcgis",
           },

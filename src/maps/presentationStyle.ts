@@ -688,6 +688,30 @@ function liftPointLayersToTop(map: ArcGISMap) {
     });
 }
 
+// The trade-area donor-share ZIP shading must read on top of every other
+// polygon/boundary fill, but still sit BELOW the point icons. reorder() only
+// sorts within a single parent group, so reparent the ZIP layer to the map root
+// (tail = top) the same way icons are lifted. Call this BEFORE liftPointLayersToTop
+// so the icons get appended last and stay above the ZIP shading.
+function liftTradeAreaZipAbovePolygons(map: ArcGISMap) {
+  type LayerHost = { layers?: { remove?: (layer: Layer) => void } };
+  collectArcJurisdictionLayers(map)
+    .filter((layer) => isTradeAreaZipLayerTitle(normalize(safeLayerTitle(layer))))
+    .forEach((layer) => {
+      try {
+        const parent = (layer as Layer & { parent?: LayerHost }).parent;
+        if (parent && (parent as unknown) !== (map as unknown) && parent.layers?.remove) {
+          parent.layers.remove(layer);
+        } else {
+          (map as unknown as LayerHost).layers?.remove?.(layer);
+        }
+        map.add(layer); // append to root collection = above the other polygons
+      } catch {
+        // Some web-map sublayers cannot be reparented; leave them in place.
+      }
+    });
+}
+
 export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView) {
   if (!map) return;
 
@@ -704,5 +728,6 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
 
   await Promise.allSettled(collectArcJurisdictionLayers(map).map((layer) => applyLayerStyle(layer, map)));
   reorderPresentationLayers(map);
+  liftTradeAreaZipAbovePolygons(map);
   liftPointLayersToTop(map);
 }

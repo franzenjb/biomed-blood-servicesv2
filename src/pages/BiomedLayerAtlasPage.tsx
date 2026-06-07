@@ -10,6 +10,8 @@ export default function BiomedLayerAtlasPage() {
       signInHeading="Sign in to inspect Explore Regions"
       signInCopy="Live regional layer counts, search, and selected features require the private Red Cross ArcGIS web map."
       testId="biomed-layer-atlas"
+      homeCenter={[-90.9, 38.7]}
+      homeZoom={7}
     />
   );
 }
