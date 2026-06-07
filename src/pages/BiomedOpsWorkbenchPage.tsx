@@ -1511,12 +1511,14 @@ export default function BiomedOpsWorkbenchPage({
     return () => window.clearTimeout(failOpen);
   }, [isAuthenticated]);
 
-  // Keep ZIP / collection polygons drawn at the top of the polygon stack (under the
-  // point icons) whenever the map hydrates or layer visibility changes.
+  // Draw ZIP / collection polygons at the top of the polygon stack (under the point
+  // icons) once the map hydrates. Intentionally NOT keyed on `layers`: reordering fires
+  // the layer collection's after-changes handler, which re-applies the preset — keying
+  // on every toggle would stomp manual layer toggles.
   useEffect(() => {
     if (!mapReady) return;
     raiseZipCollectionAbovePolygons(getMapElementMap(mapRef.current));
-  }, [mapReady, layers]);
+  }, [mapReady]);
 
   const filteredLayers = useMemo(
     () => layers.filter((layer) => layerMatchesQuery(layer, query)),

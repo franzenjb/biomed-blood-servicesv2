@@ -650,9 +650,9 @@
 }
 
 .opsv2__left-tabs button.is-active {
-  border-color: #12161c;
-  background: #12161c;
-  color: #fff;
+  border-color: #ed1b2e;
+  background: #fdecee;
+  color: #c4131f;
 }
 
 .opsv2__search-hint {
@@ -686,9 +686,9 @@
 }
 
 .opsv2__right-tabs button.is-active {
-  border-color: #12161c;
-  background: #12161c;
-  color: #fff;
+  border-color: #ed1b2e;
+  background: #fdecee;
+  color: #c4131f;
 }
 
 .opsv2__right-body {
