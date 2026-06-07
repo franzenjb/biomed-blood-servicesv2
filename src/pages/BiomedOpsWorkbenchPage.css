@@ -21,6 +21,29 @@
   height: 100%;
 }
 
+.opsv2__map-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  background: #eef2f4;
+  color: #12161c;
+  text-align: center;
+}
+
+.opsv2__map-loading strong {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.opsv2__map-loading span {
+  color: #58616d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .opsv2[data-left-open="false"] .opsv2__map-shell {
   left: 0;
 }
@@ -282,6 +305,18 @@
   min-height: 42px;
   border: 0;
   outline: 0;
+}
+
+.opsv2__layer-load-note {
+  margin: 0 18px 10px;
+  border: 1px solid #dfe4ea;
+  border-radius: 7px;
+  background: #f6f8fa;
+  color: #58616d;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+  padding: 9px 11px;
 }
 
 .opsv2__results {
