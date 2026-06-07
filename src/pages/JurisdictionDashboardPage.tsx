@@ -1,4 +1,4 @@
-import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createElement, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import RcAppBar from "../components/RcAppBar";
 import type ArcGISMap from "@arcgis/core/Map";
@@ -744,7 +744,42 @@ function JdMapLoader() {
   );
 }
 
-export default function JurisdictionDashboardPage() {
+/**
+ * Branding for the live jurisdiction map engine. Defaults render the
+ * Jurisdiction Dashboard; the Explore Regions tile reuses the same engine with
+ * a different brand + community-impact content in its About modal.
+ */
+export type JurisdictionBrand = {
+  testId: string;
+  appTitle: string;
+  signInHeading: string;
+  signInCopy: string;
+  aboutTitle: string;
+  aboutLead: string;
+  calloutTitle: string;
+  calloutSub: string;
+  /** Extra sections injected into the About modal (e.g. community impact). */
+  aboutExtra?: ReactNode;
+};
+
+export const DEFAULT_JURISDICTION_BRAND: JurisdictionBrand = {
+  testId: "jurisdiction-dashboard",
+  appTitle: "Jurisdiction Dashboard",
+  signInHeading: "Sign in to load the Jurisdiction Dashboard",
+  signInCopy:
+    "This dashboard reads live, private Red Cross ArcGIS layers. Sign in to load boundaries, filters, and FY25 counts.",
+  aboutTitle: "About the Jurisdiction Dashboard",
+  aboutLead:
+    "A single, authoritative view of BioMed operational geography — boundaries, territories, fixed and mobile collection sites, and FY25 performance — that anyone can read without GIS training.",
+  calloutTitle: "BioMed Operating Picture",
+  calloutSub: "Boundaries, territory counts, and clickable sites in one place.",
+};
+
+export default function JurisdictionDashboardPage({
+  brand = DEFAULT_JURISDICTION_BRAND,
+}: {
+  brand?: JurisdictionBrand;
+}) {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
@@ -1386,9 +1421,9 @@ export default function JurisdictionDashboardPage() {
       data-left-open={leftOpen ? "true" : "false"}
       data-right-open={rightOpen ? "true" : "false"}
       style={{ ["--jd-left" as string]: `${leftWidth}px`, ["--jd-right" as string]: `${rightWidth}px` }}
-      data-testid="jurisdiction-dashboard"
+      data-testid={brand.testId}
     >
-      <RcAppBar title="Jurisdiction Dashboard">
+      <RcAppBar title={brand.appTitle}>
         <span className="rcbar__chip" title="Current geographic scope">
           <MapPin aria-hidden="true" size={15} />
           {scopeLabel}
@@ -1736,8 +1771,8 @@ export default function JurisdictionDashboardPage() {
       {!isAuthenticated && (
         <div className="jd__signin" role="dialog" aria-label="Sign in required">
           <ShieldCheck aria-hidden="true" size={26} />
-          <h2>Sign in to load the Jurisdiction Dashboard</h2>
-          <p>This dashboard reads live, private Red Cross ArcGIS layers. Sign in to load boundaries, filters, and FY25 counts.</p>
+          <h2>{brand.signInHeading}</h2>
+          <p>{brand.signInCopy}</p>
           <button type="button" onClick={() => void signIn()} disabled={status === "checking" || status === "signing-in"}>
             Sign in to ArcGIS
           </button>
@@ -1746,11 +1781,11 @@ export default function JurisdictionDashboardPage() {
       )}
 
       {aboutOpen && (
-        <div className="jd__modal" role="dialog" aria-modal="true" aria-label="About the Jurisdiction Dashboard" onClick={() => setAboutOpen(false)}>
+        <div className="jd__modal" role="dialog" aria-modal="true" aria-label={`About ${brand.appTitle}`} onClick={() => setAboutOpen(false)}>
           <div className="jd__modal-card" onClick={(event) => event.stopPropagation()}>
             <header className="jd__modal-head">
               <span className="jd__modal-mark"><RcMark size={22} /></span>
-              <p className="jd__modal-eyebrow">Jurisdiction Dashboard</p>
+              <p className="jd__modal-eyebrow">{brand.appTitle}</p>
               <button type="button" className="jd__modal-x" aria-label="Close" onClick={() => setAboutOpen(false)}>
                 <X aria-hidden="true" size={18} />
               </button>
@@ -1758,17 +1793,14 @@ export default function JurisdictionDashboardPage() {
 
             <div className="jd__modal-body">
               <p className="jd__modal-meta">Live Red Cross ArcGIS · FY25 reporting</p>
-              <h2 className="jd__modal-title">About the Jurisdiction Dashboard</h2>
-              <p className="jd__modal-lead">
-                A single, authoritative view of BioMed operational geography — boundaries, territories, fixed and mobile
-                collection sites, and FY25 performance — that anyone can read without GIS training.
-              </p>
+              <h2 className="jd__modal-title">{brand.aboutTitle}</h2>
+              <p className="jd__modal-lead">{brand.aboutLead}</p>
 
               <div className="jd__modal-callout">
                 <RcMark size={30} />
                 <div>
-                  <strong>BioMed Operating Picture</strong>
-                  <span>Boundaries, territory counts, and clickable sites in one place.</span>
+                  <strong>{brand.calloutTitle}</strong>
+                  <span>{brand.calloutSub}</span>
                 </div>
               </div>
 
@@ -1808,9 +1840,15 @@ export default function JurisdictionDashboardPage() {
                 only where the source layer carries them; otherwise see the network totals in the KPI band.
               </p>
 
+              {brand.aboutExtra}
+
               <p className="jd__modal-foot">
                 <span className="jd__modal-foot-q">Question or suggestions?</span>{" "}
-                <a href="mailto:jeff.franzen2@redcross.org?subject=Jurisdiction%20Dashboard%20%E2%80%94%20question%2Fsuggestion">
+                <a
+                  href={`mailto:jeff.franzen2@redcross.org?subject=${encodeURIComponent(
+                    `${brand.appTitle} — question/suggestion`,
+                  )}`}
+                >
                   Email Jeff Franzen
                 </a>
                 .

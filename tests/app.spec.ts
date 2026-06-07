@@ -386,25 +386,25 @@ test.describe("Data Sources & Methodology modal", () => {
 });
 
 test.describe("Explore Regions", () => {
-  test("hub tile 09 opens the regional story", async ({ page }) => {
+  test("hub tile 09 opens the live regional engine", async ({ page }) => {
     await page.goto("/hub");
     await page.getByTestId("hub-card-explore-regions").click();
     await expect(page).toHaveURL(/\/regions$/);
-    await expect(page.getByTestId("regions")).toBeVisible();
+    await expect(page.getByTestId("explore-regions-live")).toBeVisible();
   });
 
-  test("shows real community content and a live-data path, no synthetic numbers", async ({ page }) => {
+  test("reuses the live jurisdiction engine, branded Explore Regions, with its own sign-in gate", async ({ page }) => {
     await page.goto("/regions");
-    // Live regional drill-down points at the real signed-in dashboard.
-    await expect(page.getByTestId("region-live")).toBeVisible();
-    await expect(page.getByTestId("region-live-link")).toHaveAttribute("href", "/jurisdiction-dashboard");
-    // Real, sourced community content is present.
-    await expect(page.getByText("Representation Is Medicine")).toBeVisible();
-    await expect(page.getByText("Donor Diversity & Population Representation")).toBeVisible();
-    // About the Data is reachable from Explore Regions.
-    await expect(page.getByTestId("about-the-data")).toBeVisible();
-    // No leftover synthetic region machinery.
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Explore Regions");
+    // Same live KPI band + region filters as the Jurisdiction Dashboard.
+    await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
+    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
+    // Branded sign-in gate (real private layers, not synthetic data).
+    await expect(
+      page.getByRole("heading", { name: "Sign in to explore regions" }),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    // No synthetic mock machinery remains.
     await expect(page.getByTestId("region-selector")).toHaveCount(0);
-    await expect(page.getByTestId("region-kpis")).toHaveCount(0);
   });
 });
