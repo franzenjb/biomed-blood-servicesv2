@@ -351,3 +351,36 @@ test.describe("Maps (shared shell)", () => {
     });
   }
 });
+
+test.describe("Data Sources & Methodology modal", () => {
+  test("global dock opens the modal with all six accordion sections", async ({ page }) => {
+    await page.goto("/s/future-demand");
+    const trigger = page.getByTestId("about-the-data");
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    const modal = page.getByRole("dialog", { name: "Data Sources and Methodology" });
+    await expect(modal).toBeVisible();
+    for (const name of [
+      "Data Sources",
+      "Refresh Schedule",
+      "Definitions",
+      "Methodology",
+      "Known Limitations",
+      "Data Steward Contacts",
+    ]) {
+      await expect(modal.getByRole("button", { name, expanded: false }).or(
+        modal.getByRole("button", { name, expanded: true }),
+      )).toBeVisible();
+    }
+    // Future Demand deep-links methodology open.
+    await expect(modal.getByRole("button", { name: "Methodology", expanded: true })).toBeVisible();
+    // Dismiss on Escape.
+    await page.keyboard.press("Escape");
+    await expect(modal).toHaveCount(0);
+  });
+
+  test("dock is hidden on map tiles that carry their own help", async ({ page }) => {
+    await page.goto("/jurisdiction-dashboard");
+    await expect(page.getByTestId("about-the-data")).toHaveCount(0);
+  });
+});
