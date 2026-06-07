@@ -1,3 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+:root{--font-body:-apple-system,'Segoe UI',sans-serif;--font-data:'IBM Plex Mono',ui-monospace,monospace;}
+body{margin:0;background:#eef1f5;font-family:var(--font-body);padding:40px;display:flex;gap:32px;flex-wrap:wrap;}
+.frame{width:360px;}
+.label{font-family:var(--font-data);font-size:11px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#697480;margin-bottom:8px;}
+.card{background:#fff;border:1px solid #e1e5ea;border-radius:14px;box-shadow:0 18px 40px rgba(17,22,29,.12);}
+.opsv2__selected-card{display:grid;gap:8px;margin:8px;padding:10px;}
 .opsv2 {
   position: fixed;
   inset: 0;
@@ -36,7 +44,7 @@
   right: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: 110px minmax(340px, 1fr) minmax(190px, 240px) auto minmax(190px, auto);
+  grid-template-columns: 110px minmax(360px, 1fr) minmax(340px, 42vw) auto minmax(210px, auto);
   grid-template-areas: "home brand preset reset auth";
   align-items: end;
   gap: 24px;
@@ -76,8 +84,8 @@
 .opsv2__brand {
   grid-area: brand;
   min-width: 0;
-  margin-left: clamp(12px, 1.5vw, 32px);
-  font-size: clamp(22px, 2.2vw, 32px);
+  margin-left: clamp(56px, 5vw, 96px);
+  font-size: clamp(18px, 2vw, 28px);
   font-weight: 900;
   text-decoration: none;
 }
@@ -120,8 +128,7 @@
 .opsv2__preset select {
   min-height: 52px;
   padding: 0 12px;
-  font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .opsv2__button,
@@ -930,11 +937,6 @@
   --accent-soft: #eceff3;
 }
 
-.opsv2__feature-body[data-tone="blue"] {
-  --accent: #1d6fb8;
-  --accent-soft: #e7f0f9;
-}
-
 .opsv2__feature-badge {
   display: inline-flex;
   align-items: center;
@@ -1383,3 +1385,54 @@
     grid-template-columns: 1fr;
   }
 }
+
+</style></head><body>
+<div class="frame"><div class="label">After — distribution anchor</div>
+<div class="card"><section class="opsv2__selected-card">
+<div class="opsv2__feature-body" data-tone="red">
+  <header class="opsv2__feature-hero opsv2__feature-hero--compact">
+    <p class="opsv2__eyebrow">Selected feature</p>
+    <h2>Peoria IL</h2>
+    <span class="opsv2__feature-badge"><i></i>Distribution anchor</span>
+  </header>
+  <p class="opsv2__feature-insight">Distribution anchor that receives manufactured blood products and routes them to hospitals across Illinois.</p>
+  <div class="opsv2__feature-address">
+    <svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+    <span class="opsv2__feature-address-text">405 W John H Gwynn Jr Ave, Peoria, IL, 61605</span>
+    <a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a>
+  </div>
+  <div class="opsv2__feature-pills">
+    <span class="opsv2__feature-pill"><em>Region</em>Illinois</span>
+  </div>
+  <div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Distribution Sites</strong></span></div>
+</div>
+</section></div></div>
+
+<div class="frame"><div class="label">After — fixed site (rich data)</div>
+<div class="card"><section class="opsv2__selected-card">
+<div class="opsv2__feature-body" data-tone="teal">
+  <header class="opsv2__feature-hero opsv2__feature-hero--compact">
+    <p class="opsv2__eyebrow">Selected feature</p>
+    <h2>Springfield Donor Center</h2>
+    <span class="opsv2__feature-badge"><i></i>Fixed collection site</span>
+  </header>
+  <p class="opsv2__feature-insight">Fixed collection site where donors give blood that feeds the BioMed supply chain.</p>
+  <div class="opsv2__feature-address">
+    <svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+    <span class="opsv2__feature-address-text">1200 S Grand Ave W, Springfield, IL, 62704</span>
+    <a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a>
+  </div>
+  <div class="opsv2__feature-stats">
+    <div><span>Collections</span><strong>3,482</strong></div>
+    <div><span>Units</span><strong>4,915</strong></div>
+    <div><span>RBC donors</span><strong>2,740</strong></div>
+    <div><span>Drive distance</span><strong>12.4</strong></div>
+  </div>
+  <div class="opsv2__feature-pills">
+    <span class="opsv2__feature-pill"><em>Region</em>Illinois</span>
+    <span class="opsv2__feature-pill"><em>District</em>Central</span>
+  </div>
+  <div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Fixed Site Locations</strong></span></div>
+</div>
+</section></div></div>
+</body></html>

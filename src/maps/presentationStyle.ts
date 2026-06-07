@@ -131,8 +131,8 @@ const layerStyles = {
   },
   county: {
     fill: [190, 225, 242, 0.22],
-    outline: [18, 24, 31, 0.4],
-    outlineWidth: 0.7,
+    outline: [18, 24, 31, 0.22],
+    outlineWidth: 0.35,
     opacity: 0.82
   },
   operations: {
@@ -378,18 +378,30 @@ function applyTradeAreaZipStyle(featureLayer: StyledFeatureLayer) {
   return true;
 }
 
+function collectionFillSymbol(color: Rgba) {
+  return {
+    type: "simple-fill" as const,
+    color,
+    outline: {
+      type: "simple-line" as const,
+      color: [120, 128, 138, 0.22] as Rgba,
+      width: 0.3
+    }
+  };
+}
+
 function collectionRenderer(field: Field) {
   return {
     type: "class-breaks" as const,
     field: field.name,
     legendOptions: { title: "FY25 collections" },
     defaultLabel: "No collections",
-    defaultSymbol: tradeAreaClassBreakSymbol([228, 232, 237, 0.4]),
+    defaultSymbol: collectionFillSymbol([228, 232, 237, 0]),
     classBreakInfos: collectionVolumeBreaks.map((breakInfo) => ({
       minValue: breakInfo.minValue,
       maxValue: breakInfo.maxValue,
       label: breakInfo.label,
-      symbol: tradeAreaClassBreakSymbol(breakInfo.color)
+      symbol: collectionFillSymbol(breakInfo.color)
     }))
   };
 }

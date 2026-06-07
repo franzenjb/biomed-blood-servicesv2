@@ -1,3 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+:root{--font-body:-apple-system,'Segoe UI',sans-serif;--font-data:'IBM Plex Mono',ui-monospace,monospace;}
+body{margin:0;background:#eef1f5;font-family:var(--font-body);padding:34px;display:grid;grid-template-columns:repeat(3,340px);gap:26px;}
+.label{font-family:var(--font-data);font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:#697480;margin-bottom:7px;}
+.card{background:#fff;border:1px solid #e1e5ea;border-radius:14px;box-shadow:0 14px 32px rgba(17,22,29,.1);}
+.opsv2__selected-card{display:grid;gap:8px;margin:8px;padding:10px;}
 .opsv2 {
   position: fixed;
   inset: 0;
@@ -36,7 +42,7 @@
   right: 0;
   z-index: 20;
   display: grid;
-  grid-template-columns: 110px minmax(340px, 1fr) minmax(190px, 240px) auto minmax(190px, auto);
+  grid-template-columns: 110px minmax(360px, 1fr) minmax(340px, 42vw) auto minmax(210px, auto);
   grid-template-areas: "home brand preset reset auth";
   align-items: end;
   gap: 24px;
@@ -76,8 +82,8 @@
 .opsv2__brand {
   grid-area: brand;
   min-width: 0;
-  margin-left: clamp(12px, 1.5vw, 32px);
-  font-size: clamp(22px, 2.2vw, 32px);
+  margin-left: clamp(56px, 5vw, 96px);
+  font-size: clamp(18px, 2vw, 28px);
   font-weight: 900;
   text-decoration: none;
 }
@@ -120,8 +126,7 @@
 .opsv2__preset select {
   min-height: 52px;
   padding: 0 12px;
-  font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .opsv2__button,
@@ -1383,3 +1388,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+</style></head><body>
+<div><div class="label">Distribution Sites</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="red"><header class="opsv2__feature-hero opsv2__feature-hero--compact"><p class="opsv2__eyebrow">Selected feature</p><h2>Peoria IL</h2><span class="opsv2__feature-badge"><i></i>Distribution anchor</span></header><p class="opsv2__feature-insight">Distribution anchor that receives manufactured blood products and routes them to hospitals across Illinois.</p><div class="opsv2__feature-address"><svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span class="opsv2__feature-address-text">405 W John H Gwynn Jr Ave, Peoria, IL, 61605</span><a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a></div><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>Region</em>Illinois</span></div><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Distribution Sites</strong></span></div></div></section></div></div>
+<div><div class="label">Fixed Sites</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="teal"><header class="opsv2__feature-hero opsv2__feature-hero--compact"><p class="opsv2__eyebrow">Selected feature</p><h2>Springfield Donor Center</h2><span class="opsv2__feature-badge"><i></i>Fixed collection site</span></header><p class="opsv2__feature-insight">Fixed collection site where donors give blood that feeds the BioMed supply chain.</p><div class="opsv2__feature-address"><svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span class="opsv2__feature-address-text">1200 S Grand Ave W, Springfield, IL, 62704</span><a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a></div><div class="opsv2__feature-stats"><div><span>Collections</span><strong>3,482</strong></div><div><span>Units</span><strong>4,915</strong></div><div><span>RBC donors</span><strong>2,740</strong></div><div><span>Drive distance</span><strong>12.4</strong></div></div><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>Region</em>Illinois</span><span class="opsv2__feature-pill"><em>District</em>Central</span></div><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Fixed Site Locations</strong></span></div></div></section></div></div>
+<div><div class="label">Manufacturing Sites</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="violet"><header class="opsv2__feature-hero opsv2__feature-hero--compact"><p class="opsv2__eyebrow">Selected feature</p><h2>St. Louis Mfg</h2><span class="opsv2__feature-badge"><i></i>Manufacturing location</span></header><p class="opsv2__feature-insight">Manufacturing and processing site that turns donations into patient-ready blood products.</p><div class="opsv2__feature-address"><svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span class="opsv2__feature-address-text">4050 Lindell Blvd, St. Louis, MO, 63108</span><a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a></div><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>Region</em>Missouri-Illinois</span><span class="opsv2__feature-pill"><em>ZIP</em>63108</span></div><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Manufacturing Sites</strong></span></div></div></section></div></div>
+<div><div class="label">Biomed Regions</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="slate"><header class="opsv2__feature-hero opsv2__feature-hero--compact"><p class="opsv2__eyebrow">Selected feature</p><h2>Central Illinois Region</h2><span class="opsv2__feature-badge"><i></i>BioMed regional boundary</span></header><p class="opsv2__feature-insight">BioMed region accountable for collection performance and donor reach in this area.</p><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>Division</em>North Central</span><span class="opsv2__feature-pill"><em>Region</em>Central Illinois</span></div><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Biomed Regions</strong></span></div></div></section></div></div>
+<div><div class="label">FY25 Data / Zip Codes</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="amber"><header class="opsv2__feature-hero opsv2__feature-hero--compact"><p class="opsv2__eyebrow">Selected feature</p><h2>ZIP 62704</h2><span class="opsv2__feature-badge"><i></i>ZIP-level operating data</span></header><p class="opsv2__feature-insight">ZIP-level operating data connecting collection activity to local donor geography.</p><div class="opsv2__feature-stats"><div><span>Collections</span><strong>612</strong></div><div><span>Units</span><strong>874</strong></div><div><span>RBC donors</span><strong>430</strong></div></div><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>City</em>Springfield</span><span class="opsv2__feature-pill"><em>State</em>IL</span><span class="opsv2__feature-pill"><em>ZIP</em>62704</span></div><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>FY25 Data/Zip Codes</strong></span></div></div></section></div></div>
+<div><div class="label">Hospital Locations</div><div class="card"><section class="opsv2__selected-card"><div class="opsv2__feature-body" data-tone="blue"><header class="opsv2__feature-hero opsv2__feature-hero--hospital"><p class="opsv2__eyebrow">Selected hospital</p><h2>OSF Saint Francis Medical Center</h2><span class="opsv2__feature-badge"><i></i>Hospital location</span></header><p class="opsv2__feature-insight">Hospital receiving Red Cross blood products, supplied through the Peoria IL distribution site.</p><div class="opsv2__feature-address"><svg class="opsv2__feature-address-pin" viewBox="0 0 24 24"><path d="M12 2c-3.9 0-7 3.1-7 7 0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><span class="opsv2__feature-address-text">530 NE Glen Oak Ave, Peoria, IL, 61637</span><a class="opsv2__feature-directions" href="#">Directions <span>&#8599;</span></a></div><div class="opsv2__hospital-snapshot"><div><span>Tier</span><strong>Tier 1</strong></div><div><span>Distribution site</span><strong>Peoria IL</strong></div><div><span>Priority score</span><strong>92.4</strong></div></div><div class="opsv2__feature-pills"><span class="opsv2__feature-pill"><em>Division</em>North Central</span><span class="opsv2__feature-pill"><em>ZIP</em>61637</span></div><dl class="opsv2__feature-facts opsv2__feature-facts--hospital"><div><dt>System</dt><dd>OSF HealthCare</dd></div><div><dt>Hosp ID</dt><dd>H-2241</dd></div><div><dt>Drive time</dt><dd>14 min</dd></div></dl><div class="opsv2__feature-meta opsv2__feature-meta--quiet"><span>Source<strong>Hospital Locations</strong></span></div></div></section></div></div>
+</body></html>
