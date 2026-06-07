@@ -115,7 +115,6 @@ const PAGE_LABELS: Record<string, string> = {
   "/": "Home",
   "/hub": "Hub",
   "/regions": "Explore Regions",
-  "/map": "BioMed Blood Map",
   "/dashboard": "Jurisdiction Dashboard",
   "/infographics": "Infographics",
   "/decks": "Bonus Decks",
