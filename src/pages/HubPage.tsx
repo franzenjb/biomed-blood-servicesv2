@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, HelpCircle, X } from "lucide-react";
+import { ChevronDown, HelpCircle, LogIn, X } from "lucide-react";
 import { sections } from "../data/sections";
 import { hubSectionIndex, hubSources } from "../data/hubInfo";
 import RcMark from "../components/RcMark";
@@ -49,6 +49,17 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
             Sections 01–05 are guided chapters that explain blood donation and supply. Sections 06–09 are the live,
             sign-in BioMed tools — the Jurisdiction Dashboard, Ops Workbench, Hospital Network, and Explore Regions.
           </p>
+
+          <div className="jd__modal-callout jd__modal-callout--alert">
+            <LogIn size={26} aria-hidden="true" />
+            <div>
+              <strong>Sections 06–09 Require a Red Cross ArcGIS Sign-In</strong>
+              <span>
+                Open them with your Red Cross ArcGIS Online account. Visitors without org access will see the
+                ArcGIS sign-in prompt and cannot load the live layers.
+              </span>
+            </div>
+          </div>
 
           <h3>How To Use It</h3>
           <ul>

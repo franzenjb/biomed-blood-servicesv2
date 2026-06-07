@@ -311,6 +311,15 @@
 
 .jd__modal-callout span { display: block; font-size: 13px; color: #4a4a4a; }
 
+.jd__modal-callout--alert {
+  background: #fdecec;
+  border: 1px solid #f3b8bd;
+}
+.jd__modal-callout--alert svg {
+  color: #ed1b2e;
+  flex: none;
+}
+
 .jd__modal-body h3 {
   margin: 20px 0 6px;
   font-size: 12px;
