@@ -123,7 +123,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/s/journey": "Blood Journey",
   "/s/distribution": "Hospital Distribution",
   "/s/future-demand": "Future Demand",
-  "/s/collections": "Biomed Collections",
+  "/s/collections": "BioMed Collections",
 };
 
 const fmtTime = (ts: number) =>

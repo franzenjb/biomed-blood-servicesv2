@@ -125,7 +125,7 @@ export default function HomePage() {
           </p>
 
           <Link to="/hub" className="btn btn--primary home-hero__cta" data-testid="enter-hub">
-            Inside Biomed Capabilities
+            Inside BioMed Capabilities
           </Link>
 
           <div className="home-hero__stats">

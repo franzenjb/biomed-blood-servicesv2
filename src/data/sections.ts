@@ -140,7 +140,7 @@ const blood101: Section = {
 const collections: Section = {
   id: "collections",
   index: "05",
-  title: "Biomed Collections",
+  title: "BioMed Collections",
   tagline: "Meeting donors where they already are.",
   question: "Where does blood donation happen?",
   cover: "/covers/biomed-collections.png",

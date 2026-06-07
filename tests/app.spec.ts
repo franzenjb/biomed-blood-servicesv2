@@ -164,21 +164,10 @@ test.describe("Slide deck", () => {
 });
 
 test.describe("Maps (shared shell)", () => {
-  test("/map renders the shared shell + sign-in gate", async ({ page }) => {
+  test("/map redirects into the merged Jurisdiction Dashboard", async ({ page }) => {
+    // BioMed Blood Map merged into Jurisdiction Dashboard per spec §7/§19.
     await page.goto("/map");
-    await expect(page.getByTestId("map-shell")).toBeVisible();
-    const mapWidgetOrder = await page.getByTestId("map-shell-arcgis").evaluate((element) =>
-      Array.from(element.children)
-        .filter((child) => child.getAttribute("slot") === "top-left")
-        .map((child) => child.tagName.toLowerCase()),
-    );
-    expect(mapWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
-    await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
-    await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
-    await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("map-signin")).toBeVisible();
-    await expect(page.locator(".map-shell__panel--left").getByRole("heading", { name: "Layers" })).toBeVisible();
-    await expect(page.locator(".map-shell__panel--right").getByRole("heading", { name: "Details" })).toBeVisible();
+    await expect(page).toHaveURL(/\/jurisdiction-dashboard$/);
   });
 
   test("/dashboard embeds the ArcGIS dashboard with a home back link", async ({ page }) => {
@@ -197,11 +186,10 @@ test.describe("Maps (shared shell)", () => {
     await expect(page).toHaveURL(/\/hub$/);
   });
 
-  test("map back link returns to hub", async ({ page }) => {
-    await page.goto("/map");
+  test("jurisdiction dashboard back link points to hub", async ({ page }) => {
+    // Sign-in gate overlays the canvas, so verify the home link target rather than clicking through it.
+    await page.goto("/jurisdiction-dashboard");
     await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
-    await page.locator(".rcbar__home").click();
-    await expect(page).toHaveURL(/\/hub$/);
   });
 
   test("/biomed-ops-workbench renders V2 layer controls and selected feature shell", async ({ page }) => {

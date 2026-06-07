@@ -5,7 +5,6 @@ import NotesPanel from "./components/NotesPanel";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const HubPage = lazy(() => import("./pages/HubPage"));
 const SectionDeckPage = lazy(() => import("./pages/SectionDeckPage"));
-const MapPage = lazy(() => import("./pages/MapPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const DeckViewerPage = lazy(() => import("./pages/DeckViewerPage"));
 const VideoDemoPage = lazy(() => import("./pages/VideoDemoPage"));
@@ -33,7 +32,8 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/hub" element={<HubPage />} />
           <Route path="/s/:sectionId" element={<SectionDeckPage />} />
-          <Route path="/map" element={<MapPage />} />
+          {/* BioMed Blood Map merged into Jurisdiction Dashboard per spec §7/§19 */}
+          <Route path="/map" element={<Navigate to="/jurisdiction-dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/deck/:deckId" element={<DeckViewerPage />} />
           <Route path="/video-demo" element={<VideoDemoPage />} />
