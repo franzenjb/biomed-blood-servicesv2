@@ -19,22 +19,22 @@ test.describe("Hub", () => {
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // 4 tool tiles (#6-#9): explore regions, ops, hospital network, atlas map
-    for (const id of ["explore-regions", "ops-workbench", "hospital-network", "layer-atlas"]) {
+    // 4 tool tiles (#6-#9): dashboard, ops, hospital network, Explore Regions map
+    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "explore-regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
-    await expect(page.getByTestId("hub-card-layer-atlas").locator(".hub__title")).toHaveText("Atlas Map");
+    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("BioMed Map & Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
-    await expect(page.getByTestId("hub-card-layer-atlas").locator(".hub__index")).toHaveText("09");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
     // stale separated/legacy map links are gone from the hub
-    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "map-dashboard", "regions"]) {
+    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
-    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/regions");
+    await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/dashboard");
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
-    await expect(page.getByTestId("hub-card-layer-atlas")).toHaveAttribute("href", "/biomed-layer-atlas");
+    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/biomed-layer-atlas");
     await page.getByTestId("hub-card-distribution").click();
     await expect(page).toHaveURL(/\/s\/distribution/);
     await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "distribution");
@@ -271,8 +271,8 @@ test.describe("Maps (shared shell)", () => {
   test("/biomed-layer-atlas adds the supplemental layer to the workbench stack", async ({ page }) => {
     await page.goto("/biomed-layer-atlas");
     await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
-    await expect(page.getByRole("link", { name: /BioMed Layer Atlas/i })).toHaveAttribute("href", "/hub");
-    await expect(page.getByText("Sign in to inspect the full layer atlas")).toBeVisible();
+    await expect(page.getByRole("link", { name: /Explore Regions/i })).toHaveAttribute("href", "/hub");
+    await expect(page.getByText("Sign in to inspect Explore Regions")).toBeVisible();
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-zoom[slot="top-left"]')).toHaveCount(1);

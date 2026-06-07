@@ -283,7 +283,7 @@ export const biomedWorkbenchSupplementalLayers = [
 ] satisfies ArcJurisdictionSupplementalLayerSource[];
 
 export const biomedLayerAtlasSource = {
-  title: "BioMed Layer Atlas",
+  title: "Explore Regions",
   routePath: "/biomed-layer-atlas",
   webMapItemId: arcJurisdictionMapSource.webMapItemId,
   itemUrl: arcJurisdictionMapSource.itemUrl,

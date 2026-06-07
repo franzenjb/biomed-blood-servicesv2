@@ -5,10 +5,10 @@ export default function BiomedLayerAtlasPage() {
   return (
     <BiomedOpsWorkbenchPage
       title={biomedLayerAtlasSource.title}
-      resultLabel="Layer atlas"
+      resultLabel="Explore Regions"
       supplementalLayers={biomedLayerAtlasSource.supplementalLayers}
-      signInHeading="Sign in to inspect the full layer atlas"
-      signInCopy="The Workbench layer inventory plus supplemental source layers are listed here. Live counts, search, and selected features require the private Red Cross ArcGIS web map."
+      signInHeading="Sign in to inspect Explore Regions"
+      signInCopy="Live regional layer counts, search, and selected features require the private Red Cross ArcGIS web map."
       testId="biomed-layer-atlas"
     />
   );
