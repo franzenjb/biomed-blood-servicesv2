@@ -1161,6 +1161,36 @@ function hitGraphicPriority(graphic: Graphic | undefined) {
   return 40;
 }
 
+const POINT_ICON_CATEGORIES = new Set(["sites", "hospitals", "manufacturing"]);
+
+function isPointIconLayer(layer: Layer) {
+  const title = safeLayerTitle(layer);
+  if (POINT_ICON_CATEGORIES.has(classifyMasterLayer(title))) return true;
+  return (layer as FeatureLayer | undefined)?.geometryType === "point";
+}
+
+function isZipCollectionLayer(layer: Layer) {
+  const title = safeLayerTitle(layer);
+  const normalized = title.toLowerCase().replace(/[_-]+/g, " ");
+  return (
+    isTradeAreaZipLayerTitle(title) ||
+    isTradeAreaLayerTitle(title) ||
+    isSupplementalBioMedSourceLayerTitle(title) ||
+    normalized.includes("fy25 data") ||
+    normalized.includes("collection operations")
+  );
+}
+
+// Raise ZIP / collection polygons to the top of the polygon stack, then lift the
+// point/icon layers back above them so markers stay on top and clickable.
+function raiseZipCollectionAbovePolygons(map?: ReturnType<typeof getMapElementMap>) {
+  const top = map?.layers as { toArray?: () => Layer[]; length?: number; reorder?: (layer: Layer, index: number) => unknown } | undefined;
+  if (!top?.toArray || !top.reorder) return;
+  const lastIndex = () => (typeof top.length === "number" ? top.length - 1 : 0);
+  top.toArray().filter(isZipCollectionLayer).forEach((layer) => top.reorder?.(layer, lastIndex()));
+  top.toArray().filter(isPointIconLayer).forEach((layer) => top.reorder?.(layer, lastIndex()));
+}
+
 function selectBestOperationalHit(results: unknown[], map?: ReturnType<typeof getMapElementMap>) {
   return results
     .map((candidate, index) => ({ candidate: candidate as { graphic?: Graphic }, index }))
@@ -1428,6 +1458,13 @@ export default function BiomedOpsWorkbenchPage({
     const failOpen = window.setTimeout(() => setMapReady(true), 8000);
     return () => window.clearTimeout(failOpen);
   }, [isAuthenticated]);
+
+  // Keep ZIP / collection polygons drawn at the top of the polygon stack (under the
+  // point icons) whenever the map hydrates or layer visibility changes.
+  useEffect(() => {
+    if (!mapReady) return;
+    raiseZipCollectionAbovePolygons(getMapElementMap(mapRef.current));
+  }, [mapReady, layers]);
 
   const filteredLayers = useMemo(
     () => layers.filter((layer) => layerMatchesQuery(layer, query)),
