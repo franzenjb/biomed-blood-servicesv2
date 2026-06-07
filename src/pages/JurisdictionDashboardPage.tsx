@@ -1,5 +1,5 @@
 import { createElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import RcAppBar from "../components/RcAppBar";
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Geometry from "@arcgis/core/geometry/Geometry";
@@ -11,7 +11,6 @@ import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronRight,
   HelpCircle,
-  Home,
   Layers,
   ListFilter,
   MapPin,
@@ -1022,13 +1021,15 @@ export default function JurisdictionDashboardPage() {
       if (titleField) query.orderByFields = [titleField.name];
       const result = await layer.queryFeatures(query);
       const layerTitle = safeLayerTitle(layer);
-      const rows: SiteRow[] = result.features.map((graphic, index) => {
+      const rows: SiteRow[] = result.features.flatMap((graphic, index) => {
         const attrs = graphic.attributes ?? {};
-        const title = (titleField && `${attrs[titleField.name] ?? ""}`.trim()) || `Site ${index + 1}`;
+        // Drop unnamed features instead of showing placeholder "Site 1/2/3" rows.
+        const title = titleField ? `${attrs[titleField.name] ?? ""}`.trim() : "";
+        if (!title) return [];
         const city = cityField ? `${attrs[cityField.name] ?? ""}`.trim() : "";
         const state = stateField ? `${attrs[stateField.name] ?? ""}`.trim() : "";
         const subtitle = [city, state].filter(Boolean).join(", ");
-        return {
+        return [{
           id: `${layer.id}-${index}-${title}`,
           title,
           subtitle,
@@ -1036,7 +1037,7 @@ export default function JurisdictionDashboardPage() {
           layerTitle,
           drives: rawNumber(attrs, SITE_DRIVES_TOKENS),
           volume: rawNumber(attrs, SITE_VOLUME_TOKENS),
-        };
+        }];
       });
       setSites(rows);
     } catch {
@@ -1295,24 +1296,13 @@ export default function JurisdictionDashboardPage() {
       style={{ ["--jd-left" as string]: `${leftWidth}px`, ["--jd-right" as string]: `${rightWidth}px` }}
       data-testid="jurisdiction-dashboard"
     >
-      <header className="jd__bar">
-        <Link to="/hub" className="jd__home" data-testid="jd-home">
-          <Home aria-hidden="true" size={18} />
-          Home
-        </Link>
-        <div className="jd__title">
-          <RcMark size={28} />
-          <div>
-            <strong>Jurisdiction Dashboard</strong>
-            <span>Explore BioMed operational geography, boundaries &amp; FY25 territory counts</span>
-          </div>
-        </div>
-        <div className="jd__scope" title="Current geographic scope">
+      <RcAppBar title="Jurisdiction Dashboard">
+        <span className="rcbar__chip" title="Current geographic scope">
           <MapPin aria-hidden="true" size={15} />
           {scopeLabel}
-        </div>
-        <label className="jd__quickview">
-          <span>Quick View</span>
+        </span>
+        <label className="rcbar__field">
+          Quick View
           <select
             value={preset}
             disabled={!isAuthenticated}
@@ -1326,20 +1316,20 @@ export default function JurisdictionDashboardPage() {
             ))}
           </select>
         </label>
-        <button type="button" className="jd__ghost" onClick={resetAll} data-testid="jd-reset">
+        <button type="button" className="rcbar__btn" onClick={resetAll} data-testid="jd-reset">
           <RotateCcw aria-hidden="true" size={15} />
           Reset
         </button>
         <button
           type="button"
-          className="jd__help"
+          className="rcbar__icon"
           onClick={() => setAboutOpen(true)}
           aria-label="About this tool"
           title="About this tool"
         >
           <HelpCircle aria-hidden="true" size={18} />
         </button>
-        <div className="jd__auth" data-on={isAuthenticated ? "true" : "false"}>
+        <div className="rcbar__auth" data-on={isAuthenticated ? "true" : "false"}>
           <span />
           <strong>{authLabel}</strong>
           {!isAuthenticated && (
@@ -1348,7 +1338,7 @@ export default function JurisdictionDashboardPage() {
             </button>
           )}
         </div>
-      </header>
+      </RcAppBar>
 
       {/* KPI band */}
       <div className="jd__kpis" data-testid="jd-kpis">

@@ -1,0 +1,216 @@
+/* American Red Cross shared app bar — livessaved.jbf.com styling */
+.rcbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  min-height: 72px;
+  padding: 10px 22px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #dfe3e8;
+  box-shadow: 0 12px 34px rgba(20, 25, 31, 0.08);
+  position: relative;
+  z-index: 6;
+}
+
+.rcbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.rcbar__home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #dfe3e8;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  flex-shrink: 0;
+}
+
+.rcbar__home:hover {
+  border-color: var(--arc-gray-300, #a3a3a3);
+  color: var(--arc-black, #1a1a1a);
+}
+
+.rcbar__logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.rcbar__titles {
+  min-width: 0;
+}
+
+.rcbar__titles h1 {
+  margin: 0;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #111318;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rcbar__titles p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #69717d;
+}
+
+.rcbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+}
+
+/* ---- Shared right-side controls -------------------------------------- */
+.rcbar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid #dfe3e8;
+  background: #f7f9fb;
+  font-size: 13px;
+  font-weight: 700;
+  color: #20242b;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rcbar__chip svg {
+  color: var(--arc-red, #ed1b2e);
+  flex-shrink: 0;
+}
+
+.rcbar__field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #69717d;
+  white-space: nowrap;
+}
+
+.rcbar__field select {
+  appearance: none;
+  border: 1px solid #cfd6dd;
+  border-radius: 8px;
+  background: #fff
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2369717d' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>")
+    no-repeat right 9px center;
+  color: #111318;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  padding: 8px 30px 8px 11px;
+  cursor: pointer;
+}
+
+.rcbar__field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rcbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid #cfd6dd;
+  background: #fff;
+  color: #20242b;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rcbar__btn:hover {
+  border-color: var(--arc-gray-300, #a3a3a3);
+}
+
+.rcbar__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #cfd6dd;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rcbar__icon:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
+.rcbar__auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid #dfe3e8;
+  background: #f7f9fb;
+  font-size: 12px;
+  font-weight: 700;
+  color: #20242b;
+}
+
+.rcbar__auth > span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--arc-caution, #b8860b);
+}
+
+.rcbar__auth[data-on="true"] > span {
+  background: var(--arc-success, #2d5a27);
+}
+
+.rcbar__auth button {
+  border: 0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  background: var(--arc-red, #ed1b2e);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+@media (max-width: 1320px) {
+  .rcbar__titles p {
+    display: none;
+  }
+  .rcbar__titles h1 {
+    font-size: 22px;
+  }
+}

@@ -10,7 +10,6 @@ import {
   ChevronDown,
   Filter,
   HelpCircle,
-  Home,
   Info,
   Layers,
   List,
@@ -25,8 +24,8 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
+import RcAppBar from "../components/RcAppBar";
 import {
   arcJurisdictionMapSource,
   biomedWorkbenchSupplementalLayers,
@@ -1935,17 +1934,9 @@ export default function BiomedOpsWorkbenchPage({
       data-testid={testId}
       aria-label={title}
     >
-      <header className="opsv2__bar">
-        <Link to="/hub" className="opsv2__home-link" data-testid="ops-back-hub">
-          <Home aria-hidden="true" size={18} />
-          Home
-        </Link>
-        <Link to="/hub" className="opsv2__brand">
-          <RcMark size={30} />
-          <strong>{title}</strong>
-        </Link>
-        <label className="opsv2__preset">
-          <span>Quick View</span>
+      <RcAppBar title={title}>
+        <label className="rcbar__field">
+          Quick View
           <select value={preset} onChange={(event) => applyPreset(event.target.value as WorkbenchPreset)}>
             <option value="default-workbench">Default workbench</option>
             <option value="all-layers">All BioMed layers</option>
@@ -1957,16 +1948,14 @@ export default function BiomedOpsWorkbenchPage({
             ))}
           </select>
         </label>
-        <div className="opsv2__actions">
-          <button type="button" className="opsv2__button" onClick={() => void resetMap()}>
-            <RotateCcw aria-hidden="true" size={16} />
-            Reset map
-          </button>
-          <button type="button" className="opsv2__help-btn" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
-            <HelpCircle aria-hidden="true" size={20} />
-          </button>
-        </div>
-        <div className="opsv2__auth" data-authenticated={isAuthenticated ? "true" : "false"}>
+        <button type="button" className="rcbar__btn" onClick={() => void resetMap()}>
+          <RotateCcw aria-hidden="true" size={16} />
+          Reset map
+        </button>
+        <button type="button" className="rcbar__icon" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
+          <HelpCircle aria-hidden="true" size={18} />
+        </button>
+        <div className="rcbar__auth" data-on={isAuthenticated ? "true" : "false"} data-authenticated={isAuthenticated ? "true" : "false"}>
           <span />
           <strong>{authLabel}</strong>
           {!isAuthenticated && (
@@ -1975,7 +1964,7 @@ export default function BiomedOpsWorkbenchPage({
             </button>
           )}
         </div>
-      </header>
+      </RcAppBar>
 
       <div className="opsv2__map-shell">
         {createElement(

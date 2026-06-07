@@ -207,8 +207,8 @@ test.describe("Maps (shared shell)", () => {
   test("/biomed-ops-workbench renders V2 layer controls and selected feature shell", async ({ page }) => {
     await page.goto("/biomed-ops-workbench");
     await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
-    await expect(page.getByTestId("ops-back-hub")).toHaveAttribute("href", "/hub");
-    await expect(page.getByTestId("ops-back-hub")).toContainText("Home");
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("BioMed Ops Workbench");
     await expect(page.getByText("Quick View")).toBeVisible();
     const opsWidgetOrder = await page.getByTestId("biomed-ops-arcgis").evaluate((element) =>
       Array.from(element.children)
@@ -281,7 +281,8 @@ test.describe("Maps (shared shell)", () => {
   test("/biomed-layer-atlas adds the supplemental layer to the workbench stack", async ({ page }) => {
     await page.goto("/biomed-layer-atlas");
     await expect(page.getByTestId("biomed-layer-atlas")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Explore Regions/i })).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Explore Regions");
     await expect(page.getByText("Sign in to inspect Explore Regions")).toBeVisible();
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.locator('arcgis-home[slot="top-left"]')).toHaveCount(1);
@@ -315,7 +316,8 @@ test.describe("Maps (shared shell)", () => {
   test("/jurisdiction-dashboard renders KPI band, jurisdiction filters, map controls, and sign-in gate", async ({ page }) => {
     await page.goto("/jurisdiction-dashboard");
     await expect(page.getByTestId("jurisdiction-dashboard")).toBeVisible();
-    await expect(page.getByTestId("jd-home")).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Jurisdiction Dashboard");
     // KPI band: 4 FY25 metrics + Fixed Sites
     await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
     await expect(page.getByText("FY25 Red Cell Drives")).toBeVisible();

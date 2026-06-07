@@ -6,9 +6,18 @@
   color: #12161c;
 }
 
+/* Shared RcAppBar pinned to the top of the absolute workbench layout. */
+.opsv2 > .rcbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
 .opsv2__map-shell {
   position: absolute;
-  top: 58px;
+  top: 74px;
   right: 460px;
   bottom: 0;
   left: 360px;
@@ -306,7 +315,7 @@
 
 .opsv2__panel {
   position: absolute;
-  top: 58px;
+  top: 74px;
   bottom: 0;
   z-index: 12;
   display: flex;
@@ -334,11 +343,11 @@
   }
 
   .opsv2__panel {
-    top: 104px;
+    top: 132px;
   }
 
   .opsv2__map-shell {
-    top: 104px;
+    top: 132px;
   }
 }
 
