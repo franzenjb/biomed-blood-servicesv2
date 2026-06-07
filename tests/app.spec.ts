@@ -25,14 +25,14 @@ test.describe("Hub", () => {
     }
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Inspect the full BioMed layer atlas with live map controls.");
-    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("BioMed Map & Dashboard");
+    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
     // stale separated/legacy map links are gone from the hub
     for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
-    await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/dashboard");
+    await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/jurisdiction-dashboard");
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/biomed-layer-atlas");

@@ -35,10 +35,8 @@ export default function HubPage() {
           </Link>
         ))}
 
-        <a
-          href="/dashboard"
-          target="_blank"
-          rel="noreferrer"
+        <Link
+          to="/jurisdiction-dashboard"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/dashboard-preview.svg)" }}
           data-testid="hub-card-map-dashboard"
@@ -46,10 +44,10 @@ export default function HubPage() {
           <span className="hub__scrim" />
           <span className="hub__index mono">06</span>
           <span className="hub__body">
-            <span className="hub__title">BioMed Map &amp; Dashboard</span>
-            <span className="hub__q">Live ArcGIS map plus FY25 jurisdiction KPIs - drives, collections &amp; SDP by Biomed geography.</span>
+            <span className="hub__title">Jurisdiction Dashboard</span>
+            <span className="hub__q">BioMed boundaries, FY25 counts &amp; clickable sites - filter by division, region &amp; district.</span>
           </span>
-        </a>
+        </Link>
 
         <Link
           to="/biomed-ops-workbench"

@@ -712,6 +712,21 @@
   background: var(--arc-red, #ed1b2e);
 }
 
+.jd-card__rollup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jd-card__rollup-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--arc-gray-500, #737373);
+}
+
 /* Headline stat bar — the big numbers (projection, drives) */
 .jd-card__stats {
   display: grid;

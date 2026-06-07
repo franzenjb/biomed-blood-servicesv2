@@ -167,6 +167,23 @@ function isQueryableFeatureLayer(layer: Layer): layer is FeatureLayer {
   return typeof (layer as FeatureLayer).queryFeatures === "function" && typeof (layer as FeatureLayer).createQuery === "function";
 }
 
+// Click priority so a small/specific feature wins over the big boundary polygon
+// drawn behind it: point sites > ZIP > county > chapter > district > region >
+// division. Higher number wins.
+function hitGraphicPriority(graphic: Graphic) {
+  const layer = ((graphic as Graphic & { sourceLayer?: Layer }).sourceLayer ?? graphic.layer) as FeatureLayer | undefined;
+  if (!layer) return 0;
+  if (layer.geometryType === "point") return 100;
+  const title = (layer.title ?? "").toLowerCase();
+  if (title.includes("zip") || title.includes("trade") || title.includes("fy25")) return 80;
+  if (title.includes("count")) return 50;
+  if (title.includes("chapter")) return 45;
+  if (title.includes("district")) return 40;
+  if (title.includes("region")) return 30;
+  if (title.includes("division")) return 20;
+  return 60; // other operational polygons sit above jurisdiction boundaries
+}
+
 function escapeSql(value: string) {
   return value.replace(/'/g, "''");
 }
@@ -541,8 +558,16 @@ function buildCardModel(feature: MasterFeatureSummary): CardModel {
   return { eyebrow, title, subtitle, chips, stats, insight: cardInsight(feature), address, pills, facts };
 }
 
-function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+function CleanFeatureCard({
+  feature,
+  geoStats,
+}: {
+  feature: MasterFeatureSummary;
+  geoStats?: Array<{ label: string; value: string }> | null;
+}) {
   const model = buildCardModel(feature);
+  const isGeo = feature.category === "geography";
+  const stats = isGeo && geoStats && geoStats.length ? geoStats : model.stats;
   const directionsUrl = model.address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(model.address)}`
     : "";
@@ -567,14 +592,17 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
 
       <div className="jd-card__rule" aria-hidden="true" />
 
-      {model.stats.length > 0 && (
-        <div className="jd-card__stats" data-count={model.stats.length}>
-          {model.stats.map((row, index) => (
-            <div key={`${row.label}-${row.value}`} className="jd-card__stat" data-accent={index === 0 ? "true" : "false"}>
-              <strong>{row.value}</strong>
-              <span>{row.label}</span>
-            </div>
-          ))}
+      {stats.length > 0 && (
+        <div className="jd-card__rollup">
+          {isGeo && <p className="jd-card__rollup-label">FY25 totals in this {model.eyebrow.replace(/^BioMed /, "").toLowerCase()}</p>}
+          <div className="jd-card__stats" data-count={stats.length}>
+            {stats.map((row, index) => (
+              <div key={`${row.label}-${row.value}`} className="jd-card__stat" data-accent={index === 0 ? "true" : "false"}>
+                <strong>{row.value}</strong>
+                <span>{row.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -614,7 +642,7 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
         </dl>
       )}
 
-      {model.stats.length === 0 && feature.category !== "geography" && (
+      {stats.length === 0 && !isGeo && (
         <p className="jd-card__note">No per-site counts on this layer — network counts are in the KPI band above.</p>
       )}
     </div>
@@ -641,6 +669,7 @@ export default function JurisdictionDashboardPage() {
   const [sites, setSites] = useState<SiteRow[]>([]);
   const [siteQuery, setSiteQuery] = useState("");
   const [activeFeature, setActiveFeature] = useState<MasterFeatureSummary | null>(null);
+  const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
   const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
   const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
   const [preset, setPreset] = useState<PresetId>("minimal");
@@ -850,6 +879,64 @@ export default function JurisdictionDashboardPage() {
     }
   }, []);
 
+  // FY25 counts scoped to a clicked geography boundary — shown in its popup so
+  // a Division/Region/District selection carries its own metrics (like the KPIs).
+  const computeGeoStats = useCallback(async (feature: MasterFeatureSummary) => {
+    const layer = sourceLayerRef.current;
+    const name = feature.title?.trim();
+    if (!layer || feature.category !== "geography" || !name) {
+      setGeoStats(null);
+      return;
+    }
+    const t = feature.layerTitle.toLowerCase();
+    const raw = feature.rawAttributes;
+    const sel: Selection = { division: "", region: "", district: "" };
+    if (t.includes("division")) {
+      sel.division = name;
+    } else if (t.includes("district")) {
+      sel.district = name;
+      sel.region = rawGet(raw, ["biomed region", "region"]);
+      sel.division = rawGet(raw, ["biomed division", "division"]);
+    } else if (t.includes("region")) {
+      sel.region = name;
+      sel.division = rawGet(raw, ["biomed division", "division"]);
+    } else {
+      setGeoStats(null);
+      return;
+    }
+
+    const fields = kpiFieldRef.current;
+    const defs = KPI_DEFS.filter((def) => fields[def.key]);
+    try {
+      const query = layer.createQuery();
+      query.where = buildWhereForLayer(layer, sel, chosenFieldRef.current);
+      query.returnGeometry = false;
+      query.outStatistics = defs.map((def) => ({
+        statisticType: "sum",
+        onStatisticField: fields[def.key],
+        outStatisticFieldName: `g_${def.key}`,
+      })) as never;
+      const result = await layer.queryFeatures(query);
+      const attrs = result.features?.[0]?.attributes ?? {};
+      const out = defs.map((def) => ({
+        label: def.label.replace(/^FY25 /, ""),
+        value: Math.round(Number(attrs[`g_${def.key}`] ?? 0)).toLocaleString(),
+      }));
+      const siteLayer = siteLayerRef.current;
+      if (siteLayer) {
+        try {
+          const count = await siteLayer.queryFeatureCount({ where: buildWhereForLayer(siteLayer, sel, chosenFieldRef.current) } as never);
+          out.push({ label: "Fixed Sites", value: count.toLocaleString() });
+        } catch {
+          // site count optional
+        }
+      }
+      setGeoStats(out);
+    } catch {
+      setGeoStats(null);
+    }
+  }, []);
+
   const loadSites = useCallback(async (sel: Selection) => {
     const layer = siteLayerRef.current;
     if (!layer) {
@@ -938,6 +1025,12 @@ export default function JurisdictionDashboardPage() {
     void loadSites(selection);
     void applySelectionToMap(selection);
   }, [selection, isAuthenticated, computeKpis, loadSites, applySelectionToMap]);
+
+  // Recompute scoped FY25 metrics whenever a geography boundary is selected.
+  useEffect(() => {
+    if (activeFeature && activeFeature.category === "geography") void computeGeoStats(activeFeature);
+    else setGeoStats(null);
+  }, [activeFeature, computeGeoStats]);
 
   const onSelectLevel = useCallback(
     (level: LevelId, value: string) => {
@@ -1039,12 +1132,20 @@ export default function JurisdictionDashboardPage() {
         try {
           view.popup?.close?.();
           const hit = await view.hitTest(event);
+          // Only real operational layers — drop the cleaned-boundary overlays and
+          // basemap so a click never resolves to "... (clean)" with no data.
+          const opLayerIds = new Set(collectArcJurisdictionLayers(getMapElementMap(mapElement)).map((layer) => String(layer.id)));
           const graphics = (hit.results as Array<{ type: string; graphic?: Graphic }>)
-            .filter((result) => result.type === "graphic" && result.graphic?.layer)
-            .map((result) => result.graphic as Graphic);
-          // Prefer point/site features over big boundary polygons.
-          const best =
-            graphics.find((graphic) => (graphic.layer as FeatureLayer | undefined)?.geometryType === "point") ?? graphics[0];
+            .filter((result) => result.type === "graphic" && result.graphic)
+            .map((result) => result.graphic as Graphic)
+            .filter((graphic) => {
+              const layer = (graphic as Graphic & { sourceLayer?: Layer }).sourceLayer ?? graphic.layer;
+              return layer != null && opLayerIds.has(String(layer.id));
+            });
+          // Most specific feature wins (point > ZIP > county > ... > division).
+          const best = graphics
+            .map((graphic, index) => ({ graphic, index, priority: hitGraphicPriority(graphic) }))
+            .sort((a, b) => b.priority - a.priority || a.index - b.index)[0]?.graphic;
           if (!best) {
             setActiveFeature(null);
             return;
@@ -1385,7 +1486,7 @@ export default function JurisdictionDashboardPage() {
                   )}
                 </>
               ) : activeFeature ? (
-                <CleanFeatureCard feature={activeFeature} />
+                <CleanFeatureCard feature={activeFeature} geoStats={geoStats} />
               ) : (
                 <p className="jd__empty">Click a feature on the map, or pick a site, to see a clean detail card here.</p>
               )}
