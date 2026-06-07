@@ -338,7 +338,7 @@ export function shouldShowLayerForPresenterMode(layer: BioMedLayerSnapshot, mode
   if (modeId === "national-reach") return title.includes("biomed regions") || title.includes("biomed divisions");
   if (modeId === "jurisdiction-story") return title.includes("biomed regions") || title.includes("biomed districts") || title.includes("biomed divisions");
   if (modeId === "collection-access") {
-    return title.includes("biomed collection operations") || title.includes("fy25 data") || title.includes("fixed site") || isTradeAreaLayerTitle(title);
+    return title.includes("fy25 data") || title.includes("fixed site") || isTradeAreaLayerTitle(title);
   }
   if (modeId === "hospital-readiness") return title.includes("distribution") || title.includes("portfolio") || title.includes("hospital");
   if (modeId === "manufacturing-backbone") {
