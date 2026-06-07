@@ -393,22 +393,18 @@ test.describe("Explore Regions", () => {
     await expect(page.getByTestId("regions")).toBeVisible();
   });
 
-  test("region selector drives KPIs and fixed-site drill-down", async ({ page }) => {
+  test("shows real community content and a live-data path, no synthetic numbers", async ({ page }) => {
     await page.goto("/regions");
-    await expect(page.getByTestId("region-selector")).toBeVisible();
-    await expect(page.getByTestId("region-kpis")).toBeVisible();
-
-    // Select a fixed site -> market reach panel appears.
-    const firstSite = page.getByTestId("region-sites").locator(".regions__site").first();
-    await firstSite.click();
-    await expect(page.getByTestId("region-market")).toBeVisible();
-    await expect(page.getByText("Fixed Site Market Reach")).toBeVisible();
-
-    // Changing region resets the selected fixed site.
-    await page.locator("#region-select").selectOption({ index: 2 });
-    await expect(page.getByTestId("region-market")).toHaveCount(0);
-
+    // Live regional drill-down points at the real signed-in dashboard.
+    await expect(page.getByTestId("region-live")).toBeVisible();
+    await expect(page.getByTestId("region-live-link")).toHaveAttribute("href", "/jurisdiction-dashboard");
+    // Real, sourced community content is present.
+    await expect(page.getByText("Representation Is Medicine")).toBeVisible();
+    await expect(page.getByText("Donor Diversity & Population Representation")).toBeVisible();
     // About the Data is reachable from Explore Regions.
     await expect(page.getByTestId("about-the-data")).toBeVisible();
+    // No leftover synthetic region machinery.
+    await expect(page.getByTestId("region-selector")).toHaveCount(0);
+    await expect(page.getByTestId("region-kpis")).toHaveCount(0);
   });
 });

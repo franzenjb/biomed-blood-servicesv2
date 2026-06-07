@@ -1,21 +1,16 @@
-import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { AboutTheData } from "../components/DataSourcesModal";
-import { regions, fixedSites, mobileMarkets, type FixedSite } from "../data/mockData";
 import "./RegionsPage.css";
 
-/* Explore Regions — Tile 9. The local story of BioMed: pick a region, read its
-   footprint, drill into a fixed site's trade area, and connect community impact,
-   diversity, and sickle cell to that place. (Spec §23–25, §29.)
+/* Explore Regions — Tile 9. The local story of BioMed (spec §23–25, §29).
 
-   Region/fixed-site numbers here are illustrative sample data pending Troy's
-   live regional metrics — surfaced through the "About the Data" modal, never
-   presented as confirmed fact. */
+   Live regional drill-down (region selection, real collection KPIs, fixed-site
+   trade areas) loads from the private Red Cross ArcGIS layers and is being wired
+   onto this page. The national community-impact content below is real, sourced
+   context — no synthetic regional numbers are shown. */
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-
-/* National community-impact context. Lives in Explore Regions because it is
-   about community need and donor representation, not collection operations. */
+/* Real, sourced national community-impact context. Lives in Explore Regions
+   because it is about community need and donor representation (spec §29). */
 const sickleCards = [
   { value: "100,000", label: "Americans live with sickle cell disease today" },
   { value: "290,000+", label: "diverse donors screened for sickle cell trait since 2021" },
@@ -44,38 +39,6 @@ const diversityNarrative = [
 ];
 
 export default function RegionsPage() {
-  const [regionId, setRegionId] = useState(regions[0].id);
-  const [siteId, setSiteId] = useState<string | null>(null);
-
-  const region = useMemo(() => regions.find((r) => r.id === regionId) ?? regions[0], [regionId]);
-  const regionSites = useMemo(() => fixedSites.filter((s) => s.regionId === region.id), [region.id]);
-  const regionMobile = useMemo(() => mobileMarkets.filter((m) => m.regionId === region.id), [region.id]);
-  const site: FixedSite | null = useMemo(
-    () => regionSites.find((s) => s.id === siteId) ?? null,
-    [regionSites, siteId],
-  );
-
-  const onRegionChange = (id: string) => {
-    setRegionId(id);
-    setSiteId(null);
-  };
-
-  const kpis = [
-    { label: "Population Served", value: fmt(region.demographics.population) },
-    { label: "Active Donors", value: fmt(region.activeDonors) },
-    { label: "Products / Year", value: fmt(region.annualProducts) },
-    { label: "Hospital Partners", value: fmt(region.hospitalPartners) },
-    { label: "Fixed Sites", value: String(regionSites.length) },
-    { label: "Mobile Markets", value: String(regionMobile.length) },
-  ];
-
-  const demo = [
-    { label: "African American", value: `${region.demographics.africanAmericanPct}%` },
-    { label: "Hispanic / Latino", value: `${region.demographics.hispanicLatinoPct}%` },
-    { label: "Age 65+", value: `${region.demographics.age65PlusPct}%` },
-    { label: "Median Age", value: String(region.demographics.medianAge) },
-  ];
-
   return (
     <section className="regions" data-testid="regions">
       <header className="regions__bar">
@@ -92,59 +55,37 @@ export default function RegionsPage() {
           <h1 className="regions__h1">Bring BioMed Home.</h1>
           <span className="regions__rule" />
           <p className="regions__lede">
-            National numbers move the conversation; local stories close it. Pick a region to see how
+            National numbers move the conversation; local stories close it. Explore Regions is where
             BioMed touches the communities you serve — donors, hospitals, fixed sites, diversity, and
             the patients on the other end.
           </p>
-          <p className="regions__disclaimer">
-            Regional figures below are <strong>illustrative sample data</strong> pending live regional
-            metrics. See <em>About the Data</em> for sources and status.
+        </div>
+
+        {/* Live regional drill-down (real Red Cross layers) */}
+        <article className="regions__panel" data-testid="region-live">
+          <p className="regions__sec-eyebrow">Live Regional Drill-Down</p>
+          <h2 className="regions__h2">Region Selection &amp; Fixed-Site Trade Areas</h2>
+          <p className="regions__body">
+            Region selection, live collection metrics, and fixed-site trade-area polygons draw from the
+            private Red Cross ArcGIS layers — Master RC Geography 2026, BioMed Collections 22-26, the
+            Fixed Site Map Layer, and the Red Cell Fixed Sites Trade Area. They require a Red Cross
+            ArcGIS sign-in.
           </p>
-        </div>
-
-        {/* Region selector — the primary control */}
-        <div className="regions__control" data-testid="region-selector">
-          <label htmlFor="region-select">Region</label>
-          <select
-            id="region-select"
-            value={region.id}
-            onChange={(e) => onRegionChange(e.target.value)}
-          >
-            {regions.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-          <span className="regions__chapter">{region.chapter}</span>
-        </div>
-
-        {/* Regional summary */}
-        <article className="regions__panel">
-          <h2 className="regions__h2">{region.name}</h2>
-          <p className="regions__summary">{region.summary}</p>
-          <div className="regions__kpis" data-testid="region-kpis">
-            {kpis.map((k) => (
-              <div className="regions__kpi" key={k.label}>
-                <span className="regions__kpi-value">{k.value}</span>
-                <span className="regions__kpi-label">{k.label}</span>
-              </div>
-            ))}
+          <div className="regions__livecta">
+            <Link to="/jurisdiction-dashboard" className="regions__livebtn" data-testid="region-live-link">
+              Open live regional data →
+            </Link>
+            <span className="regions__livenote">
+              Geography and population context use Red Cross Humanitarian Services geography —
+              illustrative for BioMed regional discussion until BioMed regional metrics are finalized.
+            </span>
           </div>
         </article>
 
         {/* Donor diversity & population representation */}
         <article className="regions__panel">
           <p className="regions__sec-eyebrow">Donor Diversity &amp; Population Representation</p>
-          <h2 className="regions__h2">Who the Supply Serves Here</h2>
-          <div className="regions__demo">
-            {demo.map((d) => (
-              <div className="regions__demo-card" key={d.label}>
-                <span className="regions__demo-value">{d.value}</span>
-                <span className="regions__demo-label">{d.label}</span>
-              </div>
-            ))}
-          </div>
+          <h2 className="regions__h2">Who the Supply Serves</h2>
           <div className="regions__cards">
             {diversityNarrative.map((c) => (
               <div className="regions__card" key={c.eyebrow}>
@@ -175,74 +116,10 @@ export default function RegionsPage() {
           </div>
         </article>
 
-        {/* Fixed-site trade area drill-down */}
-        <article className="regions__panel">
-          <p className="regions__sec-eyebrow">Fixed-Site Trade Area</p>
-          <h2 className="regions__h2">From Points to Markets</h2>
-          {regionSites.length === 0 ? (
-            <p className="regions__empty" data-testid="region-empty-sites">
-              No fixed sites are currently shown for {region.name}. Regional collection and community
-              metrics above remain available.
-            </p>
-          ) : (
-            <>
-              <p className="regions__body">
-                A point tells you where a site is. A trade area tells you whom it reaches. Select a
-                fixed site to see its donor-reach market.
-              </p>
-              <div className="regions__sites" data-testid="region-sites">
-                {regionSites.map((s) => (
-                  <button
-                    type="button"
-                    key={s.id}
-                    className={`regions__site${site?.id === s.id ? " is-active" : ""}`}
-                    onClick={() => setSiteId(s.id)}
-                  >
-                    <span className="regions__site-name">{s.name}</span>
-                    <span className="regions__site-meta">
-                      {s.city}, {s.state}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              {site && (
-                <div className="regions__market" data-testid="region-market">
-                  <h3 className="regions__market-title">Fixed Site Market Reach</h3>
-                  <p className="regions__market-where">
-                    {site.name} · {site.county}, {site.state} · {site.chapter}
-                  </p>
-                  <div className="regions__market-cards">
-                    <div className="regions__market-card">
-                      <span className="regions__market-value">{fmt(site.annualCollections)}</span>
-                      <span className="regions__market-label">Annual Collections</span>
-                    </div>
-                    <div className="regions__market-card">
-                      <span className="regions__market-value">{site.plateletSharePct}%</span>
-                      <span className="regions__market-label">Platelet Share</span>
-                    </div>
-                    <div className="regions__market-card">
-                      <span className="regions__market-value">{site.donorRetentionPct}%</span>
-                      <span className="regions__market-label">Donor Retention</span>
-                    </div>
-                  </div>
-                  <p className="regions__market-trade">
-                    <strong>Trade area —</strong> {site.tradeArea}
-                  </p>
-                  <p className="regions__market-narrative">{site.narrative}</p>
-                  <p className="regions__market-note">
-                    Trade areas shown are red-cell fixed-site reach. Live polygons and platelet areas
-                    arrive with the source layer — see About the Data.
-                  </p>
-                </div>
-              )}
-            </>
-          )}
-        </article>
-
         <p className="regions__foot">
           Explore Regions is the local home for community impact, diversity, sickle cell, and fixed-site
-          trade areas. Live regional metrics and trade-area polygons are pending source layers from BioMed.
+          trade areas. Live region selection and trade-area polygons are wired to the real Red Cross
+          ArcGIS layers — see About the Data for sources and status.
         </p>
       </div>
     </section>

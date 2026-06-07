@@ -391,3 +391,31 @@
   line-height: 1.5;
   color: var(--d-faint);
 }
+
+/* ---- live drill-down CTA ---- */
+.regions__livecta {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.regions__livebtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 18px;
+  background: var(--arc-red);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  border-radius: 10px;
+}
+.regions__livebtn:hover {
+  filter: brightness(0.94);
+}
+.regions__livenote {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--d-faint);
+  max-width: 62ch;
+}
