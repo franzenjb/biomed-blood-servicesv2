@@ -2,19 +2,38 @@
   position: fixed;
   inset: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: auto 1fr;
   background: #e9ecef;
 }
 
-/* Stage holds the map + side panel below the shared app bar. */
+/* Collapsible CSS-grid shell (livessaved rail model) --------------------- */
 .map-shell__stage {
-  position: relative;
-  flex: 1;
+  display: grid;
+  grid-template-columns: var(--ms-left, 340px) minmax(0, 1fr) var(--ms-right, 380px);
   min-height: 0;
+  overflow: hidden;
 }
 
-.map-shell__canvas,
+.map-shell[data-left-open="false"] .map-shell__stage {
+  grid-template-columns: 52px minmax(0, 1fr) var(--ms-right, 380px);
+}
+
+.map-shell[data-right-open="false"] .map-shell__stage {
+  grid-template-columns: var(--ms-left, 340px) minmax(0, 1fr) 52px;
+}
+
+.map-shell[data-left-open="false"][data-right-open="false"] .map-shell__stage {
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+}
+
+.map-shell__map {
+  position: relative;
+  grid-row: 1;
+  grid-column: 2;
+  min-width: 0;
+}
+
 .map-shell__arcgis {
   position: absolute;
   inset: 0;
@@ -22,118 +41,112 @@
   width: 100%;
 }
 
-/* Panel ------------------------------------------------------------------*/
-
-.map-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 15;
+/* Panels (left = layers, right = details) -------------------------------- */
+.map-shell__panel {
+  position: relative;
+  grid-row: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--arc-white);
-  border-left: 1px solid var(--arc-gray-100);
-  box-shadow: -8px 0 30px rgba(26, 26, 26, 0.08);
+  background: var(--arc-white, #fff);
+  overflow: hidden;
 }
 
-.map-panel__resize {
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 8px;
-  cursor: ew-resize;
-}
-.map-panel__resize:hover {
-  background: rgba(237, 27, 46, 0.12);
+.map-shell__panel--left {
+  grid-column: 1;
+  border-right: 1px solid var(--arc-gray-100, #e5e5e5);
 }
 
-.map-panel__head {
+.map-shell__panel--right {
+  grid-column: 3;
+  border-left: 1px solid var(--arc-gray-100, #e5e5e5);
+}
+
+/* Collapsed rail */
+.map-shell__rail {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 20px 20px 14px;
-  border-bottom: 1px solid var(--arc-gray-100);
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  height: 100%;
 }
-.map-panel__title {
-  margin-top: 4px;
+
+.map-shell__rail-btn,
+.map-shell__panel-home {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--arc-gray-100, #e5e5e5);
+  border-radius: 8px;
+  background: #fff;
+  color: #4a4a4a;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.map-shell__rail-btn:hover,
+.map-shell__panel-home:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
+.map-shell__rail-home {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: #4a4a4a;
+}
+
+.map-shell__rail-home:hover {
+  color: var(--arc-red, #ed1b2e);
+}
+
+.map-shell__rail-label {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #737373;
+}
+
+/* Expanded panel header */
+.map-shell__panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--arc-gray-100, #e5e5e5);
+}
+
+.map-shell__panel-head-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.map-shell__panel-head-text h2 {
   font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.15;
-}
-.map-panel__collapse {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  border: 1px solid var(--arc-gray-100);
-  color: var(--arc-gray-500);
-  line-height: 1;
-}
-.map-panel__collapse:hover {
-  color: var(--arc-black);
-  border-color: var(--arc-gray-300);
+  color: var(--arc-black, #1a1a1a);
 }
 
-.map-panel__reopen {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 15;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+.map-shell__panel-head-text p {
+  margin-top: 2px;
   font-size: 13px;
-  font-weight: 700;
-  color: var(--arc-black);
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid var(--arc-gray-100);
-  border-radius: 999px;
-  padding: 9px 16px;
-  box-shadow: 0 6px 18px rgba(26, 26, 26, 0.12);
-}
-.map-panel__reopen svg {
-  color: var(--arc-red, #ed1b2e);
-}
-.map-panel__reopen:hover {
-  border-color: var(--arc-gray-300);
+  color: var(--arc-gray-500, #737373);
 }
 
-/* Tabs -------------------------------------------------------------------*/
-
-.map-panel__tabs {
-  display: flex;
-  gap: 18px;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--arc-gray-100);
-}
-.map-panel__tab {
-  padding: 12px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--arc-gray-500);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-}
-.map-panel__tab:hover {
-  color: var(--arc-black);
-}
-.map-panel__tab.is-active {
-  color: var(--arc-black);
-  border-bottom-color: var(--arc-red);
-}
-
-.map-panel__body {
+.map-shell__panel-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 16px 20px 22px;
+  padding: 16px 18px 22px;
 }
 
 /* Search -----------------------------------------------------------------*/
@@ -550,8 +563,8 @@
 
 /* Responsive -------------------------------------------------------------*/
 
-@media (max-width: 640px) {
-  .map-panel {
-    width: 88vw !important;
+@media (max-width: 760px) {
+  .map-shell__stage {
+    grid-template-columns: 52px minmax(0, 1fr) 52px;
   }
 }

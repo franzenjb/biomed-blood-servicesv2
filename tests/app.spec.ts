@@ -177,8 +177,8 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByTestId("map-signin")).toBeVisible();
-    await expect(page.getByTestId("map-tab-layers")).toBeVisible();
-    await expect(page.getByTestId("map-tab-details")).toBeVisible();
+    await expect(page.locator(".map-shell__panel--left").getByRole("heading", { name: "Layers" })).toBeVisible();
+    await expect(page.locator(".map-shell__panel--right").getByRole("heading", { name: "Details" })).toBeVisible();
   });
 
   test("/dashboard embeds the ArcGIS dashboard with a home back link", async ({ page }) => {
@@ -350,7 +350,8 @@ test.describe("Maps (shared shell)", () => {
     await page.goto("/hospital-network");
     await expect(page.getByTestId("map-shell")).toBeVisible();
     await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByTestId("map-panel").getByRole("heading", { name: "Hospital Network" })).toBeVisible();
+    await expect(page.locator(".map-shell__panel--left").getByRole("heading", { name: "Layers" })).toBeVisible();
+    await expect(page.locator(".map-shell__panel--right").getByRole("heading", { name: "Details" })).toBeVisible();
   });
 
   // Retired routes fall through to the home redirect.

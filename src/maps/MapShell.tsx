@@ -6,7 +6,8 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { HelpCircle, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle, Home, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import RcAppBar from "../components/RcAppBar";
 import RcMark from "../components/RcMark";
 import type ArcGISMap from "@arcgis/core/Map";
@@ -25,7 +26,6 @@ import {
   type BioMedLayerSnapshot,
 } from "../utils/biomedMapSuite";
 import { buildFeatureInfo, type FeatureInfo } from "./featureInfo";
-import MapPanel from "./MapPanel";
 import LayerList from "./LayerList";
 import FeatureDetails from "./FeatureDetails";
 import { applyPresentationMarkers } from "./presentationMarkers";
@@ -99,10 +99,11 @@ export default function MapShell({
   const [showSecureMap, setShowSecureMap] = useState(false);
   const [snapshots, setSnapshots] = useState<BioMedLayerSnapshot[]>([]);
   const [activeFeature, setActiveFeature] = useState<FeatureInfo | null>(null);
-  const [activeTab, setActiveTab] = useState("layers");
   const [placeQuery, setPlaceQuery] = useState("");
   const [placeStatus, setPlaceStatus] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
 
   const isAuthenticated = authStatus === "signed-in";
 
@@ -190,7 +191,7 @@ export default function MapShell({
             const enriched = await Promise.all(graphics.map(enrichGraphic));
             const info = buildFeatureInfo(enriched);
             setActiveFeature(info);
-            if (info) setActiveTab("details");
+            if (info) setRightOpen(true);
           } catch {
             setActiveFeature(null);
           }
@@ -267,7 +268,13 @@ export default function MapShell({
   }
 
   return (
-    <section className="map-shell" data-testid="map-shell" aria-label={title}>
+    <section
+      className="map-shell"
+      data-testid="map-shell"
+      aria-label={title}
+      data-left-open={leftOpen ? "true" : "false"}
+      data-right-open={rightOpen ? "true" : "false"}
+    >
       <RcAppBar title={title}>
         <button
           type="button"
@@ -295,81 +302,131 @@ export default function MapShell({
       </RcAppBar>
 
       <div className="map-shell__stage">
-      <div className="map-shell__canvas">
-        {createElement(
-          "arcgis-map",
-          {
-            key: showSecureMap ? webMapItemId : "preview",
-            ref: mapRef,
-            itemId: showSecureMap ? webMapItemId : undefined,
-            basemap: showSecureMap ? undefined : "osm",
-            center: CENTER.join(","),
-            zoom: ZOOM,
-            className: "map-shell__arcgis",
-            "data-testid": "map-shell-arcgis",
-          },
-          [
-            createElement("arcgis-home", { key: "home", slot: "top-left" }),
-            createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
-            createElement("arcgis-scale-bar", { key: "scale", slot: "bottom-left", unit: "dual" }),
-            createElement(
-              "arcgis-expand",
-              { key: "basemap", slot: "bottom-right", icon: "basemap", label: "Basemap", mode: "floating" },
-              createElement("arcgis-basemap-gallery", {})
-            ),
-          ]
-        )}
-      </div>
+        <aside
+          className="map-shell__panel map-shell__panel--left"
+          data-collapsed={leftOpen ? "false" : "true"}
+          aria-label="Layer controls"
+        >
+          {!leftOpen && (
+            <div className="map-shell__rail">
+              <button type="button" className="map-shell__rail-btn" aria-label="Open layer controls" onClick={() => setLeftOpen(true)}>
+                <ChevronRight aria-hidden="true" size={18} />
+              </button>
+              <Link to="/hub" className="map-shell__rail-home" aria-label="Home" title="Home">
+                <Home aria-hidden="true" size={18} />
+              </Link>
+              <span className="map-shell__rail-label">Layers</span>
+            </div>
+          )}
+          {leftOpen && (
+            <>
+              <div className="map-shell__panel-head">
+                <Link to="/hub" className="map-shell__panel-home" aria-label="Home" title="Home">
+                  <Home aria-hidden="true" size={16} />
+                </Link>
+                <div className="map-shell__panel-head-text">
+                  <h2>Layers</h2>
+                  <p>{eyebrow}</p>
+                </div>
+                <button type="button" className="map-shell__rail-btn" aria-label="Collapse layer controls" onClick={() => setLeftOpen(false)}>
+                  <ChevronLeft aria-hidden="true" size={18} />
+                </button>
+              </div>
+              <div className="map-shell__panel-body">
+                <form className="map-search" onSubmit={searchPlace}>
+                  <input
+                    type="search"
+                    className="map-filter"
+                    placeholder="Find a place (city, county, state)"
+                    value={placeQuery}
+                    onChange={(e) => setPlaceQuery(e.target.value)}
+                    aria-label="Find a place"
+                  />
+                  <button type="submit" className="btn btn--outline map-search__go">Go</button>
+                </form>
+                {placeStatus && <p className="map-search__status mono">{placeStatus}</p>}
+                <LayerList snapshots={snapshots} onToggle={toggleLayer} />
+              </div>
+            </>
+          )}
+        </aside>
 
-      <MapPanel
-        eyebrow={eyebrow}
-        title={title}
-        tabs={[
-          { id: "layers", label: "Layers" },
-          { id: "details", label: "Details" },
-        ]}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      >
-        <form className="map-search" onSubmit={searchPlace}>
-          <input
-            type="search"
-            className="map-filter"
-            placeholder="Find a place (city, county, state)"
-            value={placeQuery}
-            onChange={(e) => setPlaceQuery(e.target.value)}
-            aria-label="Find a place"
-          />
-          <button type="submit" className="btn btn--outline map-search__go">Go</button>
-        </form>
-        {placeStatus && <p className="map-search__status mono">{placeStatus}</p>}
+        <div className="map-shell__map">
+          {createElement(
+            "arcgis-map",
+            {
+              key: showSecureMap ? webMapItemId : "preview",
+              ref: mapRef,
+              itemId: showSecureMap ? webMapItemId : undefined,
+              basemap: showSecureMap ? undefined : "osm",
+              center: CENTER.join(","),
+              zoom: ZOOM,
+              className: "map-shell__arcgis",
+              "data-testid": "map-shell-arcgis",
+            },
+            [
+              createElement("arcgis-home", { key: "home", slot: "top-left" }),
+              createElement("arcgis-zoom", { key: "zoom", slot: "top-left" }),
+              createElement("arcgis-scale-bar", { key: "scale", slot: "bottom-left", unit: "dual" }),
+              createElement(
+                "arcgis-expand",
+                { key: "basemap", slot: "bottom-right", icon: "basemap", label: "Basemap", mode: "floating" },
+                createElement("arcgis-basemap-gallery", {})
+              ),
+            ]
+          )}
 
-        {activeTab === "layers" ? (
-          <LayerList snapshots={snapshots} onToggle={toggleLayer} />
-        ) : (
-          <FeatureDetails feature={activeFeature} />
-        )}
-      </MapPanel>
-
-      {!isAuthenticated && (
-        <div className="map-gate" role="dialog" aria-label="Sign in required" data-testid="map-gate">
-          <div className="map-gate__card">
-            <p className="eyebrow">Red Cross ArcGIS</p>
-            <h2>Sign in to view the map</h2>
-            <p className="map-gate__copy">This map uses private Red Cross ArcGIS data. Sign in to load the live layers.</p>
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={signIn}
-              disabled={authStatus === "checking" || authStatus === "signing-in"}
-              data-testid="map-signin"
-            >
-              {authStatus === "signing-in" ? "Signing in…" : authStatus === "checking" ? "Checking…" : "Sign in to ArcGIS"}
-            </button>
-            {authError && <p className="map-gate__error">{authError}</p>}
-          </div>
+          {!isAuthenticated && (
+            <div className="map-gate" role="dialog" aria-label="Sign in required" data-testid="map-gate">
+              <div className="map-gate__card">
+                <p className="eyebrow">Red Cross ArcGIS</p>
+                <h2>Sign in to view the map</h2>
+                <p className="map-gate__copy">This map uses private Red Cross ArcGIS data. Sign in to load the live layers.</p>
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={signIn}
+                  disabled={authStatus === "checking" || authStatus === "signing-in"}
+                  data-testid="map-signin"
+                >
+                  {authStatus === "signing-in" ? "Signing in…" : authStatus === "checking" ? "Checking…" : "Sign in to ArcGIS"}
+                </button>
+                {authError && <p className="map-gate__error">{authError}</p>}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        <aside
+          className="map-shell__panel map-shell__panel--right"
+          data-collapsed={rightOpen ? "false" : "true"}
+          aria-label="Feature details"
+        >
+          {!rightOpen && (
+            <div className="map-shell__rail">
+              <button type="button" className="map-shell__rail-btn" aria-label="Open details" onClick={() => setRightOpen(true)}>
+                <ChevronLeft aria-hidden="true" size={18} />
+              </button>
+              <span className="map-shell__rail-label">Details</span>
+            </div>
+          )}
+          {rightOpen && (
+            <>
+              <div className="map-shell__panel-head">
+                <div className="map-shell__panel-head-text">
+                  <h2>Details</h2>
+                  <p>Click a feature on the map.</p>
+                </div>
+                <button type="button" className="map-shell__rail-btn" aria-label="Collapse details" onClick={() => setRightOpen(false)}>
+                  <ChevronRight aria-hidden="true" size={18} />
+                </button>
+              </div>
+              <div className="map-shell__panel-body">
+                <FeatureDetails feature={activeFeature} />
+              </div>
+            </>
+          )}
+        </aside>
       </div>
 
       {aboutOpen && (
