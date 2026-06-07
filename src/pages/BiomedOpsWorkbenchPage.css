@@ -1922,3 +1922,82 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* ---- Layer visibility batch controls --------------------------------- */
+.opsv2__layer-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.opsv2__layer-group-head .opsv2__layer-group-toggle {
+  flex: 1;
+  min-width: 0;
+}
+
+.opsv2__group-all {
+  flex: none;
+  align-self: center;
+  border: 1px solid #d5dbe2;
+  border-radius: 6px;
+  background: #fff;
+  color: #4f5b68;
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.opsv2__group-all:hover:not(:disabled) {
+  border-color: #ed1b2e;
+  color: #ed1b2e;
+}
+
+.opsv2__group-all:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.opsv2__layer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.opsv2__layer-actions > span {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 800;
+  color: #67717d;
+}
+
+.opsv2__layer-actions-buttons {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.opsv2__layer-action {
+  border: 1px solid #d5dbe2;
+  border-radius: 6px;
+  background: #fff;
+  color: #12161c;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+.opsv2__layer-action:hover:not(:disabled) {
+  border-color: #ed1b2e;
+  color: #ed1b2e;
+}
+
+.opsv2__layer-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

@@ -1841,6 +1841,36 @@ export default function BiomedOpsWorkbenchPage({
     refreshLayers();
   }
 
+  function setLayersVisible(targetIds: Set<string>, visible: boolean) {
+    const map = getMapElementMap(mapRef.current);
+    if (!map) return;
+    const all = collectArcJurisdictionLayers(map);
+    targetIds.forEach((id) => {
+      if (id === TRADE_AREA_COMBO_LAYER_ID) {
+        all
+          .filter((candidate) => isTradeAreaCompositeLayerTitle(safeLayerTitle(candidate)))
+          .forEach((candidate) => {
+            candidate.visible = visible;
+          });
+        return;
+      }
+      const layer = all.find((candidate) => candidate.id === id);
+      if (layer) layer.visible = visible;
+    });
+    refreshLayers();
+  }
+
+  function toggleGroupLayers(groupId: string) {
+    const groupLayers = layers.filter((layer) => layer.category === groupId);
+    if (groupLayers.length === 0) return;
+    const allOn = groupLayers.every((layer) => layer.visible);
+    setLayersVisible(new Set(groupLayers.map((layer) => layer.id)), !allOn);
+  }
+
+  function setAllLayersVisible(visible: boolean) {
+    setLayersVisible(new Set(layers.map((layer) => layer.id)), visible);
+  }
+
   async function selectSearchResult(result: FeatureSearchResult) {
     result.layer.visible = true;
     refreshLayers();
@@ -2002,6 +2032,17 @@ export default function BiomedOpsWorkbenchPage({
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
             <Filter aria-hidden="true" size={16} />
           </label>
+          <div className="opsv2__layer-actions">
+            <span>{layerCounts.visible} of {layerCounts.total} on</span>
+            <div className="opsv2__layer-actions-buttons">
+              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(true)}>
+                All on
+              </button>
+              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(false)}>
+                All off
+              </button>
+            </div>
+          </div>
           {query.trim().length > 0 && (
             <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
               {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
@@ -2036,7 +2077,7 @@ export default function BiomedOpsWorkbenchPage({
               const isExpanded = expandedGroups[group.id] ?? true;
               return (
                 <section key={group.id} className="opsv2__layer-group" data-expanded={isExpanded ? "true" : "false"}>
-                  <header>
+                  <header className="opsv2__layer-group-head">
                     <button
                       type="button"
                       className="opsv2__layer-group-toggle"
@@ -2050,6 +2091,16 @@ export default function BiomedOpsWorkbenchPage({
                       </span>
                       <b>{activeCount}/{groupLayers.length}</b>
                       <ChevronDown aria-hidden="true" className="opsv2__group-chevron" size={18} />
+                    </button>
+                    <button
+                      type="button"
+                      className="opsv2__group-all"
+                      disabled={!isAuthenticated}
+                      aria-pressed={activeCount === groupLayers.length}
+                      onClick={() => toggleGroupLayers(group.id)}
+                      title={activeCount === groupLayers.length ? "Turn all off in this group" : "Turn all on in this group"}
+                    >
+                      {activeCount === groupLayers.length ? "All off" : "All on"}
                     </button>
                   </header>
                   {isExpanded && (
