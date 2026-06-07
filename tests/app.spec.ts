@@ -188,7 +188,10 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("dash-back")).toHaveAttribute("aria-label", "Return to hub");
     const dashBackBox = await page.getByTestId("dash-back").boundingBox();
     expect(dashBackBox).not.toBeNull();
+    expect(dashBackBox!.x).toBeGreaterThan(40);
+    expect(dashBackBox!.x).toBeLessThan(80);
     expect(dashBackBox!.y).toBeGreaterThan(180);
+    expect(dashBackBox!.y).toBeLessThan(220);
     expect(dashBackBox!.width).toBeLessThanOrEqual(44);
     await page.getByTestId("dash-back").click();
     await expect(page).toHaveURL(/\/hub$/);
