@@ -257,85 +257,213 @@ function isCodeRow(row: { label: string; value: string }) {
   return false;
 }
 
-// Real metrics only — pull true FY25 counts from the feature's attributes by
-// field name, and reject IDs, dates, and epoch timestamps that merely contain
-// a hint word ("sponsor", "drive date") or are implausibly large.
-const METRIC_FIELD_DEFS: Array<{ label: string; tokens: string[][] }> = [
-  { label: "Red Cell Drives", tokens: [["red", "cell", "drive"], ["total", "red", "cell", "drive"]] },
-  { label: "Red Cell Products", tokens: [["total", "red", "cell", "product"], ["red", "cell", "product"], ["red", "cell", "collect"]] },
-  { label: "WB Collected", tokens: [["wb", "collect"], ["whole", "blood", "collect"]] },
-  { label: "SDP Units", tokens: [["sdp", "unit"], ["sdp"]] },
-  { label: "Plasma Units", tokens: [["plasma", "unit"], ["plasma"]] },
-  { label: "Platelet Units", tokens: [["platelet", "unit"], ["platelet"]] },
+// Read a field value by normalized name (exact first, then contains).
+function rawGet(raw: Record<string, unknown> | undefined, candidates: string[]) {
+  if (!raw) return "";
+  const entries = Object.entries(raw).map(([key, value]) => [key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(), value] as const);
+  for (const candidate of candidates) {
+    const target = candidate.toLowerCase();
+    const exact = entries.find(([key, value]) => key === target && value != null && `${value}`.trim());
+    if (exact) return `${exact[1]}`.trim();
+  }
+  for (const candidate of candidates) {
+    const target = candidate.toLowerCase();
+    const partial = entries.find(([key, value]) => key.includes(target) && value != null && `${value}`.trim());
+    if (partial) return `${partial[1]}`.trim();
+  }
+  return "";
+}
+
+// Headline metrics, ranked. Capture real counts (projection, drives, units),
+// reject IDs/dates/year/zip/codes and implausibly large values.
+const METRIC_HINT_ORDER = [
+  "projection",
+  "product",
+  "drive",
+  "collection",
+  "sdp",
+  "platelet",
+  "plasma",
+  "whole blood",
+  "wb",
+  "apheresis",
+  "apo",
+  "unit",
 ];
 
-function isIdOrDateKey(normalizedKey: string) {
+function isExcludedMetricKey(normalized: string) {
   return (
-    /\bid\b/.test(normalizedKey) ||
-    normalizedKey.includes("date") ||
-    normalizedKey.includes("master") ||
-    normalizedKey.includes("external") ||
-    normalizedKey.includes("objectid") ||
-    normalizedKey.includes("globalid") ||
-    /\b(lat|lon|long|latitude|longitude)\b/.test(normalizedKey)
+    /\bid\b/.test(normalized) ||
+    normalized.includes("date") ||
+    normalized.includes("sponsor") ||
+    normalized.includes("master") ||
+    normalized.includes("external") ||
+    /\byear\b/.test(normalized) ||
+    /\b(zip|postal|fips|geoid|code|objectid|globalid|fid)\b/.test(normalized) ||
+    /\b(lat|lon|long|latitude|longitude)\b/.test(normalized)
   );
+}
+
+function metricRank(normalized: string) {
+  const index = METRIC_HINT_ORDER.findIndex((hint) => normalized.includes(hint));
+  return index === -1 ? 99 : index;
+}
+
+function formatMetricLabel(key: string) {
+  return key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function extractSiteMetrics(raw?: Record<string, unknown>) {
   if (!raw) return [] as Array<{ label: string; value: string }>;
-  const out: Array<{ label: string; value: string }> = [];
+  const found: Array<{ label: string; value: string; rank: number }> = [];
   const seen = new Set<string>();
-  for (const def of METRIC_FIELD_DEFS) {
-    for (const [key, value] of Object.entries(raw)) {
-      const num = typeof value === "number" ? value : Number(`${value}`.replace(/,/g, ""));
-      if (!Number.isFinite(num)) continue;
-      const normalized = key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-      if (isIdOrDateKey(normalized)) continue;
-      if (Math.abs(num) > 5_000_000) continue; // IDs/epochs are far larger than any per-site count
-      if (def.tokens.some((group) => group.every((token) => normalized.includes(token)))) {
-        if (seen.has(def.label)) break;
-        seen.add(def.label);
-        out.push({ label: def.label, value: Math.round(num).toLocaleString() });
-        break;
-      }
-    }
+  for (const [key, value] of Object.entries(raw)) {
+    const num = typeof value === "number" ? value : Number(`${value}`.replace(/,/g, ""));
+    if (!Number.isFinite(num)) continue;
+    const normalized = key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    if (isExcludedMetricKey(normalized)) continue;
+    if (Math.abs(num) > 5_000_000) continue;
+    const rank = metricRank(normalized);
+    if (rank === 99) continue;
+    const label = formatMetricLabel(key);
+    const dedupe = label.toLowerCase();
+    if (seen.has(dedupe)) continue;
+    seen.add(dedupe);
+    found.push({ label, value: Math.round(num).toLocaleString(), rank });
   }
-  return out.slice(0, 4);
+  return found.sort((a, b) => a.rank - b.rank).slice(0, 3).map(({ label, value }) => ({ label, value }));
 }
 
-// Drop internal/junk rows from the facts list (User * IDs, epoch dates).
 function isJunkFactRow(row: { label: string; value: string }) {
-  if (/^user\b/i.test(row.label.trim())) return true;
+  const label = row.label.trim().toLowerCase();
+  if (/^user\b/.test(label)) return true;
+  if (/(^|\s)(country|street name|object ?id|global ?id)(\s|$)/.test(label)) return true;
+  if (/\bid\b/.test(label) || /\bdate\b/.test(label)) return true;
+  if (/^(united states|usa|us)$/i.test(row.value.trim())) return true;
   const digits = row.value.replace(/[^0-9]/g, "");
   if (digits.length >= 12) return true; // epoch ms / oversized id
   return false;
 }
 
+const US_STATES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
+  CT: "Connecticut", DE: "Delaware", DC: "District of Columbia", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas", KY: "Kentucky",
+  LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts", MI: "Michigan", MN: "Minnesota",
+  MS: "Mississippi", MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
+  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina", ND: "North Dakota",
+  OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina",
+  SD: "South Dakota", TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia",
+  WA: "Washington", WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", PR: "Puerto Rico",
+};
+
+function stateFullName(value: string) {
+  const v = value.trim();
+  if (!v) return "";
+  return US_STATES[v.toUpperCase()] ?? v;
+}
+
+function composeSiteAddress(raw?: Record<string, unknown>) {
+  const street = rawGet(raw, ["site address", "street address", "address 1", "address line 1", "address"]);
+  const city = rawGet(raw, ["site city", "city"]);
+  const state = rawGet(raw, ["site state", "state", "st"]);
+  const zip = rawGet(raw, ["zip", "zip code", "postal"]).replace(/[^0-9-]/g, "");
+  const locality = [city, state].filter(Boolean).join(", ");
+  return [street, locality, zip].filter(Boolean).join(", ").replace(/\s+,/g, ",").trim();
+}
+
+function cardInsight(feature: MasterFeatureSummary) {
+  const t = feature.layerTitle.toLowerCase();
+  if (t.includes("fixed site")) return "Fixed donor collection site feeding the BioMed supply chain.";
+  if (t.includes("mobile")) return "Mobile BioMed blood drive in the community.";
+  if (t.includes("distribution")) return "Distribution anchor routing blood products to hospitals.";
+  if (feature.category === "geography") return feature.impact;
+  return feature.talkingPoint;
+}
+
 function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
+  const raw = feature.rawAttributes;
+  const isGeography = feature.category === "geography";
+
+  const city = rawGet(raw, ["site city", "city"]);
+  const stateFull = stateFullName(rawGet(raw, ["site state", "state", "st"]));
+  const placeName = rawGet(raw, ["site name donor view", "facility name", "site name", "donation center", "name"]);
+  const venue = rawGet(raw, ["account name", "account"]);
+  const title = isGeography
+    ? feature.title
+    : city && stateFull
+      ? `${city}, ${stateFull}`
+      : placeName || feature.title;
+
+  const zip = rawGet(raw, ["zip", "zip code", "postal"]).replace(/[^0-9-]/g, "");
+  const year = rawGet(raw, ["year"]).replace(/[^0-9]/g, "");
+  const status = rawGet(raw, ["status"]);
+  const chips = [
+    zip ? { label: "ZIP", value: zip } : null,
+    year ? { label: "Year", value: year } : null,
+    status ? { label: "Status", value: status } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
+
+  const address = isGeography ? "" : composeSiteAddress(raw);
+  const directionsUrl = address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : "";
+  const metrics = extractSiteMetrics(raw);
+
   const geo = feature.geography.filter((row) => row.value && row.value.trim()).filter((row) => !isCodeRow(row));
-  const metrics = extractSiteMetrics(feature.rawAttributes);
+  const usedValues = new Set([title, venue, address, city, stateFull, ...chips.map((c) => c.value)].map((v) => v.toLowerCase().replace(/[^a-z0-9]+/g, "")));
   const facts = feature.sourceFields
     .filter((row) => row.value && row.value.trim())
     .filter((row) => !isCodeRow(row) && !isJunkFactRow(row))
     .filter((row) => !geo.some((g) => g.value === row.value))
-    .slice(0, 8);
+    .filter((row) => !usedValues.has(row.value.toLowerCase().replace(/[^a-z0-9]+/g, "")))
+    .filter((row) => !/^(city|state|st|zip|year|status|account name)$/i.test(row.label.trim()))
+    .slice(0, 5);
 
   return (
     <div className="jd-card">
-      <header className="jd-card__head">
+      <header className="jd-card__hero">
         <p className="jd-card__eyebrow">{feature.layerTitle}</p>
-        <h3>{feature.title}</h3>
-        <p className="jd-card__impact">{feature.talkingPoint}</p>
+        <h3>{title}</h3>
+        {venue && !isGeography && <p className="jd-card__venue">{venue}</p>}
+        {chips.length > 0 && (
+          <div className="jd-card__chips">
+            {chips.map((chip) => (
+              <span key={chip.label} className="jd-card__chip">
+                <em>{chip.label}</em>
+                {chip.value}
+              </span>
+            ))}
+          </div>
+        )}
       </header>
 
+      <div className="jd-card__rule" aria-hidden="true" />
+
       {metrics.length > 0 && (
-        <div className="jd-card__metrics">
-          {metrics.map((row) => (
-            <div key={`${row.label}-${row.value}`}>
-              <span>{row.label}</span>
+        <div className="jd-card__stats" data-count={metrics.length}>
+          {metrics.map((row, index) => (
+            <div key={`${row.label}-${row.value}`} className="jd-card__stat" data-accent={index === 0 ? "true" : "false"}>
               <strong>{row.value}</strong>
+              <span>{row.label}</span>
             </div>
           ))}
+        </div>
+      )}
+
+      <p className="jd-card__insight">{cardInsight(feature)}</p>
+
+      {address && (
+        <div className="jd-card__address">
+          <MapPin aria-hidden="true" size={15} />
+          <span>{address}</span>
+          {directionsUrl && (
+            <a href={directionsUrl} target="_blank" rel="noreferrer">
+              Directions ↗
+            </a>
+          )}
         </div>
       )}
 
@@ -359,6 +487,10 @@ function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
             </div>
           ))}
         </dl>
+      )}
+
+      {metrics.length === 0 && !isGeography && (
+        <p className="jd-card__note">No per-site counts on this layer — network counts are in the KPI band above.</p>
       )}
     </div>
   );
