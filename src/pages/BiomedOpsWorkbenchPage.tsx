@@ -33,6 +33,7 @@ import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMarkers, legendMarkerForLayer } from "../maps/presentationMarkers";
 import {
   applyPresentationMapStyle,
+  collectionVolumeBreaks,
   quietOpsBasemapId,
   tradeAreaBreakForDonorShare,
   tradeAreaDonorShareBreaks
@@ -1306,6 +1307,15 @@ export default function BiomedOpsWorkbenchPage({
     return presenterModes.find((mode) => mode.id === preset)?.label ?? "Custom view";
   }, [preset]);
 
+  const collectionZipVisible = useMemo(
+    () =>
+      layers.some((layer) => {
+        const t = layer.title.toLowerCase();
+        return layer.visible && t.includes("zip") && (t.includes("fy25") || t.includes("collection"));
+      }),
+    [layers],
+  );
+
   const currentTitle = query.trim() ? `Search: ${query.trim()}` : selectedFeature ? featureDisplayTitle(selectedFeature) : "Current filter";
   const currentSubtitle = query.trim()
     ? `${searchResults.length} feature result${searchResults.length === 1 ? "" : "s"}`
@@ -1775,6 +1785,27 @@ export default function BiomedOpsWorkbenchPage({
               createElement("arcgis-basemap-gallery", {}),
             ),
           ],
+        )}
+
+        {collectionZipVisible && (
+          <div className="opsv2__collection-legend" aria-label="ZIP collection volume legend">
+            <header>
+              <b>FY25 collections</b>
+              <span>by ZIP</span>
+            </header>
+            <div className="opsv2__collection-legend-list">
+              <div>
+                <i style={{ backgroundColor: rgbaCss([228, 232, 237, 0.4]) }} />
+                <span>None</span>
+              </div>
+              {collectionVolumeBreaks.map((breakInfo) => (
+                <div key={breakInfo.label}>
+                  <i style={{ backgroundColor: rgbaCss(breakInfo.color) }} />
+                  <span>{breakInfo.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
 

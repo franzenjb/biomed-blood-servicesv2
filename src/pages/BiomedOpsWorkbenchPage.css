@@ -1054,6 +1054,68 @@
   line-height: 1;
 }
 
+.opsv2__collection-legend {
+  position: absolute;
+  bottom: 44px;
+  left: 14px;
+  z-index: 12;
+  display: grid;
+  gap: 7px;
+  border: 1px solid #dfe4ea;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 10px 12px;
+  box-shadow: 0 8px 24px rgba(18, 22, 28, 0.16);
+}
+
+.opsv2__collection-legend header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.opsv2__collection-legend header b {
+  color: #11161d;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.opsv2__collection-legend header span {
+  color: #8a949f;
+  font-family: var(--font-data);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+
+.opsv2__collection-legend-list {
+  display: grid;
+  gap: 4px;
+}
+
+.opsv2__collection-legend-list div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.opsv2__collection-legend-list i {
+  width: 16px;
+  height: 12px;
+  flex: none;
+  border: 1px solid rgba(15, 18, 23, 0.25);
+  border-radius: 3px;
+}
+
+.opsv2__collection-legend-list span {
+  color: #2b333d;
+  font-family: var(--font-data);
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
 .opsv2__feature-pills {
   display: flex;
   flex-wrap: wrap;

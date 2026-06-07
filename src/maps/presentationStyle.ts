@@ -54,6 +54,23 @@ export const tradeAreaDonorShareBreaks: TradeAreaDonorShareBreak[] = [
   { minValue: 21.209742, maxValue: 63.323782, color: [24, 98, 132, 0.9], label: "21.21 - 63.32%" }
 ];
 
+export type CollectionVolumeBreak = {
+  minValue: number;
+  maxValue: number;
+  color: Rgba;
+  label: string;
+};
+
+// FY25 collection volume (TotalColl) — sequential red ramp. Breaks chosen from the
+// live distribution: 12,080 of 32,041 ZIPs collect; max ~14,418; avg ~145.
+export const collectionVolumeBreaks: CollectionVolumeBreak[] = [
+  { minValue: 1, maxValue: 100, color: [254, 224, 210, 0.82], label: "1 – 100" },
+  { minValue: 101, maxValue: 500, color: [252, 174, 145, 0.84], label: "101 – 500" },
+  { minValue: 501, maxValue: 1500, color: [251, 106, 74, 0.86], label: "501 – 1,500" },
+  { minValue: 1501, maxValue: 5000, color: [222, 45, 38, 0.88], label: "1,501 – 5,000" },
+  { minValue: 5001, maxValue: 1000000, color: [165, 15, 21, 0.9], label: "5,000+" }
+];
+
 const layerStyles = {
   biomedDivision: {
     fill: [189, 214, 224, 0.16],
@@ -271,6 +288,19 @@ function findPercentDonorsField(fields: Field[] | undefined) {
   });
 }
 
+function findCollectionField(fields: Field[] | undefined) {
+  return fields?.find((field) => {
+    if (!isNumericField(field)) return false;
+    const normalized = compact(`${field.name} ${field.alias ?? ""}`);
+    return normalized.includes("totalcoll") || (normalized.includes("total") && normalized.includes("collection"));
+  });
+}
+
+function isCollectionZipLayerTitle(title: string) {
+  const normalized = normalize(title);
+  return normalized.includes("zip") && (normalized.includes("fy25") || normalized.includes("collection"));
+}
+
 function findTradeAreaZipField(fields: Field[] | undefined) {
   return fields?.find((field) => {
     if (field.type !== "string") return false;
@@ -348,6 +378,39 @@ function applyTradeAreaZipStyle(featureLayer: StyledFeatureLayer) {
   return true;
 }
 
+function collectionRenderer(field: Field) {
+  return {
+    type: "class-breaks" as const,
+    field: field.name,
+    legendOptions: { title: "FY25 collections" },
+    defaultLabel: "No collections",
+    defaultSymbol: tradeAreaClassBreakSymbol([228, 232, 237, 0.4]),
+    classBreakInfos: collectionVolumeBreaks.map((breakInfo) => ({
+      minValue: breakInfo.minValue,
+      maxValue: breakInfo.maxValue,
+      label: breakInfo.label,
+      symbol: tradeAreaClassBreakSymbol(breakInfo.color)
+    }))
+  };
+}
+
+function applyCollectionZipStyle(featureLayer: StyledFeatureLayer) {
+  const collectionField = findCollectionField(featureLayer.fields);
+  if (!collectionField) return false;
+
+  featureLayer.renderer = collectionRenderer(collectionField);
+  const zipField = findTradeAreaZipField(featureLayer.fields);
+  featureLayer.labelsVisible = Boolean(zipField);
+  featureLayer.labelingInfo = zipField ? [tradeAreaZipLabelClass(zipField)] : [];
+  featureLayer.minScale = 0;
+  featureLayer.maxScale = 0;
+  featureLayer.opacity = 1;
+  featureLayer.blendMode = "normal";
+  featureLayer.effect = "drop-shadow(0 1px 0 rgba(17, 24, 39, 0.12))";
+  featureLayer.refresh?.();
+  return true;
+}
+
 function applyTradeAreaBoundaryStyle(featureLayer: StyledFeatureLayer) {
   featureLayer.renderer = {
     type: "simple",
@@ -389,6 +452,7 @@ async function applyLayerStyle(layer: Layer) {
     return;
   }
   if (featureLayer.geometryType === "polygon" && (isTradeAreaZipLayerTitle(title) || isTradeAreaLayerTitle(title)) && applyTradeAreaZipStyle(featureLayer)) return;
+  if (featureLayer.geometryType === "polygon" && isCollectionZipLayerTitle(title) && applyCollectionZipStyle(featureLayer)) return;
 
   const style = getPresentationStyleForLayer(title);
   if (isLower48VisibleSourceLayerTitle(title)) {
