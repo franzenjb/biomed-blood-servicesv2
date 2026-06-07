@@ -421,3 +421,12 @@ test.describe("Hub dev notes", () => {
     await expect(modal.getByText("In Progress", { exact: true })).toBeVisible();
   });
 });
+
+test("Hub dev notes: PDF download link is present and points to the asset", async ({ page }) => {
+  await page.goto("/hub");
+  await page.getByRole("button", { name: "About this hub" }).click();
+  const dl = page.getByTestId("devnotes-download");
+  await expect(dl).toBeVisible();
+  await expect(dl).toHaveAttribute("href", "/biomed-capabilities-status.pdf");
+  await expect(dl).toHaveAttribute("download", /\.pdf$/);
+});

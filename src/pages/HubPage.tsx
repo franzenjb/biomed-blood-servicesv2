@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, HelpCircle, LogIn, X } from "lucide-react";
+import { ChevronDown, Download, HelpCircle, LogIn, X } from "lucide-react";
 import { sections } from "../data/sections";
 import { hubDevNotes, hubSectionIndex, hubSources } from "../data/hubInfo";
 import RcMark from "../components/RcMark";
@@ -89,6 +89,15 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
                     </ul>
                   </div>
                 ))}
+                <a
+                  className="hub__devnote-download"
+                  href="/biomed-capabilities-status.pdf"
+                  download="BioMed_Capabilities_Status.pdf"
+                  data-testid="devnotes-download"
+                >
+                  <Download aria-hidden="true" size={15} />
+                  Download status as PDF
+                </a>
               </div>
             )}
           </section>

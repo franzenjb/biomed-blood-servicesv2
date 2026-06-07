@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>BioMed Capabilities — Status</title>
+<style>
+  :root{
+    --arc-red:#ED1B2E; --ink:#111318; --g700:#4a4a4a; --g500:#737373;
+    --g100:#e5e5e5; --cream:#f7f5f2; --info:#1e4a6d; --callout:#eef4f8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:Inter,"Helvetica Neue",Arial,system-ui,sans-serif;
+    color:var(--ink); background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  }
+  .page{max-width:720px;margin:0 auto;padding:40px 44px 36px;}
+  header.head{display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid var(--g100);}
+  .eyebrow{flex:1;margin:0;font-size:13px;font-weight:800;letter-spacing:.1em;color:var(--ink);}
+  .meta{margin:16px 0 6px;font-size:12px;color:var(--g500);}
+  h1.title{margin:0 0 10px;font-size:30px;line-height:1.1;font-weight:800;letter-spacing:-.01em;color:var(--ink);}
+  .lead{margin:0 0 16px;font-size:15px;font-weight:600;line-height:1.5;color:#2d2d2d;}
+  .callout{display:flex;align-items:center;gap:14px;padding:16px 18px;margin:0 0 18px;background:var(--callout);border-radius:10px;}
+  .callout strong{display:block;font-size:18px;font-weight:800;color:var(--arc-red);}
+  .callout span{display:block;font-size:13px;color:var(--g700);}
+  h2.sec{margin:22px 0 8px;font-size:19px;font-weight:800;letter-spacing:-.005em;color:var(--ink);}
+  .group{margin:0 0 12px;padding-left:12px;border-left:3px solid var(--g100);break-inside:avoid;}
+  .group[data-tone="done"]{border-left-color:#1f6b35;}
+  .group[data-tone="progress"]{border-left-color:var(--info);}
+  .group[data-tone="troy"]{border-left-color:var(--arc-red);}
+  .group[data-tone="jennifer"]{border-left-color:#8a5a00;}
+  .group h3{margin:0 0 6px;font-size:14px;font-weight:800;color:var(--ink);}
+  .group ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;}
+  .group li{font-size:13px;line-height:1.5;color:var(--g700);}
+  .note{margin:18px 0 0;padding:14px 16px;background:var(--cream);border-radius:10px;font-size:12.5px;line-height:1.5;color:var(--g700);}
+  .foot{margin:22px 0 0;padding-top:14px;border-top:1px solid var(--g100);font-size:12px;color:var(--g500);}
+  .foot-q{color:var(--arc-red);font-weight:800;}
+  .foot a{color:var(--g500);text-decoration:none;font-weight:600;}
+  .rcmark{width:22px;height:22px;}
+</style>
+</head>
+<body>
+  <div class="page">
+    <header class="head">
+      <svg class="rcmark" viewBox="0 0 32 32"><rect x="12" y="4" width="8" height="24" fill="#ED1B2E"/><rect x="4" y="12" width="24" height="8" fill="#ED1B2E"/></svg>
+      <p class="eyebrow">BioMed Capabilities</p>
+      <span style="font-size:12px;color:var(--g500);">American Red Cross · BioMed</span>
+    </header>
+
+    <p class="meta">Status update · for Troy Rathbun &amp; Jennifer · June 7, 2026</p>
+    <h1 class="title">Where We Are &amp; What's Outstanding</h1>
+    <p class="lead">The core experience tested well — we're refining, not rebuilding. The structural changes and the biggest new feature (Explore Regions) are in and working on real Red Cross data.</p>
+
+    <div class="callout">
+      <svg width="30" height="30" viewBox="0 0 32 32"><rect x="12" y="4" width="8" height="24" fill="#ED1B2E"/><rect x="4" y="12" width="24" height="8" fill="#ED1B2E"/></svg>
+      <div>
+        <strong>Refining, Not Rebuilding</strong>
+        <span>Remaining work is content depth in Collections, a few Ops Workbench enhancements, and items waiting on Troy or Marketing &amp; Communications.</span>
+      </div>
+    </div>
+
+    <h2 class="sec">Done</h2>
+    <div class="group" data-tone="done">
+      <h3>Shipped &amp; live</h3>
+      <ul>
+        <li>Home page renamed to “Inside BioMed Capabilities.”</li>
+        <li>Nine-tile structure confirmed, ordered foundation → regional.</li>
+        <li>Tile 6 — BioMed Blood Map merged into the Jurisdiction Dashboard (one authoritative geography view).</li>
+        <li>Tile 9 — Explore Regions built live on real layers: region selection, FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons.</li>
+        <li>Content moves: Clara AI / RapidPass / Track Your Blood → Blood Journey; Sickle Cell → Explore Regions.</li>
+        <li>Volunteer sections in Blood 101, Blood Journey, Hospital Distribution, and Collections.</li>
+        <li>Data Sources &amp; Methodology “About the Data” credibility layer added app-wide.</li>
+      </ul>
+    </div>
+
+    <h2 class="sec">In Progress</h2>
+    <div class="group" data-tone="progress">
+      <h3>Building now</h3>
+      <ul>
+        <li><b>Tile 5 — BioMed Collections:</b> Mobile Collections + Fixed Sites (incl. Fixed Site Growth Program), Diversity / population section, Division/Region/Chapter filters, territory map, BioMed-vs-Humanitarian-Services boundary disclaimer.</li>
+        <li><b>Tile 7 — Operations Workbench:</b> design retained; adding GOAT boundary bookmarks (Division/Region/District/Chapter), boundary disclaimer, and confirming the infrastructure layers.</li>
+      </ul>
+    </div>
+
+    <h2 class="sec">Outstanding — Needs Troy</h2>
+    <div class="group" data-tone="troy">
+      <h3>Data &amp; decisions</h3>
+      <ul>
+        <li>Future Demand — verify the flagged numbers and confirm sources before finalizing.</li>
+        <li>Tile 8 — Hospital Network: held for Troy's dashboard concept (placeholder, not over-built).</li>
+        <li>Platelet (SDP) trade areas — confirm the blessed current SDP layer before adding a red-cell / platelet toggle.</li>
+        <li>Regional detail metrics (chapters, hospitals served, staging, products distributed) — “to be determined.”</li>
+        <li>Complete data sources list to finish populating About the Data.</li>
+      </ul>
+    </div>
+
+    <h2 class="sec">Outstanding — Needs Jennifer / Marketing &amp; Communications</h2>
+    <div class="group" data-tone="jennifer">
+      <h3>Language sign-off</h3>
+      <ul>
+        <li>Validate Blood 101 content and all volunteer, diversity, and Sickle Cell language.</li>
+        <li>Confirm which Future Demand figures were the concern.</li>
+      </ul>
+    </div>
+
+    <p class="note"><b>Note on data —</b> Where BioMed-specific regional numbers aren't available yet, regional geography and population context use Red Cross Humanitarian Services geography — labeled as such, for discussion, until BioMed figures are finalized.</p>
+
+    <p class="foot"><span class="foot-q">Questions or suggestions?</span> Jeff Franzen · <a href="mailto:jeff.franzen2@redcross.org">jeff.franzen2@redcross.org</a> · Live at biomed.jbf.com</p>
+  </div>
+</body>
+</html>

@@ -471,3 +471,24 @@
   line-height: 1.5;
   color: var(--arc-gray-700, #4a4a4a);
 }
+
+.hub__devnote-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--arc-red, #ed1b2e);
+  color: #fff;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hub__devnote-download:hover {
+  filter: brightness(0.94);
+}
+.hub__devnote-download svg {
+  color: #fff;
+}
