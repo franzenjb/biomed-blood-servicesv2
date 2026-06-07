@@ -5,7 +5,7 @@
   grid-template-rows: auto auto 1fr;
   background: var(--arc-cream, #f7f5f2);
   color: var(--arc-black, #1a1a1a);
-  font-family: var(--font-body);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   overflow: hidden;
 }
 
@@ -69,7 +69,7 @@
 
 .jd__title strong {
   display: block;
-  font-family: var(--font-headline);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 17px;
   line-height: 1.1;
 }
@@ -189,7 +189,6 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-transform: uppercase;
   color: var(--arc-gray-500, #737373);
   white-space: nowrap;
   overflow: hidden;
@@ -197,7 +196,7 @@
 }
 
 .jd__kpi-value {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 26px;
   font-weight: 700;
   color: var(--arc-black, #1a1a1a);
@@ -400,7 +399,7 @@
 
 .jd__panel-head h2 {
   margin: 0;
-  font-family: var(--font-headline);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 15px;
   color: var(--arc-black, #1a1a1a);
 }
@@ -445,7 +444,6 @@
 .jd__field span {
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--arc-gray-500, #737373);
 }
@@ -550,7 +548,6 @@
   font-style: normal;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
   color: var(--arc-gray-500, #737373);
   flex-shrink: 0;
 }
@@ -607,7 +604,6 @@
 .jd__legend h3 {
   margin: 0 0 8px;
   font-size: 11px;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--arc-gray-500, #737373);
 }
@@ -801,7 +797,7 @@
 }
 
 .jd__site-bar b {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 11px;
   font-weight: 500;
   color: var(--arc-gray-700, #4a4a4a);
@@ -853,10 +849,9 @@
 
 .jd-card__eyebrow {
   margin: 0;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 11px;
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--arc-red, #ed1b2e);
 }
@@ -869,7 +864,7 @@
 
 .jd-card__hero h3 {
   margin: 2px 0 0;
-  font-family: var(--font-headline);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 26px;
   line-height: 1.12;
   font-weight: 700;
@@ -897,7 +892,7 @@
   border-radius: 999px;
   background: var(--arc-cream, #f7f5f2);
   border: 1px solid var(--arc-gray-100, #e5e5e5);
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--arc-black, #1a1a1a);
@@ -907,7 +902,6 @@
   font-style: normal;
   font-family: var(--font-body);
   font-size: 10px;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--arc-gray-500, #737373);
 }
@@ -928,7 +922,6 @@
   margin: 0;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--arc-gray-500, #737373);
 }
@@ -957,7 +950,7 @@
 }
 
 .jd-card__stat strong {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 30px;
   font-weight: 600;
   line-height: 1;
@@ -971,7 +964,6 @@
 .jd-card__stat span {
   font-size: 11px;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--arc-gray-500, #737373);
 }
@@ -1150,7 +1142,7 @@
 
 .jd__signin h2 {
   margin: 0;
-  font-family: var(--font-headline);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 20px;
 }
 
@@ -1211,7 +1203,6 @@
   font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 13px;
   font-weight: 800;
-  text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #111318;
 }
@@ -1344,7 +1335,6 @@
 .jd__modal-stat span {
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--arc-gray-500, #737373);
 }
