@@ -76,6 +76,29 @@ async function enrichGraphic(graphic: Graphic): Promise<Graphic> {
   return graphic;
 }
 
+type CoincidentHit = { key: string; info: FeatureInfo; title: string; layerTitle: string };
+
+// Distinct POINT features under the click pixel, de-duped by layer + object id. Drives the
+// stacked-marker picker; polygons are excluded so a single point click never triggers it.
+function collectPointHits(graphics: Graphic[]): CoincidentHit[] {
+  const seen = new Set<string>();
+  const hits: CoincidentHit[] = [];
+  graphics.forEach((graphic, index) => {
+    const layer = ((graphic as Graphic & { sourceLayer?: Layer }).sourceLayer ?? graphic.layer) as
+      | (Layer & { geometryType?: string; objectIdField?: string })
+      | undefined;
+    if (!layer || layer.geometryType !== "point") return;
+    const objectId = layer.objectIdField ? graphic.attributes?.[layer.objectIdField] : undefined;
+    const key = `${layer.id ?? "layer"}::${objectId ?? `idx-${index}`}`;
+    if (seen.has(key)) return;
+    const info = buildFeatureInfo([graphic]);
+    if (!info) return;
+    seen.add(key);
+    hits.push({ key, info, title: info.title, layerTitle: info.sections[0]?.layerTitle ?? "Feature" });
+  });
+  return hits;
+}
+
 function errorMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : `${error}`;
   if (/abort|cancel|closed/i.test(message)) return "Sign-in was closed before it completed.";
@@ -99,6 +122,8 @@ export default function MapShell({
   const [showSecureMap, setShowSecureMap] = useState(false);
   const [snapshots, setSnapshots] = useState<BioMedLayerSnapshot[]>([]);
   const [activeFeature, setActiveFeature] = useState<FeatureInfo | null>(null);
+  const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
+  const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [placeQuery, setPlaceQuery] = useState("");
   const [placeStatus, setPlaceStatus] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -189,10 +214,24 @@ export default function MapShell({
               .filter((result) => result.type === "graphic" && result.graphic?.layer)
               .map((result) => result.graphic as Graphic);
             const enriched = await Promise.all(graphics.map(enrichGraphic));
-            const info = buildFeatureInfo(enriched);
-            setActiveFeature(info);
-            if (info) setRightOpen(true);
+            const pointHits = collectPointHits(enriched);
+            if (pointHits.length > 1) {
+              // Stacked point icons: let the user pick which one.
+              setCoincidentHits(pointHits);
+              setActiveHitKey(null);
+              setActiveFeature(null);
+              setRightOpen(true);
+            } else {
+              // Single point (or polygons only): keep the merged context card.
+              setCoincidentHits([]);
+              setActiveHitKey(null);
+              const info = buildFeatureInfo(enriched);
+              setActiveFeature(info);
+              if (info) setRightOpen(true);
+            }
           } catch {
+            setCoincidentHits([]);
+            setActiveHitKey(null);
             setActiveFeature(null);
           }
         });
@@ -422,7 +461,38 @@ export default function MapShell({
                 </button>
               </div>
               <div className="map-shell__panel-body">
-                <FeatureDetails feature={activeFeature} />
+                {coincidentHits.length > 1 && (
+                  <section className="map-shell__coincident" data-testid="map-coincident-picker" aria-label="Overlapping features at this point">
+                    <header className="map-shell__coincident-head">
+                      <strong>{coincidentHits.length} features here</strong>
+                      <span>Stacked markers — pick one</span>
+                    </header>
+                    <div className="map-shell__coincident-list">
+                      {coincidentHits.map((hit) => (
+                        <button
+                          key={hit.key}
+                          type="button"
+                          className={`map-shell__coincident-item${hit.key === activeHitKey ? " is-active" : ""}`}
+                          aria-pressed={hit.key === activeHitKey}
+                          onClick={() => {
+                            setActiveHitKey(hit.key);
+                            setActiveFeature(hit.info);
+                          }}
+                        >
+                          <strong>{hit.title}</strong>
+                          <span>{hit.layerTitle}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                )}
+                {activeFeature ? (
+                  <FeatureDetails feature={activeFeature} />
+                ) : coincidentHits.length > 1 ? (
+                  <p className="map-shell__coincident-hint">Select one of the stacked features above.</p>
+                ) : (
+                  <FeatureDetails feature={activeFeature} />
+                )}
               </div>
             </>
           )}

@@ -1197,6 +1197,7 @@ type CoincidentHit = {
   title: string;
   layerTitle: string;
   category: MasterLayerCategory;
+  isPoint: boolean;
 };
 
 // All distinct operational features under the click pixel, de-duped by layer + object id
@@ -1221,6 +1222,7 @@ function collectOperationalHits(results: unknown[], map?: ReturnType<typeof getM
         title: featureDisplayTitle(summary) || layerTitle || "Feature",
         layerTitle: summary.layerTitle || layerTitle,
         category: summary.category,
+        isPoint: layer?.geometryType === "point",
       },
       priority: hitGraphicPriority(graphic),
       index,
@@ -1823,9 +1825,11 @@ export default function BiomedOpsWorkbenchPage({
           const hit = await view.hitTest(event);
           const currentMap = getMapElementMap(mapElement);
           const hits = collectOperationalHits(hit.results, currentMap);
-          if (hits.length > 1) {
-            // Stacked / coincident markers: let the user pick which one instead of guessing.
-            setCoincidentHits(hits);
+          // Only stacked POINT icons trigger the picker — a single point always sits over
+          // county/ZIP polygons, and priority already resolves point-over-polygon.
+          const pointHits = hits.filter((entry) => entry.isPoint);
+          if (pointHits.length > 1) {
+            setCoincidentHits(pointHits);
             setSelectedFeature(null);
             setSelectedGraphic(null);
             setRightOpen(true);

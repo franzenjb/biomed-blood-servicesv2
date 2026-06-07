@@ -181,7 +181,7 @@ function hitGraphicPriority(graphic: Graphic) {
   return 60; // other operational polygons sit above jurisdiction boundaries
 }
 
-type CoincidentHit = { key: string; graphic: Graphic; title: string; layerTitle: string };
+type CoincidentHit = { key: string; graphic: Graphic; title: string; layerTitle: string; isPoint: boolean };
 
 // All distinct operational features under the click pixel, de-duped by layer + object id
 // and ranked by hitGraphicPriority (points first). Drives the stacked-marker picker.
@@ -203,7 +203,7 @@ function collectCoincidentHits(
     const layerTitle = (layer as { title?: string }).title ?? "Feature";
     const summary = summarizeMasterFeature(graphic, layerTitle);
     ranked.push({
-      hit: { key, graphic, title: summary.title || layerTitle, layerTitle: summary.layerTitle || layerTitle },
+      hit: { key, graphic, title: summary.title || layerTitle, layerTitle: summary.layerTitle || layerTitle, isPoint: layer.geometryType === "point" },
       priority: hitGraphicPriority(graphic),
       index,
     });
@@ -1269,9 +1269,11 @@ export default function JurisdictionDashboardPage() {
           // Only real operational layers — drop cleaned-boundary overlays and basemap.
           const opLayerIds = new Set(collectArcJurisdictionLayers(getMapElementMap(mapElement)).map((layer) => String(layer.id)));
           const hits = collectCoincidentHits(hit.results as Array<{ type: string; graphic?: Graphic }>, opLayerIds);
-          if (hits.length > 1) {
-            // Stacked / coincident markers: let the user pick which one.
-            setCoincidentHits(hits);
+          // Only stacked POINT icons trigger the picker — a single point always sits over
+          // county/ZIP polygons, and priority already resolves point-over-polygon.
+          const pointHits = hits.filter((entry) => entry.isPoint);
+          if (pointHits.length > 1) {
+            setCoincidentHits(pointHits);
             setActiveHitKey(null);
             setActiveFeature(null);
             setRightTab("detail");
