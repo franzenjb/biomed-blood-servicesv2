@@ -1191,13 +1191,6 @@ function raiseZipCollectionAbovePolygons(map?: ReturnType<typeof getMapElementMa
   top.toArray().filter(isPointIconLayer).forEach((layer) => top.reorder?.(layer, lastIndex()));
 }
 
-function selectBestOperationalHit(results: unknown[], map?: ReturnType<typeof getMapElementMap>) {
-  return results
-    .map((candidate, index) => ({ candidate: candidate as { graphic?: Graphic }, index }))
-    .filter(({ candidate }) => isOperationalHitGraphic(candidate.graphic, map))
-    .sort((a, b) => hitGraphicPriority(b.candidate.graphic) - hitGraphicPriority(a.candidate.graphic) || a.index - b.index)[0]?.candidate;
-}
-
 type CoincidentHit = {
   key: string;
   graphic: Graphic;
@@ -1984,6 +1977,7 @@ export default function BiomedOpsWorkbenchPage({
     result.layer.visible = true;
     refreshLayers();
     const summary = summarizeMasterFeature(result.graphic, result.layerTitle, true);
+    setCoincidentHits([]);
     setSelectedFeature(summary);
     setSelectedGraphic(result.graphic);
     setExpandedGroups((current) => ({ ...current, [result.category]: true }));
@@ -2005,6 +1999,7 @@ export default function BiomedOpsWorkbenchPage({
     setQuery("");
     setSearchResults([]);
     setSearchStatus("idle");
+    setCoincidentHits([]);
     setSelectedFeature(null);
     setSelectedGraphic(null);
     setSpatialRollup(null);
@@ -2387,20 +2382,49 @@ export default function BiomedOpsWorkbenchPage({
             )}
 
             {rightTab === "detail" && (
-              <section
-                className={`opsv2__selected-card${selectedFeature?.category === "hospitals" ? " opsv2__selected-card--hospital" : ""}`}
-                data-testid={selectedFeature?.category === "hospitals" ? "ops-hospital-feature-card" : "ops-selected-feature-card"}
-              >
-                {selectedFeature ? (
-                  selectedFeature.category === "hospitals" ? (
-                    <HospitalFeatureCard feature={selectedFeature} />
-                  ) : (
-                    <FeatureInfoCard feature={selectedFeature} />
-                  )
-                ) : (
-                  <p className="opsv2__empty">No feature selected.</p>
+              <>
+                {coincidentHits.length > 1 && (
+                  <section className="opsv2__coincident" data-testid="ops-coincident-picker" aria-label="Overlapping features at this point">
+                    <header className="opsv2__coincident-head">
+                      <strong>{coincidentHits.length} features here</strong>
+                      <span>Stacked markers — pick one</span>
+                    </header>
+                    <div className="opsv2__coincident-list">
+                      {coincidentHits.map((hit) => {
+                        const active = selectedGraphic === hit.graphic;
+                        return (
+                          <button
+                            key={hit.key}
+                            type="button"
+                            className={`opsv2__coincident-item${active ? " is-active" : ""}`}
+                            aria-pressed={active}
+                            onClick={() => selectCoincidentHit(hit)}
+                          >
+                            <strong>{hit.title}</strong>
+                            <span>{hit.layerTitle}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
                 )}
-              </section>
+                <section
+                  className={`opsv2__selected-card${selectedFeature?.category === "hospitals" ? " opsv2__selected-card--hospital" : ""}`}
+                  data-testid={selectedFeature?.category === "hospitals" ? "ops-hospital-feature-card" : "ops-selected-feature-card"}
+                >
+                  {selectedFeature ? (
+                    selectedFeature.category === "hospitals" ? (
+                      <HospitalFeatureCard feature={selectedFeature} />
+                    ) : (
+                      <FeatureInfoCard feature={selectedFeature} />
+                    )
+                  ) : (
+                    <p className="opsv2__empty">
+                      {coincidentHits.length > 1 ? "Select one of the stacked features above." : "No feature selected."}
+                    </p>
+                  )}
+                </section>
+              </>
             )}
 
             {rightTab === "list" && (
