@@ -764,6 +764,49 @@
   display: block;
 }
 
+.opsv2__tier-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.opsv2__tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #e4e8ec;
+  border-radius: 999px;
+  background: #fff;
+  padding: 2px 8px 2px 6px;
+  color: #3a434d;
+  font-family: var(--font-data);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  line-height: 1.4;
+}
+
+.opsv2__tier i {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(17, 22, 28, 0.18);
+}
+
+.opsv2__tier[data-tier="1"] i {
+  background: #d71920;
+}
+
+.opsv2__tier[data-tier="2"] i {
+  background: #1f6fbf;
+}
+
+.opsv2__tier[data-tier="3"] i {
+  background: #2f8f3e;
+}
+
 .opsv2__selected-card {
   display: grid;
   gap: 8px;

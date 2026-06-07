@@ -1887,6 +1887,22 @@ export default function BiomedOpsWorkbenchPage({
                                 <strong>{layer.title}</strong>
                               </span>
                               <small>{layer.summary}</small>
+                              {layer.category === "hospitals" && (
+                                <span className="opsv2__tier-legend" aria-label="Hospital tiers">
+                                  <span className="opsv2__tier" data-tier="1">
+                                    <i aria-hidden="true" />
+                                    Tier 1
+                                  </span>
+                                  <span className="opsv2__tier" data-tier="2">
+                                    <i aria-hidden="true" />
+                                    Tier 2
+                                  </span>
+                                  <span className="opsv2__tier" data-tier="3">
+                                    <i aria-hidden="true" />
+                                    Tier 3
+                                  </span>
+                                </span>
+                              )}
                             </span>
                           </button>
                         );
