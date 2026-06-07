@@ -1,8 +1,10 @@
 import type ArcGISMap from "@arcgis/core/Map";
 import type Graphic from "@arcgis/core/Graphic";
 import type Geometry from "@arcgis/core/geometry/Geometry";
+import type Point from "@arcgis/core/geometry/Point";
 import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Field from "@arcgis/core/layers/support/Field";
+import * as geometryEngine from "@arcgis/core/geometry/geometryEngine";
 import { collectArcJurisdictionLayers, safeLayerTitle } from "./biomedMapSuite";
 import { classifyMasterLayer, type MasterFeatureSummary, type MasterLayerCategory } from "./masterMapFeatures";
 
@@ -153,8 +155,72 @@ function emptyRollup(status: BioMedSpatialRollupStatus, focus: MasterFeatureSumm
   };
 }
 
+// Cap for the centroid-assignment path. Counties hold tens of ZIPs; only huge
+// selections (divisions) exceed this, where border spillover is negligible and
+// downloading every polygon would be wasteful — those fall back to intersects.
+const CENTROID_ROLLUP_MAX = 800;
+
+function featureCentroid(geometry: Geometry | null | undefined): Point | null {
+  if (!geometry) return null;
+  const polygonCentroid = (geometry as Geometry & { centroid?: Point }).centroid;
+  if (polygonCentroid) return polygonCentroid;
+  const center = (geometry as Geometry & { extent?: { center?: Point } }).extent?.center;
+  return center ?? null;
+}
+
+// Polygon-vs-polygon rollups (e.g. ZIPs within a county) must assign each
+// feature to a single area by its centroid. "intersects" over-counts: a ZIP that
+// merely clips the county border would add its full totals to that county.
+async function queryPolygonLayerByCentroid(
+  layer: FeatureLayer,
+  geometry: Geometry,
+  metricFields: Field[],
+): Promise<BioMedSpatialRollupRow | null> {
+  const query = layer.createQuery();
+  query.geometry = geometry;
+  query.spatialRelationship = "intersects";
+  query.returnGeometry = true;
+  query.outSpatialReference = geometry.spatialReference;
+  query.outFields = metricFields.map((field) => field.name);
+  query.maxRecordCountFactor = 5;
+
+  const result = await layer.queryFeatures(query);
+  const features = result.features ?? [];
+  if (features.length > CENTROID_ROLLUP_MAX) return null; // too big — let caller fall back
+
+  let count = 0;
+  const sums = metricFields.map(() => 0);
+  for (const feature of features) {
+    const centroid = featureCentroid(feature.geometry);
+    const intersects = (geometryEngine as unknown as { intersects: (a: Geometry, b: Geometry) => boolean }).intersects;
+    if (!centroid || !intersects(geometry, centroid)) continue;
+    count += 1;
+    metricFields.forEach((field, index) => {
+      const value = Number(feature.attributes?.[field.name]);
+      if (Number.isFinite(value)) sums[index] += value;
+    });
+  }
+
+  const metrics: BioMedSpatialRollupMetric[] = [];
+  metricFields.forEach((field, index) => {
+    const value = formatMetricValue(sums[index]);
+    if (value > 0) metrics.push({ label: formatFieldLabel(field), value });
+  });
+
+  const title = safeLayerTitle(layer);
+  const category = getLayerCategory(title);
+  return { id: layer.id, title, category, categoryLabel: categoryLabels[category], count, metrics };
+}
+
 async function queryLayerRollup(layer: FeatureLayer, geometry: Geometry): Promise<BioMedSpatialRollupRow> {
   await layer.load?.();
+
+  const metricFieldsAll = metricFieldsForLayer(layer);
+  const focusIsPolygon = geometry.type === "polygon";
+  if (focusIsPolygon && layer.geometryType === "polygon" && metricFieldsAll.length > 0) {
+    const centroidRow = await queryPolygonLayerByCentroid(layer, geometry, metricFieldsAll);
+    if (centroidRow) return centroidRow;
+  }
 
   const countQuery = layer.createQuery();
   countQuery.geometry = geometry;
