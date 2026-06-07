@@ -978,6 +978,35 @@
   --accent-soft: #e7f0f9;
 }
 
+.opsv2__feature-body[data-tone="tier1"] {
+  --accent: #d71920;
+  --accent-soft: #fdebec;
+}
+
+.opsv2__feature-body[data-tone="tier2"] {
+  --accent: #1f6fbf;
+  --accent-soft: #e7f0f9;
+}
+
+.opsv2__feature-body[data-tone="tier3"] {
+  --accent: #2f8f3e;
+  --accent-soft: #e8f3ea;
+}
+
+.opsv2__hospital-tier {
+  border-left: 3px solid var(--accent, #e1e5ea) !important;
+}
+
+.opsv2__tier-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 999px;
+  background: var(--accent, #697480);
+  vertical-align: middle;
+}
+
 .opsv2__feature-badge {
   display: inline-flex;
   align-items: center;

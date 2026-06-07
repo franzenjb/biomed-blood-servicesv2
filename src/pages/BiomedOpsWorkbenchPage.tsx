@@ -841,6 +841,8 @@ function hospitalDetailRows(feature: MasterFeatureSummary) {
 function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   const title = hospitalAttribute(feature, ["Hospital", "HospitalName", "Hospital Name"]) || featureDisplayTitle(feature);
   const tier = hospitalAttribute(feature, ["Final Tier", "FINAL_TIER", "Tier"]);
+  const tierNum = tier && !isJunkValue(tier) ? (tier.match(/[123]/)?.[0] ?? "") : "";
+  const hospitalTone = tierNum ? `tier${tierNum}` : "blue";
   const distributionSite = hospitalAttribute(feature, ["Distribution Site", "DistributionSite"]);
   const priority = hospitalPriority(feature);
   const address = composeFeatureAddress(feature);
@@ -860,13 +862,13 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   const facts = detailRows.filter((row) => !GEO_PILL_LABELS.has(row.label.toLowerCase())).slice(0, 8);
 
   return (
-    <div className="opsv2__feature-body" data-tone="blue">
+    <div className="opsv2__feature-body" data-tone={hospitalTone}>
       <header className="opsv2__feature-hero opsv2__feature-hero--hospital">
         <p className="opsv2__eyebrow">Selected hospital</p>
         <h2>{title}</h2>
         <span className="opsv2__feature-badge">
           <i aria-hidden="true" />
-          Hospital location
+          {tierNum ? `Tier ${tierNum} hospital` : "Hospital location"}
         </span>
       </header>
 
@@ -890,9 +892,12 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
       {(tier || distributionSite || priority) && (
         <div className="opsv2__hospital-snapshot" aria-label="Hospital selection summary">
           {tier && !isJunkValue(tier) && (
-            <div>
+            <div className="opsv2__hospital-tier">
               <span>Tier</span>
-              <strong>{tier}</strong>
+              <strong>
+                {tierNum && <i className="opsv2__tier-dot" aria-hidden="true" />}
+                {tier}
+              </strong>
             </div>
           )}
           {distributionSite && !isJunkValue(distributionSite) && (
