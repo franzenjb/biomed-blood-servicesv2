@@ -14,7 +14,9 @@ import {
   Layers,
   List,
   MapPinned,
+  PanelLeftClose,
   PanelLeftOpen,
+  PanelRightClose,
   PanelRightOpen,
   RotateCcw,
   Search,
@@ -1878,7 +1880,7 @@ export default function BiomedOpsWorkbenchPage({
               <p>{layerCounts.visible} active of {layerCounts.total} layers.</p>
             </div>
             <button type="button" aria-label="Hide layer controls" onClick={() => setLeftOpen(false)}>
-              <PanelLeftOpen aria-hidden="true" size={17} />
+              <PanelLeftClose aria-hidden="true" size={17} />
             </button>
           </div>
           <label className="opsv2__search">
@@ -1994,7 +1996,7 @@ export default function BiomedOpsWorkbenchPage({
         </aside>
       ) : (
         <button type="button" className="opsv2__reopen opsv2__reopen--left" onClick={() => setLeftOpen(true)}>
-          <PanelRightOpen aria-hidden="true" size={16} />
+          <PanelLeftOpen aria-hidden="true" size={16} />
           Layers
         </button>
       )}
@@ -2009,7 +2011,7 @@ export default function BiomedOpsWorkbenchPage({
               <p>{currentSubtitle}</p>
             </div>
             <button type="button" aria-label={`Hide ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(false)}>
-              <PanelRightOpen aria-hidden="true" size={17} />
+              <PanelRightClose aria-hidden="true" size={17} />
             </button>
           </div>
           <div className="opsv2__right-tabs" role="tablist" aria-label={`${resultLabel} result views`}>
@@ -2138,7 +2140,7 @@ export default function BiomedOpsWorkbenchPage({
         </aside>
       ) : (
         <button type="button" className="opsv2__reopen opsv2__reopen--right" onClick={() => setRightOpen(true)}>
-          <PanelLeftOpen aria-hidden="true" size={16} />
+          <PanelRightOpen aria-hidden="true" size={16} />
           Feature
         </button>
       )}

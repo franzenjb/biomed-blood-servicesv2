@@ -35,20 +35,19 @@ export default function HubPage() {
           </Link>
         ))}
 
-        <a
-          href="/dashboard"
-          target="_blank"
-          rel="noreferrer"
-          className="hub__card hub__card--map hub__card--tilt"
-          data-testid="hub-card-map-dashboard"
+        <Link
+          to="/regions"
+          className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/regions.jpg)" }}
+          data-testid="hub-card-explore-regions"
         >
           <span className="hub__scrim" />
           <span className="hub__index mono">06</span>
           <span className="hub__body">
-            <span className="hub__title">BioMed Map &amp; Dashboard</span>
-            <span className="hub__q">Live ArcGIS map plus FY25 jurisdiction KPIs — drives, collections &amp; SDP by Biomed geography.</span>
+            <span className="hub__title">Explore Regions</span>
+            <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>
           </span>
-        </a>
+        </Link>
 
         <Link
           to="/biomed-ops-workbench"
@@ -79,16 +78,16 @@ export default function HubPage() {
         </Link>
 
         <Link
-          to="/regions"
+          to="/biomed-layer-atlas"
           className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/regions.jpg)" }}
-          data-testid="hub-card-regions"
+          style={{ backgroundImage: "url(/covers/tools/ops-workbench.jpg)" }}
+          data-testid="hub-card-layer-atlas"
         >
           <span className="hub__scrim" />
           <span className="hub__index mono">09</span>
           <span className="hub__body">
-            <span className="hub__title">Explore Regions</span>
-            <span className="hub__q">Local story and community impact — by Red Cross region and chapter.</span>
+            <span className="hub__title">Atlas Map</span>
+            <span className="hub__q">Inspect the full BioMed layer atlas with live map controls.</span>
           </span>
         </Link>
       </nav>
