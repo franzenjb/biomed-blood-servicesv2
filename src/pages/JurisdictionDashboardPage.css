@@ -237,9 +237,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(247, 245, 242, 0.92);
+  background: #eef2f4;
   color: var(--arc-gray-700, #4a4a4a);
-  z-index: 3;
+  z-index: 5;
 }
 
 .jd__loading strong {
@@ -1354,8 +1354,13 @@
   color: var(--arc-gray-500, #737373);
 }
 
+.jd__modal-foot-q {
+  color: var(--arc-red, #ed1b2e);
+  font-weight: 800;
+}
+
 .jd__modal-foot a {
-  color: var(--arc-info, #1e4a6d);
+  color: var(--arc-gray-500, #737373);
   text-decoration: none;
   font-weight: 600;
 }

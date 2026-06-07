@@ -757,7 +757,9 @@ export default function JurisdictionDashboardPage() {
       return;
     }
     setMapReady(false);
-    const timer = window.setTimeout(() => setMapReady(true), 9000);
+    // Last-resort only: hydrate()'s finally{} is the real reveal. Keep this long
+    // so it never reveals an unstyled map mid-load on a slow connection.
+    const timer = window.setTimeout(() => setMapReady(true), 20000);
     return () => window.clearTimeout(timer);
   }, [isAuthenticated]);
 
@@ -1160,50 +1162,73 @@ export default function JurisdictionDashboardPage() {
       if (!isAuthenticated) return;
       const mapElement = mapRef.current;
       const view = mapElement?.view as (MapView & { popupEnabled?: boolean; popup?: { close?: () => void } }) | undefined;
-      if (!mapElement || !view) return;
+      if (!mapElement || !view) {
+        setMapReady(true);
+        return;
+      }
 
-      await view.when?.();
-      if (cancelled) return;
-      setMapReady(true);
+      // Reveal the map ONLY after every step below — loaded, styled, markered,
+      // popups off, preset applied — so the user never sees raw default icons or
+      // a half-built map. finally{} guarantees the loader never sticks.
+      try {
+        await view.when?.();
+        if (cancelled) return;
 
-      const map = getMapElementMap(mapElement);
-      if (!map) return;
+        const map = getMapElementMap(mapElement);
+        if (!map) return;
 
-      // Pull in supplemental portal layers (mobile collections) before styling.
-      await addArcgisPortalLayers(map, jurisdictionDashboardSupplementalLayers);
-      if (cancelled) return;
+        // Add supplemental portal layers (mobile collections) first.
+        await addArcgisPortalLayers(map, jurisdictionDashboardSupplementalLayers);
+        if (cancelled) return;
 
-      hideBasemapUtilityLayers(map);
-      await applyPresentationMapStyle(map, view);
-      await applyPresentationMarkers(map);
-      if (cancelled) return;
+        // Load EVERY operational feature layer before styling so none flash with
+        // their default ArcGIS symbology while the view is already visible.
+        const featureLayers = collectArcJurisdictionLayers(map).filter(isQueryableFeatureLayer);
+        await Promise.allSettled(featureLayers.map((layer) => layer.load?.()));
+        if (cancelled) return;
 
-      // Kill default ArcGIS popups everywhere — info goes to the right panel.
-      view.popupEnabled = false;
-      view.popup?.close?.();
-      collectArcJurisdictionLayers(map).forEach((layer) => {
-        if ("popupEnabled" in layer) (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
-        if ("popupTemplate" in layer) (layer as Layer & { popupTemplate?: unknown }).popupTemplate = null;
-      });
+        hideBasemapUtilityLayers(map);
+        await applyPresentationMapStyle(map, view);
+        await applyPresentationMarkers(map);
+        if (cancelled) return;
 
-      // Discover backbone layers, seed filter options + first KPI pass.
-      const featureLayers = collectArcJurisdictionLayers(map).filter(isQueryableFeatureLayer);
-      await Promise.allSettled(featureLayers.map((layer) => layer.load?.()));
-      if (cancelled) return;
-      discoverLayers(map);
+        // Kill default ArcGIS popups everywhere — info goes to the right panel.
+        view.popupEnabled = false;
+        view.popup?.close?.();
+        collectArcJurisdictionLayers(map).forEach((layer) => {
+          if ("popupEnabled" in layer) (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
+          if ("popupTemplate" in layer) (layer as Layer & { popupTemplate?: unknown }).popupTemplate = null;
+        });
 
-      // Start at the minimal preset and track per-layer visibility changes.
-      applyPreset("minimal");
-      collectArcJurisdictionLayers(map).forEach((layer) => {
-        const handle = (layer as Layer & { watch?: (name: string, cb: () => void) => WatchHandle }).watch?.("visible", refreshLayerSnaps);
-        if (handle) handles.push(handle);
-      });
-      refreshLayerSnaps();
+        discoverLayers(map);
 
-      await refreshOptionsFor("all", EMPTY_SELECTION);
-      await computeKpis(EMPTY_SELECTION);
-      await loadSites(EMPTY_SELECTION);
+        // Start at the minimal preset and track per-layer visibility changes.
+        applyPreset("minimal");
+        collectArcJurisdictionLayers(map).forEach((layer) => {
+          const handle = (layer as Layer & { watch?: (name: string, cb: () => void) => WatchHandle }).watch?.("visible", refreshLayerSnaps);
+          if (handle) handles.push(handle);
+        });
+        refreshLayerSnaps();
 
+        attachClickHandler(view);
+
+        // Everything is applied — now reveal the finished map.
+        if (!cancelled) setMapReady(true);
+
+        // Seed filters/KPIs/sites after reveal (does not gate the map).
+        await refreshOptionsFor("all", EMPTY_SELECTION);
+        if (cancelled) return;
+        await computeKpis(EMPTY_SELECTION);
+        await loadSites(EMPTY_SELECTION);
+      } catch {
+        // swallow — finally still reveals so the loader can't get stuck
+      } finally {
+        if (!cancelled) setMapReady(true);
+      }
+    }
+
+    function attachClickHandler(view: MapView & { popup?: { close?: () => void } }) {
+      const mapElement = mapRef.current;
       const clickHandle = view.on("click", async (event) => {
         try {
           view.popup?.close?.();
@@ -1677,7 +1702,7 @@ export default function JurisdictionDashboardPage() {
               </p>
 
               <p className="jd__modal-foot">
-                Question or suggestion?{" "}
+                <span className="jd__modal-foot-q">Question or suggestions?</span>{" "}
                 <a href="mailto:jeff.franzen2@redcross.org?subject=Jurisdiction%20Dashboard%20%E2%80%94%20question%2Fsuggestion">
                   Email Jeff Franzen
                 </a>
