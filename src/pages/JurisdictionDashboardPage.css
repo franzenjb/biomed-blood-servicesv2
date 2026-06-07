@@ -1208,12 +1208,12 @@
 .jd__modal-eyebrow {
   margin: 0;
   flex: 1;
-  font-family: var(--font-data);
-  font-size: 12px;
-  font-weight: 500;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--arc-black, #1a1a1a);
+  letter-spacing: 0.1em;
+  color: #111318;
 }
 
 .jd__modal-x {
@@ -1247,11 +1247,12 @@
 
 .jd__modal-title {
   margin: 0 0 10px;
-  font-family: var(--font-headline);
-  font-size: 26px;
-  line-height: 1.15;
-  font-weight: 700;
-  color: var(--arc-black, #1a1a1a);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 30px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #111318;
 }
 
 .jd__modal-lead {
@@ -1274,8 +1275,9 @@
 
 .jd__modal-callout strong {
   display: block;
-  font-family: var(--font-headline);
-  font-size: 16px;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--arc-red, #ed1b2e);
 }
 
@@ -1286,11 +1288,12 @@
 }
 
 .jd__modal-body h3 {
-  margin: 20px 0 6px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--arc-red-deep, #c41e3a);
+  margin: 22px 0 8px;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.005em;
+  color: #111318;
 }
 
 .jd__modal-body p {
@@ -1347,8 +1350,9 @@
 }
 
 .jd__modal-stat strong {
-  font-family: var(--font-data);
-  font-size: 15px;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 800;
   color: var(--arc-red, #ed1b2e);
 }
 
