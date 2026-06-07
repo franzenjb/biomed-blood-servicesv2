@@ -1362,7 +1362,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
           <p>Geography is always shown by name — Chapter, Region, Division — never internal codes.</p>
 
           <p className="jd__modal-foot">
-            Question or suggestion?{" "}
+            <span className="jd__modal-foot-q">Question or suggestions?</span>{" "}
             <a href={`mailto:jeff.franzen2@redcross.org?subject=${mailSubject}`}>Email Jeff Franzen</a>.
           </p>
         </div>
