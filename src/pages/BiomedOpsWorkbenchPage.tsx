@@ -61,6 +61,7 @@ import "./BiomedOpsWorkbenchPage.css";
 type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
 type RightTab = "current" | "detail" | "list";
+type LeftTab = "search" | "filter";
 type ArcgisSearchElement = HTMLElement & {
   popupDisabled?: boolean;
   popupTemplate?: unknown;
@@ -1411,6 +1412,7 @@ export default function BiomedOpsWorkbenchPage({
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
+  const [leftTab, setLeftTab] = useState<LeftTab>("filter");
   const [mapReady, setMapReady] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
@@ -2034,23 +2036,35 @@ export default function BiomedOpsWorkbenchPage({
               <ChevronLeft aria-hidden="true" size={18} />
             </button>
           </div>
+          <div className="opsv2__left-tabs" role="tablist" aria-label="Layer panel views">
+            <button
+              type="button"
+              className={leftTab === "search" ? "is-active" : ""}
+              onClick={() => setLeftTab("search")}
+              role="tab"
+              aria-selected={leftTab === "search"}
+            >
+              <Search aria-hidden="true" size={17} />
+              Search
+            </button>
+            <button
+              type="button"
+              className={leftTab === "filter" ? "is-active" : ""}
+              onClick={() => setLeftTab("filter")}
+              role="tab"
+              aria-selected={leftTab === "filter"}
+            >
+              <Filter aria-hidden="true" size={17} />
+              Filter
+            </button>
+          </div>
+          {leftTab === "search" && (
+          <>
           <label className="opsv2__search">
             <Search aria-hidden="true" size={16} />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
-            <Filter aria-hidden="true" size={16} />
           </label>
-          <div className="opsv2__layer-actions">
-            <span>{layerCounts.visible} of {layerCounts.total} on</span>
-            <div className="opsv2__layer-actions-buttons">
-              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(true)}>
-                All on
-              </button>
-              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(false)}>
-                All off
-              </button>
-            </div>
-          </div>
-          {query.trim().length > 0 && (
+          {query.trim().length > 0 ? (
             <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
               {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
               {searchStatus === "blocked" && <p>Sign in to search live map features.</p>}
@@ -2074,7 +2088,24 @@ export default function BiomedOpsWorkbenchPage({
                 </>
               )}
             </section>
+          ) : (
+            <p className="opsv2__search-hint">Search counties, regions, sites, and hospitals across every BioMed layer.</p>
           )}
+          </>
+          )}
+          {leftTab === "filter" && (
+          <>
+          <div className="opsv2__layer-actions">
+            <span>{layerCounts.visible} of {layerCounts.total} on</span>
+            <div className="opsv2__layer-actions-buttons">
+              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(true)}>
+                All on
+              </button>
+              <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(false)}>
+                All off
+              </button>
+            </div>
+          </div>
           <div className="opsv2__layer-groups">
             {sourceGroups.map((group) => {
               const groupLayers = filteredLayers.filter((layer) => layer.category === group.id);
@@ -2165,6 +2196,8 @@ export default function BiomedOpsWorkbenchPage({
               );
             })}
           </div>
+          </>
+          )}
         </>
         )}
       </aside>

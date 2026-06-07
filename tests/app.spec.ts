@@ -251,6 +251,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
+    await page.getByRole("tab", { name: "Search" }).click();
     await page.getByPlaceholder("Search counties, regions, sites").fill("Dallas");
     await expect(page.getByTestId("ops-search-results")).toBeVisible();
     await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "true");

@@ -556,6 +556,40 @@
   background: #fff;
 }
 
+.opsv2__left-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px 0;
+}
+
+.opsv2__left-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid #d7dee6;
+  border-radius: 8px;
+  background: #fff;
+  color: #56616f;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.opsv2__left-tabs button.is-active {
+  border-color: #12161c;
+  background: #12161c;
+  color: #fff;
+}
+
+.opsv2__search-hint {
+  margin: 4px 12px 0;
+  color: #6b7785;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
 .opsv2__right-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
