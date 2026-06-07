@@ -13,6 +13,7 @@ import {
   Droplet,
   Home,
   Info,
+  Layers,
   ListFilter,
   MapPin,
   PanelLeftClose,
@@ -31,11 +32,13 @@ import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
 import { applyPresentationMarkers } from "../maps/presentationMarkers";
 import {
+  buildLayerSnapshots,
   collectArcJurisdictionLayers,
   getMapElementMap,
   hideBasemapUtilityLayers,
   safeLayerTitle,
   type ArcgisMapElement,
+  type BioMedLayerSnapshot,
 } from "../utils/biomedMapSuite";
 import { summarizeMasterFeature, type MasterFeatureSummary } from "../utils/masterMapFeatures";
 import "./JurisdictionDashboardPage.css";
@@ -97,17 +100,66 @@ function findField(fields: Field[], groups: string[][], opts: { numeric?: boolea
   return undefined;
 }
 
+// Name-first: prefer explicit *name* fields, then plain jurisdiction fields.
 const LEVEL_FIELD_TOKENS: Record<LevelId, string[][]> = {
-  division: [["biomed", "division"], ["division"]],
-  region: [["biomed", "region"], ["region"]],
-  district: [["biomed", "district"], ["district"]],
+  division: [["biomed", "division", "name"], ["division", "name"], ["biomed", "division"], ["division"]],
+  region: [["biomed", "region", "name"], ["region", "name"], ["biomed", "region"], ["region"]],
+  district: [["biomed", "district", "name"], ["district", "name"], ["biomed", "district"], ["district"]],
 };
 
-function findLevelField(fields: Field[], level: LevelId) {
-  return findField(
-    fields.filter((field) => field.type === "string"),
-    LEVEL_FIELD_TOKENS[level],
+// Codes never reach a human: skip ECODE/RCODE/DCODE/FIPS/code/id fields entirely.
+const CODE_FIELD_RE = /\b(code|ecode|rcode|dcode|fips|geoid|abbr|objectid|globalid|id)\b/i;
+
+function fieldText(field: Field) {
+  return `${field.name} ${field.alias ?? ""}`.replace(/[_]+/g, " ").toLowerCase();
+}
+
+function isCodeLikeFieldName(field: Field) {
+  return CODE_FIELD_RE.test(fieldText(field));
+}
+
+// Humanitarian Services geography is a different jurisdiction system. This tool
+// is BioMed-only — never let an HS field win a level match.
+function isHsFieldName(field: Field) {
+  const text = fieldText(field);
+  return /\bhs\b/.test(text) || text.includes("humanitarian");
+}
+
+// A short, space-free, mostly-uppercase/numeric token is a code, not a name
+// (e.g. "R12", "0512", "NE"). Names have spaces or real words.
+function looksLikeCodeValue(value: string) {
+  const trimmed = value.trim();
+  return trimmed.length > 0 && trimmed.length <= 6 && !/\s/.test(trimmed) && !/[a-z]{3,}/.test(trimmed);
+}
+
+function levelNameFieldCandidates(fields: Field[], level: LevelId): Field[] {
+  const stringFields = fields.filter(
+    (field) => field.type === "string" && isSqlSafeField(field.name) && !isCodeLikeFieldName(field) && !isHsFieldName(field),
   );
+  const ranked: Field[] = [];
+  for (const tokens of LEVEL_FIELD_TOKENS[level]) {
+    for (const field of stringFields) {
+      if (ranked.includes(field)) continue;
+      const text = fieldText(field);
+      if (tokens.every((token) => text.includes(token))) ranked.push(field);
+    }
+  }
+  return ranked;
+}
+
+function findLevelField(fields: Field[], level: LevelId) {
+  return levelNameFieldCandidates(fields, level)[0];
+}
+
+// Use the field that actually fed the dropdown (chosen) when this layer carries
+// it; otherwise fall back to the layer's own best name field.
+function resolveLevelField(layer: FeatureLayer, level: LevelId, chosen: Partial<Record<LevelId, string>>) {
+  const candidates = levelNameFieldCandidates(layer.fields ?? [], level);
+  if (chosen[level]) {
+    const match = candidates.find((field) => field.name === chosen[level]);
+    if (match) return match;
+  }
+  return candidates[0];
 }
 
 function isQueryableFeatureLayer(layer: Layer): layer is FeatureLayer {
@@ -118,14 +170,13 @@ function escapeSql(value: string) {
   return value.replace(/'/g, "''");
 }
 
-// Build a WHERE clause for THIS layer using its own jurisdiction field names.
-function buildWhereForLayer(layer: FeatureLayer, selection: Selection) {
-  const fields = layer.fields ?? [];
+// Build a WHERE clause for THIS layer using its own jurisdiction NAME fields.
+function buildWhereForLayer(layer: FeatureLayer, selection: Selection, chosen: Partial<Record<LevelId, string>> = {}) {
   const clauses: string[] = [];
   LEVELS.forEach((level) => {
     const value = selection[level];
     if (!value) return;
-    const field = findLevelField(fields, level);
+    const field = resolveLevelField(layer, level, chosen);
     if (field) clauses.push(`${field.name} = '${escapeSql(value)}'`);
   });
   return clauses.length ? clauses.join(" AND ") : "1=1";
@@ -149,6 +200,44 @@ function levelLabel(level: LevelId) {
   return "BioMed District";
 }
 
+// Quick View presets — logical layer combinations. The matcher decides which
+// layers are ON for each preset; "minimal" is the default starting view.
+type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "all" | "clean";
+
+const PRESETS: Array<{ id: PresetId; label: string }> = [
+  { id: "minimal", label: "Minimal (boundaries + fixed sites)" },
+  { id: "boundaries", label: "Boundaries only" },
+  { id: "fixed", label: "Fixed sites" },
+  { id: "mobile-fixed", label: "Mobile + fixed sites" },
+  { id: "collections", label: "FY25 collections data" },
+  { id: "all", label: "All BioMed layers" },
+  { id: "clean", label: "Clean map (no overlays)" },
+];
+
+function isHsTitle(title: string) {
+  const t = title.toLowerCase();
+  return t.includes("hs ") || t.includes("humanitarian");
+}
+
+function shouldShowLayerForPreset(title: string, preset: PresetId) {
+  const t = title.toLowerCase();
+  if (preset === "clean") return false;
+  if (isHsTitle(title)) return false; // BioMed-only tool
+  if (preset === "all") return true;
+
+  const isBoundary = t.includes("biomed division") || t.includes("biomed region") || t.includes("biomed district");
+  const isFixed = t.includes("fixed site");
+  const isMobile = t.includes("mobile");
+  const isCollections = t.includes("zip") || t.includes("fy25") || t.includes("collection operations");
+
+  if (preset === "boundaries") return isBoundary;
+  if (preset === "fixed") return isFixed || t.includes("biomed region");
+  if (preset === "mobile-fixed") return isMobile || isFixed || t.includes("biomed region");
+  if (preset === "collections") return isCollections || t.includes("biomed region");
+  // minimal
+  return t.includes("biomed division") || t.includes("biomed region") || isFixed;
+}
+
 type SiteRow = { id: string; title: string; subtitle: string; graphic: Graphic; layerTitle: string };
 
 function zoomTargetForGeometry(geometry: Geometry) {
@@ -157,11 +246,22 @@ function zoomTargetForGeometry(geometry: Geometry) {
   return { target: geometry, zoom: 10 };
 }
 
+// Never surface a raw code to a human. Drop rows that are codes or whose
+// jurisdiction value is a code rather than a name.
+const JURIS_LABEL_RE = /^(division|region|district|chapter|county)$/i;
+function isCodeRow(row: { label: string; value: string }) {
+  const label = row.label.trim();
+  if (/\b(code|ecode|rcode|dcode|fips|geoid|objectid|globalid)\b/i.test(label)) return true;
+  if (JURIS_LABEL_RE.test(label) && looksLikeCodeValue(row.value)) return true;
+  return false;
+}
+
 function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
-  const geo = feature.geography.filter((row) => row.value && row.value.trim());
+  const geo = feature.geography.filter((row) => row.value && row.value.trim()).filter((row) => !isCodeRow(row));
   const metrics = feature.metrics.filter((row) => row.value && row.value.trim()).slice(0, 4);
   const facts = feature.sourceFields
     .filter((row) => row.value && row.value.trim())
+    .filter((row) => !isCodeRow(row))
     .filter((row) => !geo.some((g) => g.value === row.value))
     .slice(0, 8);
 
@@ -230,12 +330,18 @@ export default function JurisdictionDashboardPage() {
   const [siteQuery, setSiteQuery] = useState("");
   const [activeFeature, setActiveFeature] = useState<MasterFeatureSummary | null>(null);
   const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
+  const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
+  const [preset, setPreset] = useState<PresetId>("minimal");
+  const [layerSnaps, setLayerSnaps] = useState<BioMedLayerSnapshot[]>([]);
   const [aboutOpen, setAboutOpen] = useState(false);
 
   // Resolved live layers (refs so effects can read without re-subscribing).
   const sourceLayerRef = useRef<FeatureLayer | null>(null); // KPI + filter backbone (ZIP/FY25 data)
   const siteLayerRef = useRef<FeatureLayer | null>(null); // Fixed sites point layer
   const kpiFieldRef = useRef<Record<string, string>>({});
+  // The name field actually chosen for each level (the one that yields names,
+  // not codes) on the source layer.
+  const chosenFieldRef = useRef<Partial<Record<LevelId, string>>>({});
 
   // Fail-open loader so a slow ArcGIS init can never leave the loader stuck.
   useEffect(() => {
@@ -249,8 +355,38 @@ export default function JurisdictionDashboardPage() {
   }, [isAuthenticated]);
 
   const selectionWhere = useCallback(
-    (layer: FeatureLayer | null | undefined) => (layer ? buildWhereForLayer(layer, selection) : "1=1"),
+    (layer: FeatureLayer | null | undefined) => (layer ? buildWhereForLayer(layer, selection, chosenFieldRef.current) : "1=1"),
     [selection],
+  );
+
+  const refreshLayerSnaps = useCallback(() => {
+    setLayerSnaps(buildLayerSnapshots(getMapElementMap(mapRef.current)).filter((snap) => !isHsTitle(snap.title)));
+  }, []);
+
+  const applyPreset = useCallback(
+    (nextPreset: PresetId) => {
+      setPreset(nextPreset);
+      const map = getMapElementMap(mapRef.current);
+      if (!map) return;
+      collectArcJurisdictionLayers(map).forEach((layer) => {
+        const visible = shouldShowLayerForPreset(safeLayerTitle(layer), nextPreset);
+        if (layer.visible !== visible) layer.visible = visible;
+      });
+      refreshLayerSnaps();
+    },
+    [refreshLayerSnaps],
+  );
+
+  const toggleMapLayer = useCallback(
+    (layerId: string) => {
+      const map = getMapElementMap(mapRef.current);
+      if (!map) return;
+      const layer = collectArcJurisdictionLayers(map).find((candidate) => candidate.id === layerId);
+      if (!layer) return;
+      layer.visible = !layer.visible;
+      refreshLayerSnaps();
+    },
+    [refreshLayerSnaps],
   );
 
   // ---- Resizable panels -------------------------------------------------
@@ -313,25 +449,38 @@ export default function JurisdictionDashboardPage() {
   const loadOptions = useCallback(async (level: LevelId, parent: Selection) => {
     const layer = sourceLayerRef.current;
     if (!layer) return [] as string[];
-    const field = findLevelField(layer.fields ?? [], level);
-    if (!field) return [] as string[];
-    try {
-      const query = layer.createQuery();
-      query.where = buildWhereForLayer(layer, { ...parent, [level]: "" });
-      query.outFields = [field.name];
-      query.returnDistinctValues = true;
-      query.returnGeometry = false;
-      query.orderByFields = [field.name];
-      query.num = 2000;
-      const result = await layer.queryFeatures(query);
-      const values = result.features
-        .map((feature) => feature.attributes?.[field.name])
-        .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-        .map((value) => value.trim());
-      return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
-    } catch {
-      return [] as string[];
+    const candidates = levelNameFieldCandidates(layer.fields ?? [], level);
+    if (candidates.length === 0) return [] as string[];
+
+    // Try each candidate field; keep the first that returns human NAMES, not
+    // codes. Cache that choice so KPI/where queries stay consistent.
+    for (const field of candidates) {
+      try {
+        const query = layer.createQuery();
+        query.where = buildWhereForLayer(layer, { ...parent, [level]: "" }, chosenFieldRef.current);
+        query.outFields = [field.name];
+        query.returnDistinctValues = true;
+        query.returnGeometry = false;
+        query.orderByFields = [field.name];
+        query.num = 2000;
+        const result = await layer.queryFeatures(query);
+        const values = result.features
+          .map((feature) => feature.attributes?.[field.name])
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .map((value) => value.trim());
+        const unique = Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+        if (unique.length === 0) continue;
+        const nameLike = unique.filter((value) => !looksLikeCodeValue(value)).length;
+        const isLastCandidate = field === candidates[candidates.length - 1];
+        if (nameLike >= unique.length / 2 || isLastCandidate) {
+          chosenFieldRef.current[level] = field.name;
+          return unique;
+        }
+      } catch {
+        // try the next candidate field
+      }
     }
+    return [] as string[];
   }, []);
 
   const refreshOptionsFor = useCallback(
@@ -350,7 +499,7 @@ export default function JurisdictionDashboardPage() {
     const layer = sourceLayerRef.current;
     if (!layer) return;
     setKpiLoading(true);
-    const where = buildWhereForLayer(layer, sel);
+    const where = buildWhereForLayer(layer, sel, chosenFieldRef.current);
     const fields = kpiFieldRef.current;
 
     const sums = KPI_DEFS.filter((def) => fields[def.key]).map((def) => ({ def, fieldName: fields[def.key] }));
@@ -381,7 +530,7 @@ export default function JurisdictionDashboardPage() {
     const siteLayer = siteLayerRef.current;
     if (siteLayer) {
       try {
-        const count = await siteLayer.queryFeatureCount({ where: buildWhereForLayer(siteLayer, sel) } as never);
+        const count = await siteLayer.queryFeatureCount({ where: buildWhereForLayer(siteLayer, sel, chosenFieldRef.current) } as never);
         setSiteCount(count);
       } catch {
         setSiteCount(null);
@@ -400,7 +549,7 @@ export default function JurisdictionDashboardPage() {
       const cityField = findField(layer.fields ?? [], [["city"]]);
       const stateField = findField(layer.fields ?? [], [["state"]]);
       const query = layer.createQuery();
-      query.where = buildWhereForLayer(layer, sel);
+      query.where = buildWhereForLayer(layer, sel, chosenFieldRef.current);
       query.outFields = ["*"];
       query.returnGeometry = true;
       query.num = 250;
@@ -433,7 +582,7 @@ export default function JurisdictionDashboardPage() {
     collectArcJurisdictionLayers(map)
       .filter(isQueryableFeatureLayer)
       .forEach((layer) => {
-        const where = buildWhereForLayer(layer, sel);
+        const where = buildWhereForLayer(layer, sel, chosenFieldRef.current);
         if (where !== "1=1" && !layerHasAnyLevelField(layer)) return;
         try {
           layer.definitionExpression = where;
@@ -449,7 +598,7 @@ export default function JurisdictionDashboardPage() {
       try {
         const extentResult = await (layer as FeatureLayer & {
           queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
-        }).queryExtent?.({ where: buildWhereForLayer(layer, sel) });
+        }).queryExtent?.({ where: buildWhereForLayer(layer, sel, chosenFieldRef.current) });
         if (extentResult?.extent) await view.goTo(extentResult.extent.clone().expand(1.15), { duration: 650 });
       } catch {
         // Navigation can be interrupted; selection still applies.
@@ -494,9 +643,10 @@ export default function JurisdictionDashboardPage() {
     setActiveFeature(null);
     setSiteQuery("");
     setRightTab("sites");
+    applyPreset("minimal");
     const layer = sourceLayerRef.current;
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
-  }, [refreshOptionsFor]);
+  }, [refreshOptionsFor, applyPreset]);
 
   const selectSite = useCallback(async (row: SiteRow) => {
     const summary = summarizeMasterFeature(row.graphic, row.layerTitle, true);
@@ -549,6 +699,15 @@ export default function JurisdictionDashboardPage() {
       await Promise.allSettled(featureLayers.map((layer) => layer.load?.()));
       if (cancelled) return;
       discoverLayers(map);
+
+      // Start at the minimal preset and track per-layer visibility changes.
+      applyPreset("minimal");
+      collectArcJurisdictionLayers(map).forEach((layer) => {
+        const handle = (layer as Layer & { watch?: (name: string, cb: () => void) => WatchHandle }).watch?.("visible", refreshLayerSnaps);
+        if (handle) handles.push(handle);
+      });
+      refreshLayerSnaps();
+
       await refreshOptionsFor("all", EMPTY_SELECTION);
       await computeKpis(EMPTY_SELECTION);
       await loadSites(EMPTY_SELECTION);
@@ -587,7 +746,7 @@ export default function JurisdictionDashboardPage() {
       cancelled = true;
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [isAuthenticated, discoverLayers, refreshOptionsFor, computeKpis, loadSites]);
+  }, [isAuthenticated, discoverLayers, refreshOptionsFor, computeKpis, loadSites, applyPreset, refreshLayerSnaps]);
 
   const filteredSites = useMemo(() => {
     const term = siteQuery.trim().toLowerCase();
@@ -640,6 +799,21 @@ export default function JurisdictionDashboardPage() {
           <MapPin aria-hidden="true" size={15} />
           {scopeLabel}
         </div>
+        <label className="jd__quickview">
+          <span>Quick View</span>
+          <select
+            value={preset}
+            disabled={!isAuthenticated}
+            onChange={(event) => applyPreset(event.target.value as PresetId)}
+            data-testid="jd-quickview"
+          >
+            {PRESETS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <button type="button" className="jd__ghost" onClick={resetAll} data-testid="jd-reset">
           <RotateCcw aria-hidden="true" size={15} />
           Reset
@@ -680,16 +854,54 @@ export default function JurisdictionDashboardPage() {
         {leftOpen ? (
           <aside className="jd__panel jd__panel--left" style={{ width: "var(--jd-left)" }} aria-label="Jurisdiction filters">
             <div className="jd__panel-head">
-              <ListFilter aria-hidden="true" size={17} />
+              {leftTab === "filters" ? <ListFilter aria-hidden="true" size={17} /> : <Layers aria-hidden="true" size={17} />}
               <div>
-                <h2>Filter by geography</h2>
-                <p>Drill from division to district.</p>
+                <h2>{leftTab === "filters" ? "Filter by geography" : "Map layers"}</h2>
+                <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
               <button type="button" aria-label="Hide filters" onClick={() => setLeftOpen(false)}>
                 <PanelLeftClose aria-hidden="true" size={17} />
               </button>
             </div>
 
+            <div className="jd__tabs jd__tabs--left" role="tablist">
+              <button type="button" role="tab" aria-selected={leftTab === "filters"} className={leftTab === "filters" ? "is-active" : ""} onClick={() => setLeftTab("filters")} data-testid="jd-tab-filters">
+                <ListFilter aria-hidden="true" size={15} />
+                Filters
+              </button>
+              <button type="button" role="tab" aria-selected={leftTab === "layers"} className={leftTab === "layers" ? "is-active" : ""} onClick={() => setLeftTab("layers")} data-testid="jd-tab-layers">
+                <Layers aria-hidden="true" size={15} />
+                Layers {layerSnaps.length > 0 && <b>{layerSnaps.filter((snap) => snap.visible).length}</b>}
+              </button>
+            </div>
+
+            {leftTab === "layers" ? (
+              <div className="jd__layers" data-testid="jd-layer-list">
+                {!isAuthenticated ? (
+                  <p className="jd__empty">Sign in to load map layers.</p>
+                ) : layerSnaps.length === 0 ? (
+                  <p className="jd__empty">No layers loaded yet.</p>
+                ) : (
+                  layerSnaps.map((snap) => (
+                    <button
+                      key={snap.id}
+                      type="button"
+                      className="jd__layer"
+                      aria-pressed={snap.visible}
+                      onClick={() => toggleMapLayer(snap.id)}
+                    >
+                      <span className={`jd__layer-dot jd__layer-dot--${snap.category}`} aria-hidden="true" />
+                      <span className="jd__layer-name">
+                        <strong>{snap.title}</strong>
+                        <small>{snap.summary}</small>
+                      </span>
+                      <em className="jd__layer-state">{snap.visible ? "On" : "Off"}</em>
+                    </button>
+                  ))
+                )}
+              </div>
+            ) : (
+              <>
             <div className="jd__filters">
               {LEVELS.map((level) => {
                 const disabled =
@@ -746,6 +958,8 @@ export default function JurisdictionDashboardPage() {
               Boundaries reflect the authoritative BioMed operational source layer and update when the source updates.
               BioMed territories may differ from Humanitarian Services jurisdictions.
             </p>
+              </>
+            )}
           </aside>
         ) : (
           <button type="button" className="jd__reopen jd__reopen--left" onClick={() => setLeftOpen(true)}>
