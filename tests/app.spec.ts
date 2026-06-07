@@ -186,6 +186,10 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("dashboard")).toBeVisible();
     await expect(page.getByTestId("dash-frame")).toHaveAttribute("src", /arcgis\.com\/apps\/dashboards/);
     await expect(page.getByTestId("dash-back")).toHaveAttribute("aria-label", "Return to hub");
+    const dashBackBox = await page.getByTestId("dash-back").boundingBox();
+    expect(dashBackBox).not.toBeNull();
+    expect(dashBackBox!.y).toBeGreaterThan(180);
+    expect(dashBackBox!.width).toBeLessThanOrEqual(44);
     await page.getByTestId("dash-back").click();
     await expect(page).toHaveURL(/\/hub$/);
   });
