@@ -4,7 +4,10 @@ import type Field from "@arcgis/core/layers/support/Field";
 import type Layer from "@arcgis/core/layers/Layer";
 import type MapView from "@arcgis/core/views/MapView";
 import Basemap from "@arcgis/core/Basemap";
-import { collectArcJurisdictionLayers, hideBasemapUtilityLayers, safeLayerTitle } from "../utils/biomedMapSuite";
+import Graphic from "@arcgis/core/Graphic";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
+import Polygon from "@arcgis/core/geometry/Polygon";
+import { CLEANED_OVERLAY_PREFIX, collectArcJurisdictionLayers, hideBasemapUtilityLayers, safeLayerTitle } from "../utils/biomedMapSuite";
 
 type Rgba = [number, number, number, number];
 
@@ -446,7 +449,92 @@ function applyTradeAreaBoundaryStyle(featureLayer: StyledFeatureLayer) {
   featureLayer.refresh?.();
 }
 
-async function applyLayerStyle(layer: Layer) {
+// Signed area; ESRI polygon exterior rings are clockwise (negative here), holes
+// are counter-clockwise (positive).
+function ringIsHole(ring: number[][]) {
+  let sum = 0;
+  for (let i = 0; i < ring.length; i += 1) {
+    const [x1, y1] = ring[i];
+    const [x2, y2] = ring[(i + 1) % ring.length];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return sum > 0;
+}
+
+function isSimplifiedJurisdictionTitle(title: string) {
+  const n = normalize(title);
+  if (n.includes("county") || n.includes("counties") || n.includes("zip")) return false;
+  return n.includes("division") || n.includes("region") || n.includes("district") || n.includes("chapter");
+}
+
+const cleanedOverlays = new Map<string, GraphicsLayer>();
+
+// The *_SimplifyPolyg jurisdiction layers ship with spurious interior holes and
+// fragments from over-simplification. Keep the source layer for labels, hit-test
+// and rollups, but paint a hole-free copy (exterior rings only) on an overlay.
+async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: ArcGISMap, style: PresentationLayerStyle) {
+  const labelField = pickLabelField(featureLayer.fields, style.labelHints);
+  featureLayer.labelsVisible = Boolean(labelField);
+  featureLayer.labelingInfo = labelField ? [labelClassForField(labelField, style)] : [];
+  featureLayer.renderer = {
+    type: "simple",
+    symbol: {
+      type: "simple-fill",
+      color: [255, 255, 255, 0.01], // invisible but keeps the feature hit-testable
+      outline: { type: "simple-line", color: [0, 0, 0, 0], width: 0 }
+    }
+  };
+  featureLayer.opacity = 1;
+  featureLayer.effect = undefined;
+
+  let overlay = cleanedOverlays.get(featureLayer.id);
+  if (!overlay) {
+    overlay = new GraphicsLayer({
+      id: `${CLEANED_OVERLAY_PREFIX}${featureLayer.id}`,
+      title: `${safeLayerTitle(featureLayer)} (clean)`,
+      listMode: "hide"
+    });
+    cleanedOverlays.set(featureLayer.id, overlay);
+    map.add(overlay, 0);
+    (featureLayer as Layer & { watch?: (n: string, cb: () => void) => unknown }).watch?.("visible", () => {
+      if (overlay) overlay.visible = featureLayer.visible;
+    });
+  }
+  overlay.visible = featureLayer.visible;
+
+  try {
+    const query = featureLayer.createQuery();
+    query.where = "1=1";
+    query.outFields = [];
+    query.returnGeometry = true;
+    query.maxRecordCountFactor = 5;
+    const result = await featureLayer.queryFeatures(query);
+    overlay.removeAll();
+    const outline = {
+      type: "simple-line" as const,
+      color: style.outline,
+      style: style.outlineStyle ?? "solid",
+      width: style.outlineWidth
+    };
+    for (const feature of result.features) {
+      const geom = feature.geometry as { rings?: number[][][]; spatialReference?: unknown } | undefined;
+      if (!geom?.rings?.length) continue;
+      const exterior = geom.rings.filter((ring) => !ringIsHole(ring));
+      if (!exterior.length) continue;
+      overlay.add(
+        new Graphic({
+          geometry: new Polygon({ rings: exterior, spatialReference: geom.spatialReference as never }),
+          symbol: { type: "simple-fill", color: style.fill, outline }
+        }),
+      );
+    }
+  } catch {
+    // If the query fails, fall back to a plain (holey) fill so the layer still shows.
+    featureLayer.renderer = { type: "simple", symbol: simpleFillSymbol(style) };
+  }
+}
+
+async function applyLayerStyle(layer: Layer, map?: ArcGISMap) {
   if (typeof (layer as FeatureLayer).load !== "function") return;
 
   const featureLayer = layer as StyledFeatureLayer;
@@ -467,6 +555,10 @@ async function applyLayerStyle(layer: Layer) {
   if (featureLayer.geometryType === "polygon" && isCollectionZipLayerTitle(title) && applyCollectionZipStyle(featureLayer)) return;
 
   const style = getPresentationStyleForLayer(title);
+  if (map && featureLayer.geometryType === "polygon" && isSimplifiedJurisdictionTitle(title)) {
+    await applyHoleStrippedBoundary(featureLayer, map, style);
+    return;
+  }
   if (isLower48VisibleSourceLayerTitle(title)) {
     featureLayer.minScale = 0;
     featureLayer.maxScale = 0;
@@ -556,6 +648,6 @@ export async function applyPresentationMapStyle(map?: ArcGISMap, view?: MapView)
     };
   }
 
-  await Promise.allSettled(collectArcJurisdictionLayers(map).map(applyLayerStyle));
+  await Promise.allSettled(collectArcJurisdictionLayers(map).map((layer) => applyLayerStyle(layer, map)));
   reorderPresentationLayers(map);
 }

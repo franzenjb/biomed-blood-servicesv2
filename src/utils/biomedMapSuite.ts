@@ -317,9 +317,15 @@ export function getLayerRole(title: string) {
   return getLayerPresentation(title).summary;
 }
 
+export const CLEANED_OVERLAY_PREFIX = "cleaned-boundary-";
+
+export function isAppOverlayLayer(layer: Layer) {
+  return typeof layer.id === "string" && layer.id.startsWith(CLEANED_OVERLAY_PREFIX);
+}
+
 export function collectArcJurisdictionLayers(map?: ArcGISMap): Layer[] {
   return ((map?.allLayers?.toArray?.() ?? []) as Layer[]).filter((layer) => {
-    return !isBasemapUtilityLayer(layer);
+    return !isBasemapUtilityLayer(layer) && !isAppOverlayLayer(layer);
   });
 }
 
