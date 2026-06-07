@@ -220,13 +220,13 @@ function levelLabel(level: LevelId) {
 type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "all" | "clean";
 
 const PRESETS: Array<{ id: PresetId; label: string }> = [
-  { id: "minimal", label: "Minimal (boundaries + fixed sites)" },
-  { id: "boundaries", label: "Boundaries only" },
-  { id: "fixed", label: "Fixed sites" },
-  { id: "mobile-fixed", label: "Mobile + fixed sites" },
-  { id: "collections", label: "FY25 collections data" },
-  { id: "all", label: "All BioMed layers" },
-  { id: "clean", label: "Clean map (no overlays)" },
+  { id: "minimal", label: "Minimal (Boundaries + Fixed Sites)" },
+  { id: "boundaries", label: "Boundaries Only" },
+  { id: "fixed", label: "Fixed Sites" },
+  { id: "mobile-fixed", label: "Mobile + Fixed Sites" },
+  { id: "collections", label: "FY25 Collections Data" },
+  { id: "all", label: "All BioMed Layers" },
+  { id: "clean", label: "Clean Map (No Overlays)" },
 ];
 
 function isHsTitle(title: string) {
