@@ -198,6 +198,11 @@ function isTradeAreaBoundaryLayerTitle(title: string) {
   return normalized.includes("fsrsmotradeareas") || (normalized.includes("fsrsmo") && normalized.includes("tradeareas"));
 }
 
+function isZipOperatingLayerTitle(title: string) {
+  const normalized = title.toLowerCase();
+  return normalized.includes("zip") || normalized.includes("fy25");
+}
+
 function isSupplementalBioMedSourceLayerTitle(title: string) {
   return title.toLowerCase().replace(/[_-]+/g, " ").includes("biomed source layer");
 }
@@ -310,6 +315,17 @@ function featureDisplayTitle(feature: MasterFeatureSummary) {
   const tradeAreaZip = isTradeAreaLayerTitle(feature.layerTitle) && tradeAreaZipValue(feature);
   if (tradeAreaZip) return `ZIP ${tradeAreaZip}`;
 
+  if (isZipOperatingLayerTitle(feature.layerTitle)) {
+    const place = featureDetailValue(feature, ["NAME", "Name", "City", "Place"], { identifier: true }) || feature.title;
+    const state = featureDetailValue(feature, ["State", "STATE", "State Name", "RG_NAME"], { identifier: true });
+    const zip = featureDetailValue(feature, ["Zip Code", "ZIP", "ZipCode", "ZIP_CODE"], { identifier: true });
+    const location = [place, state].filter((value, index, values) => {
+      if (!value) return false;
+      return values.findIndex((candidate) => normalizeDisplayValue(candidate) === normalizeDisplayValue(value)) === index;
+    }).join(", ");
+    return [location || feature.title, zip].filter(Boolean).join(" ");
+  }
+
   const preferredPlaceTitle = featureSourceFieldValue(feature, [
     "Facility Name",
     "Facility",
@@ -353,6 +369,7 @@ function featureKindLabel(feature: MasterFeatureSummary) {
 }
 
 const GEO_PILL_LABELS = new Set(["region", "district", "division", "chapter", "county", "state", "city", "zip"]);
+const ZIP_OPERATING_HIDDEN_LABELS = new Set(["zip", "hschaptercode"]);
 const STAT_ROW_LABELS = new Set([
   "collections",
   "units",
@@ -422,6 +439,10 @@ function partitionFeatureRows(rows: Array<{ label: string; value: string }>) {
     else other.push(row);
   });
   return { geo, stats: stats.slice(0, 4), other: other.slice(0, 8) };
+}
+
+function shouldHideZipOperatingRow(row: { label: string; value: string }) {
+  return ZIP_OPERATING_HIDDEN_LABELS.has(normalizeDisplayValue(row.label));
 }
 
 function featureAccentTone(feature: MasterFeatureSummary) {
@@ -807,14 +828,13 @@ function compactFeatureRows(feature: MasterFeatureSummary) {
     );
   }
 
-  if (layerTitle.includes("zip") || layerTitle.includes("fy25")) {
+  if (isZipOperatingLayerTitle(feature.layerTitle)) {
     return compactRows(
       [
         featureDetailRow(feature, "Collections", ["TotalColl", "Total Collections", "Collections"]),
         featureDetailRow(feature, "Drives", ["TotalDrives", "Total Drives", "Drives"]),
         featureDetailRow(feature, "Plasma", ["Plasma"]),
         featureDetailRow(feature, "SDP", ["SDP"]),
-        featureDetailRow(feature, "ZIP", ["Zip Code", "ZIP", "ZipCode", "ZIP_CODE"], { identifier: true }),
         featureDetailRow(feature, "Place", ["NAME", "Name"], { requireNamedValue: true }),
         featureDetailRow(feature, "Division", ["Biomed Division", "Division"], { requireNamedValue: true, rejectShortCode: true }),
         featureDetailRow(feature, "Region", ["Biomed Region"], { requireNamedValue: true, rejectShortCode: true }),
@@ -1031,13 +1051,14 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   if (isTradeAreaLayerTitle(feature.layerTitle)) return <TradeAreaFeatureCard feature={feature} />;
 
   const layerTitle = feature.layerTitle.toLowerCase();
-  const isZipLayer = layerTitle.includes("zip") || layerTitle.includes("fy25");
+  const isZipLayer = isZipOperatingLayerTitle(feature.layerTitle);
   const address = isZipLayer ? "" : composeFeatureAddress(feature);
   const title = featureDisplayTitle(feature);
   const tone = featureAccentTone(feature);
-  const insight = featureInsight(feature);
+  const insight = isZipLayer ? "" : featureInsight(feature);
   const baseRows = compactFeatureRows(feature);
-  const enrichedRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)];
+  const enrichedRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)]
+    .filter((row) => !isZipLayer || !shouldHideZipOperatingRow(row));
   const { geo, stats, other } = partitionFeatureRows(enrichedRows);
   const directionsUrl = address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
