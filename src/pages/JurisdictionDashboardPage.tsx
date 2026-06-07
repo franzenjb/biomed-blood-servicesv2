@@ -257,12 +257,66 @@ function isCodeRow(row: { label: string; value: string }) {
   return false;
 }
 
+// Real metrics only — pull true FY25 counts from the feature's attributes by
+// field name, and reject IDs, dates, and epoch timestamps that merely contain
+// a hint word ("sponsor", "drive date") or are implausibly large.
+const METRIC_FIELD_DEFS: Array<{ label: string; tokens: string[][] }> = [
+  { label: "Red Cell Drives", tokens: [["red", "cell", "drive"], ["total", "red", "cell", "drive"]] },
+  { label: "Red Cell Products", tokens: [["total", "red", "cell", "product"], ["red", "cell", "product"], ["red", "cell", "collect"]] },
+  { label: "WB Collected", tokens: [["wb", "collect"], ["whole", "blood", "collect"]] },
+  { label: "SDP Units", tokens: [["sdp", "unit"], ["sdp"]] },
+  { label: "Plasma Units", tokens: [["plasma", "unit"], ["plasma"]] },
+  { label: "Platelet Units", tokens: [["platelet", "unit"], ["platelet"]] },
+];
+
+function isIdOrDateKey(normalizedKey: string) {
+  return (
+    /\bid\b/.test(normalizedKey) ||
+    normalizedKey.includes("date") ||
+    normalizedKey.includes("master") ||
+    normalizedKey.includes("external") ||
+    normalizedKey.includes("objectid") ||
+    normalizedKey.includes("globalid") ||
+    /\b(lat|lon|long|latitude|longitude)\b/.test(normalizedKey)
+  );
+}
+
+function extractSiteMetrics(raw?: Record<string, unknown>) {
+  if (!raw) return [] as Array<{ label: string; value: string }>;
+  const out: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+  for (const def of METRIC_FIELD_DEFS) {
+    for (const [key, value] of Object.entries(raw)) {
+      const num = typeof value === "number" ? value : Number(`${value}`.replace(/,/g, ""));
+      if (!Number.isFinite(num)) continue;
+      const normalized = key.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      if (isIdOrDateKey(normalized)) continue;
+      if (Math.abs(num) > 5_000_000) continue; // IDs/epochs are far larger than any per-site count
+      if (def.tokens.some((group) => group.every((token) => normalized.includes(token)))) {
+        if (seen.has(def.label)) break;
+        seen.add(def.label);
+        out.push({ label: def.label, value: Math.round(num).toLocaleString() });
+        break;
+      }
+    }
+  }
+  return out.slice(0, 4);
+}
+
+// Drop internal/junk rows from the facts list (User * IDs, epoch dates).
+function isJunkFactRow(row: { label: string; value: string }) {
+  if (/^user\b/i.test(row.label.trim())) return true;
+  const digits = row.value.replace(/[^0-9]/g, "");
+  if (digits.length >= 12) return true; // epoch ms / oversized id
+  return false;
+}
+
 function CleanFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   const geo = feature.geography.filter((row) => row.value && row.value.trim()).filter((row) => !isCodeRow(row));
-  const metrics = feature.metrics.filter((row) => row.value && row.value.trim()).slice(0, 4);
+  const metrics = extractSiteMetrics(feature.rawAttributes);
   const facts = feature.sourceFields
     .filter((row) => row.value && row.value.trim())
-    .filter((row) => !isCodeRow(row))
+    .filter((row) => !isCodeRow(row) && !isJunkFactRow(row))
     .filter((row) => !geo.some((g) => g.value === row.value))
     .slice(0, 8);
 
