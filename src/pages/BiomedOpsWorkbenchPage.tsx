@@ -1450,6 +1450,11 @@ export default function BiomedOpsWorkbenchPage({
   const mapRef = useRef<ArcgisMapElement | null>(null);
   const searchRef = useRef<ArcgisSearchElement | null>(null);
   const searchRunRef = useRef(0);
+  // Layer-collection size at last preset apply. The after-changes handler re-applies
+  // the preset only when this changes (layers added/removed) — NOT on a reorder or
+  // visibility toggle, which would otherwise stomp manual toggles and re-fire on our
+  // own z-order reordering.
+  const layerCountRef = useRef(0);
   const [preset, setPreset] = useState<WorkbenchPreset>(DEFAULT_WORKBENCH_PRESET);
   // Track the live preset without making it a hydrate dependency: changing the
   // Quick View must only re-toggle layer visibility, never re-run the whole map
@@ -1513,14 +1518,15 @@ export default function BiomedOpsWorkbenchPage({
     return () => window.clearTimeout(failOpen);
   }, [isAuthenticated]);
 
-  // Draw ZIP / collection polygons at the top of the polygon stack (under the point
-  // icons) once the map hydrates. Intentionally NOT keyed on `layers`: reordering fires
-  // the layer collection's after-changes handler, which re-applies the preset — keying
-  // on every toggle would stomp manual layer toggles.
+  // Keep ZIP / collection polygons at the top of the polygon stack (under the point
+  // icons) whenever the map hydrates OR layer visibility changes — so a layer toggled on
+  // after load is re-raised above every other polygon. Safe to re-run on `layers` now
+  // that the after-changes handler is gated to add/remove only (a reorder keeps the same
+  // count, so it no longer stomps toggles).
   useEffect(() => {
     if (!mapReady) return;
     raiseZipCollectionAbovePolygons(getMapElementMap(mapRef.current));
-  }, [mapReady]);
+  }, [mapReady, layers]);
 
   const filteredLayers = useMemo(
     () => layers.filter((layer) => layerMatchesQuery(layer, query)),
@@ -1808,14 +1814,23 @@ export default function BiomedOpsWorkbenchPage({
       // re-apply the preset as the layer collection settles so the default view
       // isn't left with every layer visible on first load.
       const layerCollection = (map as unknown as {
-        allLayers?: { on?: (event: string, cb: () => void) => WatchHandle };
+        allLayers?: { on?: (event: string, cb: () => void) => WatchHandle; length?: number };
       } | undefined)?.allLayers;
+      const layerCount = () => (typeof layerCollection?.length === "number" ? layerCollection.length : 0);
       const collectionHandle = layerCollection?.on?.("after-changes", () => {
         if (cancelled) return;
+        // Only re-apply the preset when layers are ADDED/REMOVED (the web map settling).
+        // A reorder or visibility toggle keeps the same count — re-applying then would
+        // stomp the user's toggle and re-fire on our own z-order reorder.
+        const count = layerCount();
+        if (count === layerCountRef.current) return;
+        layerCountRef.current = count;
         applyPreset(presetRef.current);
+        raiseZipCollectionAbovePolygons(getMapElementMap(mapRef.current));
       });
       if (collectionHandle) handles.push(collectionHandle);
 
+      layerCountRef.current = layerCount();
       applyPreset(presetRef.current);
       refreshLayers();
 
