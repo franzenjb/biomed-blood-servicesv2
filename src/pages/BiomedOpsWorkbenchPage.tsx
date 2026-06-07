@@ -294,6 +294,8 @@ const STAT_ROW_LABELS = new Set([
   "red cells",
   "wb units",
   "sdp units",
+  "plasma",
+  "sdp",
   "drive distance",
   "drive time",
   "priority",
@@ -738,6 +740,27 @@ function compactFeatureRows(feature: MasterFeatureSummary) {
     );
   }
 
+  if (layerTitle.includes("zip") || layerTitle.includes("fy25")) {
+    return compactRows(
+      [
+        featureDetailRow(feature, "Collections", ["TotalColl", "Total Collections", "Collections"]),
+        featureDetailRow(feature, "Drives", ["TotalDrives", "Total Drives", "Drives"]),
+        featureDetailRow(feature, "Plasma", ["Plasma"]),
+        featureDetailRow(feature, "SDP", ["SDP"]),
+        featureDetailRow(feature, "ZIP", ["Zip Code", "ZIP", "ZipCode", "ZIP_CODE"], { identifier: true }),
+        featureDetailRow(feature, "Place", ["NAME", "Name"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Division", ["Biomed Division", "Division"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "Region", ["Biomed Region"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "District", ["Biomed District"], { requireNamedValue: true, rejectShortCode: true }),
+        featureDetailRow(feature, "Coll op", ["Biomed Coll Op"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Chapter", ["HS Chapter", "Chapter"], { requireNamedValue: true }),
+        featureDetailRow(feature, "Portfolio", ["DRD AM Portfolio"], { requireNamedValue: true }),
+      ],
+      displayTitle,
+      11,
+    );
+  }
+
   if (feature.category === "manufacturing") {
     return compactRows(
       [
@@ -922,7 +945,9 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
 function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   if (isTradeAreaLayerTitle(feature.layerTitle)) return <TradeAreaFeatureCard feature={feature} />;
 
-  const address = composeFeatureAddress(feature);
+  const layerTitle = feature.layerTitle.toLowerCase();
+  const isZipLayer = layerTitle.includes("zip") || layerTitle.includes("fy25");
+  const address = isZipLayer ? "" : composeFeatureAddress(feature);
   const title = featureDisplayTitle(feature);
   const tone = featureAccentTone(feature);
   const insight = featureInsight(feature);
