@@ -15,6 +15,7 @@ const RegionsPage = lazy(() => import("./pages/RegionsPage"));
 const BiomedOpsWorkbenchPage = lazy(() => import("./pages/BiomedOpsWorkbenchPage"));
 const BiomedLayerAtlasPage = lazy(() => import("./pages/BiomedLayerAtlasPage"));
 const HospitalNetworkPage = lazy(() => import("./pages/HospitalNetworkPage"));
+const JurisdictionDashboardPage = lazy(() => import("./pages/JurisdictionDashboardPage"));
 
 function Fallback() {
   return (
@@ -43,6 +44,8 @@ export default function App() {
           <Route path="/ops" element={<BiomedOpsWorkbenchPage />} />
           <Route path="/biomed-layer-atlas" element={<BiomedLayerAtlasPage />} />
           <Route path="/hospital-network" element={<HospitalNetworkPage />} />
+          <Route path="/jurisdiction-dashboard" element={<JurisdictionDashboardPage />} />
+          <Route path="/jurisdiction" element={<JurisdictionDashboardPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

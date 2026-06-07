@@ -312,6 +312,38 @@ test.describe("Maps (shared shell)", () => {
     await expect(page).toHaveURL(/\/ops$/);
   });
 
+  test("/jurisdiction-dashboard renders KPI band, jurisdiction filters, map controls, and sign-in gate", async ({ page }) => {
+    await page.goto("/jurisdiction-dashboard");
+    await expect(page.getByTestId("jurisdiction-dashboard")).toBeVisible();
+    await expect(page.getByTestId("jd-home")).toHaveAttribute("href", "/hub");
+    // KPI band: 4 FY25 metrics + Fixed Sites
+    await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
+    await expect(page.getByText("FY25 Red Cell Drives")).toBeVisible();
+    await expect(page.getByText("FY25 SDP Units")).toBeVisible();
+    // Cascading jurisdiction filters; region/district disabled until parent picked
+    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
+    await expect(page.getByTestId("jd-filter-region")).toBeDisabled();
+    await expect(page.getByTestId("jd-filter-district")).toBeDisabled();
+    // Standard ArcGIS controls
+    const jdWidgetOrder = await page.getByTestId("jd-arcgis").evaluate((element) =>
+      Array.from(element.children)
+        .filter((child) => child.getAttribute("slot") === "top-left")
+        .map((child) => child.tagName.toLowerCase()),
+    );
+    expect(jdWidgetOrder).toEqual(["arcgis-home", "arcgis-zoom"]);
+    await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
+    await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
+    // Right panel + sign-in gate
+    await expect(page.getByRole("tab", { name: /Sites/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Sign in to load the Jurisdiction Dashboard" })).toBeVisible({ timeout: 20_000 });
+    // Retractable + resizable panel affordances are present
+    await expect(page.getByRole("button", { name: "Hide filters" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Hide details" })).toBeVisible();
+    await expect(page.locator(".jd__resizer")).toHaveCount(2);
+  });
+
   test("/hospital-network renders the hospital portfolio map shell", async ({ page }) => {
     await page.goto("/hospital-network");
     await expect(page.getByTestId("map-shell")).toBeVisible();
