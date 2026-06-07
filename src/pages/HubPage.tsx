@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, HelpCircle, LogIn, X } from "lucide-react";
 import { sections } from "../data/sections";
-import { hubSectionIndex, hubSources } from "../data/hubInfo";
+import { hubDevNotes, hubSectionIndex, hubSources } from "../data/hubInfo";
 import RcMark from "../components/RcMark";
 import ThemeToggle from "../components/ThemeToggle";
 import "./HubPage.css";
 
 function HubHelpModal({ onClose }: { onClose: () => void }) {
-  const [openPanel, setOpenPanel] = useState<"index" | "sources" | null>("index");
+  const [openPanel, setOpenPanel] = useState<"devnotes" | "index" | "sources" | null>("devnotes");
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -67,6 +67,31 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
             <li><b>Start anywhere</b> — the sections stand on their own; numbers are a suggested order, not a requirement.</li>
             <li><b>Use the help icon</b> — every tool has its own <b>?</b> with controls and definitions for that view.</li>
           </ul>
+
+          <section className="hub__accordion" data-open={openPanel === "devnotes" ? "true" : "false"}>
+            <button type="button" className="hub__accordion-head" onClick={() => setOpenPanel(openPanel === "devnotes" ? null : "devnotes")}>
+              <span>Development Notes — for Jennifer &amp; Troy</span>
+              <b>{hubDevNotes.reduce((n, g) => n + g.items.length, 0)}</b>
+              <ChevronDown aria-hidden="true" size={18} />
+            </button>
+            {openPanel === "devnotes" && (
+              <div className="hub__accordion-body">
+                <p className="hub__devnote-intro">
+                  Where we are against the review notes — refining, not rebuilding. Updated June 7, 2026.
+                </p>
+                {hubDevNotes.map((g) => (
+                  <div key={g.group} className="hub__devnote" data-tone={g.tone}>
+                    <p className="hub__devnote-group">{g.group}</p>
+                    <ul className="hub__devnote-list">
+                      {g.items.map((item, i) => (
+                        <li key={i}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section className="hub__accordion" data-open={openPanel === "index" ? "true" : "false"}>
             <button type="button" className="hub__accordion-head" onClick={() => setOpenPanel(openPanel === "index" ? null : "index")}>

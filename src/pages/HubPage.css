@@ -434,3 +434,40 @@
   letter-spacing: 0.04em;
   vertical-align: middle;
 }
+
+/* ---- Development Notes accordion (Jennifer & Troy) ---- */
+.hub__devnote-intro {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--arc-gray-500, #737373);
+}
+.hub__devnote {
+  margin: 0 0 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--arc-gray-100, #e5e5e5);
+}
+.hub__devnote[data-tone="done"] { border-left-color: #1f6b35; }
+.hub__devnote[data-tone="progress"] { border-left-color: #1e4a6d; }
+.hub__devnote[data-tone="troy"] { border-left-color: var(--arc-red, #ed1b2e); }
+.hub__devnote[data-tone="jennifer"] { border-left-color: #8a5a00; }
+
+.hub__devnote-group {
+  margin: 0 0 6px;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111318;
+}
+.hub__devnote-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hub__devnote-list li {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--arc-gray-700, #4a4a4a);
+}

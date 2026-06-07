@@ -408,3 +408,16 @@ test.describe("Explore Regions", () => {
     await expect(page.getByTestId("region-selector")).toHaveCount(0);
   });
 });
+
+test.describe("Hub dev notes", () => {
+  test("About modal shows the Development Notes for Jennifer & Troy", async ({ page }) => {
+    await page.goto("/hub");
+    await page.getByRole("button", { name: "About this hub" }).click();
+    const modal = page.getByRole("dialog", { name: "About the Blood Services Hub" });
+    await expect(modal).toBeVisible();
+    await expect(modal.getByText("Development Notes — for Jennifer & Troy")).toBeVisible();
+    // Status groups present.
+    await expect(modal.getByText("Needs Troy", { exact: true })).toBeVisible();
+    await expect(modal.getByText("In Progress", { exact: true })).toBeVisible();
+  });
+});

@@ -50,3 +50,55 @@ export const hubSources: HubSource[] = [
   { title: "Types of Blood Donations", kind: "Webpage", url: "https://www.redcrossblood.org/donate-blood/how-to-donate/types-of-blood-donations.html" },
   { title: "What Does a Blood Shortage Mean | American Red Cross", kind: "Webpage", url: "https://www.redcrossblood.org/local-homepage/news/article/blood-shortage-explained-rcbs.html" },
 ];
+
+// Development status for Jennifer & Troy — shown in the Hub "About" modal so the
+// review notes and current state live with the experience. Tone matches the
+// status writeup; keep concise and plain-language.
+export type HubDevNoteGroup = {
+  group: string;
+  tone: "done" | "progress" | "troy" | "jennifer";
+  items: string[];
+};
+
+export const hubDevNotes: HubDevNoteGroup[] = [
+  {
+    group: "Done",
+    tone: "done",
+    items: [
+      "Home page renamed to “Inside BioMed Capabilities.”",
+      "Nine-tile structure confirmed, ordered foundation → regional.",
+      "Tile 6 — BioMed Blood Map merged into the Jurisdiction Dashboard (one authoritative geography view).",
+      "Tile 9 — Explore Regions built live on real layers: region selection, FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons.",
+      "Content moves: Clara AI / RapidPass / Track Your Blood → Blood Journey; Sickle Cell → Explore Regions.",
+      "Volunteer sections in Blood 101, Blood Journey, Hospital Distribution, and Collections.",
+      "Data Sources & Methodology “About the Data” credibility layer added app-wide.",
+    ],
+  },
+  {
+    group: "In Progress",
+    tone: "progress",
+    items: [
+      "Tile 5 — BioMed Collections: Mobile Collections + Fixed Sites (incl. Fixed Site Growth Program), Diversity / population section, Division/Region/Chapter filters, territory map, BioMed-vs-Humanitarian-Services boundary disclaimer.",
+      "Tile 7 — Operations Workbench: design retained; adding GOAT boundary bookmarks (Division/Region/District/Chapter), boundary disclaimer, and confirming the infrastructure layers.",
+    ],
+  },
+  {
+    group: "Needs Troy",
+    tone: "troy",
+    items: [
+      "Future Demand — verify the flagged numbers and confirm sources before finalizing.",
+      "Tile 8 — Hospital Network: held for Troy’s dashboard concept (placeholder, not over-built).",
+      "Platelet (SDP) trade areas — confirm the blessed current SDP layer before adding a red-cell / platelet toggle.",
+      "Regional detail metrics (chapters, hospitals served, staging, products distributed) — “to be determined.”",
+      "Complete data sources list to finish populating About the Data.",
+    ],
+  },
+  {
+    group: "Needs Jennifer / Marketing & Communications",
+    tone: "jennifer",
+    items: [
+      "Validate Blood 101 content and all volunteer, diversity, and Sickle Cell language.",
+      "Confirm which Future Demand figures were the concern.",
+    ],
+  },
+];
