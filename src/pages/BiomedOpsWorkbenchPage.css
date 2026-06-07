@@ -4,6 +4,7 @@
   overflow: hidden;
   background: #dfe5ea;
   color: #12161c;
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   display: grid;
   grid-template-rows: auto 1fr;
 }
@@ -309,11 +310,10 @@
 
 .opsv2__preset span,
 .opsv2__eyebrow {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 11px;
   font-weight: 900;
   letter-spacing: 1.4px;
-  text-transform: uppercase;
 }
 
 .opsv2__preset span {
@@ -430,12 +430,11 @@
 
 .opsv2__panel-kicker {
   margin: 0 0 4px !important;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   color: #6b7480 !important;
   font-size: 11px !important;
   font-weight: 900 !important;
   letter-spacing: 1.4px;
-  text-transform: uppercase;
 }
 
 .opsv2__panel-head p {
@@ -502,7 +501,6 @@
   color: #58616d;
   font-size: 12px;
   font-weight: 900;
-  text-transform: uppercase;
 }
 
 .opsv2__results-head strong {
@@ -646,16 +644,15 @@
 
 .opsv2__rollup-section > header span {
   color: #68717d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 1.2px;
-  text-transform: uppercase;
 }
 
 .opsv2__rollup-section > header b {
   color: #d90820;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 15px;
   font-weight: 900;
 }
@@ -701,7 +698,7 @@
 
 .opsv2__rollup-list b {
   color: #d90820;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 19px;
   font-weight: 900;
   line-height: 1;
@@ -722,16 +719,15 @@
 
 .opsv2__subtotal-card > header span {
   color: #68717d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 1.4px;
-  text-transform: uppercase;
 }
 
 .opsv2__subtotal-card > header b {
   color: #d90820;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 16px;
   font-weight: 900;
 }
@@ -776,7 +772,7 @@
 
 .opsv2__subtotal-list b {
   color: #d90820;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 20px;
   font-weight: 900;
 }
@@ -939,7 +935,6 @@
   line-height: 1;
   padding: 4px 7px;
   text-align: center;
-  text-transform: uppercase;
 }
 
 .opsv2__layer[aria-pressed="true"] .opsv2__layer-status {
@@ -968,7 +963,7 @@
   background: #fff;
   padding: 2px 8px 2px 6px;
   color: #3a434d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.3px;
@@ -1072,12 +1067,11 @@
 
 .opsv2__hospital-snapshot span {
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.75px;
   line-height: 1.15;
-  text-transform: uppercase;
 }
 
 .opsv2__hospital-snapshot strong {
@@ -1104,12 +1098,11 @@
   background: #f8fafc;
   padding: 5px 8px;
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9px;
   font-weight: 900;
   gap: 7px;
   letter-spacing: 0.7px;
-  text-transform: uppercase;
 }
 
 .opsv2__feature-meta strong {
@@ -1237,12 +1230,11 @@
 }
 
 .opsv2__tier-crest-medal em {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 7px;
   font-style: normal;
   font-weight: 900;
   letter-spacing: 1px;
-  text-transform: uppercase;
   opacity: 0.92;
 }
 
@@ -1338,12 +1330,11 @@
   border-radius: 999px;
   background: var(--accent, #11161d);
   color: #fff;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.5px;
   text-decoration: none;
-  text-transform: uppercase;
   padding: 4px 9px;
 }
 
@@ -1369,19 +1360,18 @@
 
 .opsv2__feature-stats span {
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9px;
   font-weight: 900;
   letter-spacing: 0.7px;
   line-height: 1.15;
-  text-transform: uppercase;
 }
 
 .opsv2__feature-stats strong {
   min-width: 0;
   overflow-wrap: anywhere;
   color: #11161d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 18px;
   font-weight: 950;
   line-height: 1;
@@ -1409,12 +1399,11 @@
 
 .opsv2__feature-pill em {
   color: #8a949f;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 8.5px;
   font-style: normal;
   font-weight: 900;
   letter-spacing: 0.7px;
-  text-transform: uppercase;
 }
 
 .opsv2__trade-insight {
@@ -1455,17 +1444,16 @@
 
 .opsv2__trade-metric span {
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.9px;
   line-height: 1;
-  text-transform: uppercase;
 }
 
 .opsv2__trade-metric strong {
   color: #11161d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: clamp(38px, 4.4vw, 52px);
   font-weight: 950;
   letter-spacing: 0;
@@ -1525,12 +1513,11 @@
 
 .opsv2__feature-facts dt {
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.75px;
   line-height: 1.2;
-  text-transform: uppercase;
 }
 
 .opsv2__feature-facts dd {
@@ -1579,16 +1566,15 @@
 
 .opsv2__zip-legend header span {
   color: #697480;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.75px;
-  text-transform: uppercase;
 }
 
 .opsv2__zip-legend header b {
   color: #11161d;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 10px;
   font-weight: 950;
 }
@@ -1636,7 +1622,6 @@
   font-weight: 950;
   line-height: 1;
   padding: 4px 6px;
-  text-transform: uppercase;
 }
 
 .opsv2__empty {
@@ -1813,7 +1798,6 @@
   font-family: var(--font-data, "IBM Plex Mono", monospace);
   font-size: 12px;
   font-weight: 500;
-  text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--arc-black, #1a1a1a);
 }
@@ -1891,7 +1875,6 @@
 .jd__modal-body h3 {
   margin: 20px 0 6px;
   font-size: 12px;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--arc-red-deep, #c41e3a);
 }
@@ -1944,7 +1927,6 @@
 .jd__modal-stat span {
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--arc-gray-500, #737373);
 }
@@ -2003,11 +1985,10 @@
   border-radius: 6px;
   background: #fff;
   color: #4f5b68;
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.6px;
-  text-transform: uppercase;
   padding: 5px 9px;
   cursor: pointer;
   white-space: nowrap;
@@ -2031,7 +2012,7 @@
 }
 
 .opsv2__layer-actions > span {
-  font-family: var(--font-data);
+  font-family: Inter, "Source Sans 3", "Source Sans Pro", system-ui, sans-serif;
   font-size: 11px;
   font-weight: 800;
   color: #67717d;

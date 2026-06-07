@@ -221,7 +221,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
-    await expect(page.getByRole("heading", { name: "Layer controls" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Layer Controls" })).toBeVisible();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.locator(".opsv2__layer-group").first()).toContainText("Hospitals & Patient Care");
@@ -237,7 +237,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("tab", { name: "Current" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "List" })).toBeVisible();
-    await expect(page.getByText("Layer group subtotals")).toBeVisible();
+    await expect(page.getByText("Layer Group Subtotals")).toBeVisible();
     await expect(page.getByRole("button", { name: "Jurisdictions & Regions" })).toContainText(
       "BioMed ownership first; HS boundaries only for alignment comparison.",
     );
@@ -274,8 +274,8 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("Source fields")).toHaveCount(0);
     await expect(page.getByText("Additional details")).toHaveCount(0);
     await page.getByRole("tab", { name: "List" }).click();
-    await expect(page.getByText("Active layer stack")).toBeVisible();
-    await expect(page.getByText("Search results")).toHaveCount(0);
+    await expect(page.getByText("Active Layer Stack")).toBeVisible();
+    await expect(page.getByText("Search Results")).toHaveCount(0);
   });
 
   test("/biomed-layer-atlas adds the supplemental layer to the workbench stack", async ({ page }) => {

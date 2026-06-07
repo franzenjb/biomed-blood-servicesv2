@@ -655,7 +655,7 @@ function TradeAreaFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   return (
     <>
       <header className="opsv2__feature-hero opsv2__feature-hero--trade">
-        <p className="opsv2__eyebrow">Trade-area ZIP</p>
+        <p className="opsv2__eyebrow">Trade-Area ZIP</p>
         <h2>{title}</h2>
         {contextLine && <p className="opsv2__feature-kind">{contextLine}</p>}
       </header>
@@ -865,7 +865,7 @@ function HospitalFeatureCard({ feature }: { feature: MasterFeatureSummary }) {
   return (
     <div className="opsv2__feature-body" data-tone={hospitalTone}>
       <header className={`opsv2__feature-hero opsv2__feature-hero--hospital${tierNum ? " opsv2__feature-hero--tiered" : ""}`}>
-        <p className="opsv2__eyebrow">Selected hospital</p>
+        <p className="opsv2__eyebrow">Selected Hospital</p>
         <h2>{title}</h2>
         <span className="opsv2__feature-badge">
           <i aria-hidden="true" />
@@ -1022,7 +1022,7 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   return (
     <div className="opsv2__feature-body" data-tone={tone}>
       <header className="opsv2__feature-hero opsv2__feature-hero--compact">
-        <p className="opsv2__eyebrow">Selected feature</p>
+        <p className="opsv2__eyebrow">Selected Feature</p>
         <h2>{title}</h2>
         <span className="opsv2__feature-badge">
           <i aria-hidden="true" />
@@ -1201,7 +1201,7 @@ function SpatialRollupPanel({
   if (!selectedFeature) {
     return (
       <section className="opsv2__rollup-card">
-        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <p className="opsv2__eyebrow">Live Geography Rollup</p>
         <h3>Select a boundary</h3>
         <p className="opsv2__rollup-note">Click a BioMed division, region, district, chapter, or county to compute live intersections across the source layers.</p>
       </section>
@@ -1211,7 +1211,7 @@ function SpatialRollupPanel({
   if (selectedFeature.category !== "geography") {
     return (
       <section className="opsv2__rollup-card">
-        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <p className="opsv2__eyebrow">Live Geography Rollup</p>
         <h3>{featureDisplayTitle(selectedFeature)}</h3>
         <p className="opsv2__rollup-note">Select a geography boundary to roll up facilities, operations, and jurisdiction layers.</p>
       </section>
@@ -1221,7 +1221,7 @@ function SpatialRollupPanel({
   if (!rollup || rollup.status === "loading") {
     return (
       <section className="opsv2__rollup-card">
-        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <p className="opsv2__eyebrow">Live Geography Rollup</p>
         <h3>{featureDisplayTitle(selectedFeature)}</h3>
         <p className="opsv2__rollup-note">Building live layer intersections...</p>
       </section>
@@ -1231,7 +1231,7 @@ function SpatialRollupPanel({
   if (rollup.status === "empty" || rollup.status === "error") {
     return (
       <section className="opsv2__rollup-card">
-        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <p className="opsv2__eyebrow">Live Geography Rollup</p>
         <h3>{featureDisplayTitle(selectedFeature)}</h3>
         <p className="opsv2__rollup-note">{rollup.message ?? "No matching source layers were found inside this boundary."}</p>
       </section>
@@ -1241,14 +1241,14 @@ function SpatialRollupPanel({
   return (
     <section className="opsv2__rollup-card">
       <header className="opsv2__rollup-head">
-        <p className="opsv2__eyebrow">Live geography rollup</p>
+        <p className="opsv2__eyebrow">Live Geography Rollup</p>
         <h3>{featureDisplayTitle(selectedFeature)}</h3>
         <span>{rollup.message}</span>
       </header>
 
       <div className="opsv2__rollup-section">
         <header>
-          <span>Category totals</span>
+          <span>Category Totals</span>
           <b>{rollup.categoryRows.length}</b>
         </header>
         <div className="opsv2__rollup-list">
@@ -1266,7 +1266,7 @@ function SpatialRollupPanel({
 
       <div className="opsv2__rollup-section">
         <header>
-          <span>Layer matches</span>
+          <span>Layer Matches</span>
           <b>{rollup.layerRows.length}</b>
         </header>
         <div className="opsv2__rollup-list">
@@ -1339,7 +1339,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
             <li><b>Quick View</b> — preset layer sets: Default workbench, All BioMed layers, Clean map, or a presenter story.</li>
             <li><b>Layer controls</b> — the left rail toggles individual layers; it collapses to free up the map.</li>
             <li><b>Click anything</b> — sites and boundaries open a clean detail card on the right (no raw ArcGIS popups).</li>
-            <li><b>Live geography rollup</b> — click a Division, Region, District, Chapter, or County to total the layers inside it.</li>
+            <li><b>Live Geography Rollup</b> — click a Division, Region, District, Chapter, or County to total the layers inside it.</li>
             <li><b>Search</b> — find counties, regions, and sites, then click a result to zoom.</li>
           </ul>
 
@@ -2225,7 +2225,7 @@ export default function BiomedOpsWorkbenchPage({
 
                 <section className="opsv2__subtotal-card">
                   <header>
-                    <span>Layer group subtotals</span>
+                    <span>Layer Group Subtotals</span>
                     <b>{groupSummaries.length}</b>
                   </header>
                   <div className="opsv2__subtotal-list">
@@ -2264,7 +2264,7 @@ export default function BiomedOpsWorkbenchPage({
               <>
                 <section className="opsv2__subtotal-card">
                   <header>
-                    <span>Active layer stack</span>
+                    <span>Active Layer Stack</span>
                     <b>{activeLayers.length}</b>
                   </header>
                   <div className="opsv2__subtotal-list">
@@ -2283,7 +2283,7 @@ export default function BiomedOpsWorkbenchPage({
                 {(query.trim() || searchResults.length > 0) && (
                   <section className="opsv2__subtotal-card">
                     <header>
-                      <span>Search results</span>
+                      <span>Search Results</span>
                       <b>{searchResults.length}</b>
                     </header>
                     <div className="opsv2__subtotal-list">
