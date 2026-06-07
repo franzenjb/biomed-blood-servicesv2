@@ -1304,6 +1304,12 @@ export default function BiomedOpsWorkbenchPage({
   const searchRef = useRef<ArcgisSearchElement | null>(null);
   const searchRunRef = useRef(0);
   const [preset, setPreset] = useState<WorkbenchPreset>(DEFAULT_WORKBENCH_PRESET);
+  // Track the live preset without making it a hydrate dependency: changing the
+  // Quick View must only re-toggle layer visibility, never re-run the whole map
+  // hydrate (re-add layers + re-style + re-goTo), which flickered the map and
+  // snapped it back to an empty "clean" state.
+  const presetRef = useRef(preset);
+  presetRef.current = preset;
   const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() =>
     previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({
       ...layer,
@@ -1627,11 +1633,11 @@ export default function BiomedOpsWorkbenchPage({
       } | undefined)?.allLayers;
       const collectionHandle = layerCollection?.on?.("after-changes", () => {
         if (cancelled) return;
-        applyPreset(preset);
+        applyPreset(presetRef.current);
       });
       if (collectionHandle) handles.push(collectionHandle);
 
-      applyPreset(preset);
+      applyPreset(presetRef.current);
       refreshLayers();
 
       const clickHandle = view.on("click", async (event) => {
@@ -1664,7 +1670,9 @@ export default function BiomedOpsWorkbenchPage({
       cancelled = true;
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers, supplementalLayers]);
+    // `preset` intentionally excluded: Quick View changes go through applyPreset
+    // (visibility only) and presetRef, not a full map re-hydrate.
+  }, [applyPreset, disableSearchPopup, isAuthenticated, refreshLayers, supplementalLayers]);
 
   useEffect(() => {
     let cancelled = false;
