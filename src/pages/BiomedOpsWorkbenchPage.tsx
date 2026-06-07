@@ -1325,7 +1325,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
           <div className="jd__modal-callout">
             <RcMark size={30} />
             <div>
-              <strong>BioMed operating picture</strong>
+              <strong>BioMed Operating Picture</strong>
               <span>Sites, boundaries, and live geography rollups in one place.</span>
             </div>
           </div>
