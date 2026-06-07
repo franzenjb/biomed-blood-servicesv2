@@ -256,11 +256,14 @@ export const arcJurisdictionMapSource = {
   ] satisfies ArcJurisdictionLayerSource[]
 };
 
+// Troy's "FS Map Layer" — a hosted feature layer titled "FS RSMO Trade Areas
+// Map_WFL1" with two polygon sublayers (FSRSMOTradeAreas, TradeAreaByZip). This
+// IS the Red Cell fixed-site trade-area source behind the trade-area dashboard.
 export const supplementalBiomedSourceLayer = {
-  title: "Supplemental BioMed source layer",
+  title: "Fixed Site Trade Areas",
   itemId: "6af8a323a0b5468f9427baa4d6ee7481",
-  category: "reference",
-  role: "Additional private BioMed source layer loaded alongside the Workbench map.",
+  category: "sites",
+  role: "Red Cell fixed-site trade-area polygons (donor reach) — FSRSMOTradeAreas + TradeAreaByZip.",
   defaultVisible: true,
   itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=6af8a323a0b5468f9427baa4d6ee7481",
   mapViewerUrl:

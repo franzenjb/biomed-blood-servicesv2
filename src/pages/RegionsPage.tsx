@@ -51,9 +51,9 @@ const EXPLORE_REGIONS_BRAND: JurisdictionBrand = {
   calloutTitle: "Bring BioMed Home",
   calloutSub: "Region selection, live metrics, and community impact in one place.",
   aboutExtra: communityImpact,
-  // Explore Regions carries Troy's Fixed Site Map Layer on top of mobile
-  // collections so fixed-site reach is part of the regional drill-down.
-  // (Red Cell trade-area polygon layer to be added once its AGOL item id is known.)
+  // Explore Regions carries Troy's FS Map Layer (6af8a323 = "FS RSMO Trade
+  // Areas", the Red Cell fixed-site trade-area polygons) on top of mobile
+  // collections, so fixed-site donor reach is part of the regional drill-down.
   supplementalLayers: [...jurisdictionDashboardSupplementalLayers, supplementalBiomedSourceLayer],
 };
 
