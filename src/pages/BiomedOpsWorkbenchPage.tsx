@@ -8,22 +8,20 @@ import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
 import {
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Filter,
   HelpCircle,
+  Home,
   Info,
-  Layers,
   List,
-  MapPinned,
-  PanelLeftClose,
-  PanelLeftOpen,
-  PanelRightClose,
-  PanelRightOpen,
   RotateCcw,
   Search,
   ShieldCheck,
   SlidersHorizontal,
   X,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
 import {
@@ -1966,6 +1964,7 @@ export default function BiomedOpsWorkbenchPage({
         </div>
       </RcAppBar>
 
+      <div className="opsv2__stage">
       <div className="opsv2__map-shell">
         {createElement(
           "arcgis-map",
@@ -2004,16 +2003,30 @@ export default function BiomedOpsWorkbenchPage({
         )}
       </div>
 
-      {leftOpen ? (
-        <aside className="opsv2__panel opsv2__panel--left" data-has-query={query.trim().length > 0 ? "true" : "false"} aria-label="Layer controls">
+      <aside className="opsv2__panel opsv2__panel--left" data-collapsed={leftOpen ? "false" : "true"} data-has-query={query.trim().length > 0 ? "true" : "false"} aria-label="Layer controls">
+        {!leftOpen && (
+          <div className="opsv2__rail">
+            <button type="button" className="opsv2__rail-btn" aria-label="Open layer controls" onClick={() => setLeftOpen(true)}>
+              <ChevronRight aria-hidden="true" size={18} />
+            </button>
+            <Link to="/hub" className="opsv2__rail-home" aria-label="Home" title="Home">
+              <Home aria-hidden="true" size={18} />
+            </Link>
+            <span className="opsv2__rail-label">Layers</span>
+          </div>
+        )}
+        {leftOpen && (
+        <>
           <div className="opsv2__panel-head">
-            <Layers aria-hidden="true" size={18} />
+            <Link to="/hub" className="opsv2__panel-home" aria-label="Home" title="Home">
+              <Home aria-hidden="true" size={16} />
+            </Link>
             <div>
-              <h2>Layer controls</h2>
+              <h2>Layer Controls</h2>
               <p>{layerCounts.visible} active of {layerCounts.total} layers.</p>
             </div>
-            <button type="button" aria-label="Hide layer controls" onClick={() => setLeftOpen(false)}>
-              <PanelLeftClose aria-hidden="true" size={17} />
+            <button type="button" className="opsv2__rail-btn" aria-label="Collapse layer controls" onClick={() => setLeftOpen(false)}>
+              <ChevronLeft aria-hidden="true" size={18} />
             </button>
           </div>
           <label className="opsv2__search">
@@ -2147,25 +2160,29 @@ export default function BiomedOpsWorkbenchPage({
               );
             })}
           </div>
-        </aside>
-      ) : (
-        <button type="button" className="opsv2__reopen opsv2__reopen--left" onClick={() => setLeftOpen(true)}>
-          <PanelLeftOpen aria-hidden="true" size={16} />
-          Layers
-        </button>
-      )}
+        </>
+        )}
+      </aside>
 
-      {rightOpen ? (
-        <aside className="opsv2__panel opsv2__panel--right" aria-label={`${resultLabel} results`}>
+      <aside className="opsv2__panel opsv2__panel--right" data-collapsed={rightOpen ? "false" : "true"} aria-label={`${resultLabel} results`}>
+        {!rightOpen && (
+          <div className="opsv2__rail">
+            <button type="button" className="opsv2__rail-btn" aria-label={`Open ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(true)}>
+              <ChevronLeft aria-hidden="true" size={18} />
+            </button>
+            <span className="opsv2__rail-label">Results</span>
+          </div>
+        )}
+        {rightOpen && (
+        <>
           <div className="opsv2__panel-head">
-            <MapPinned aria-hidden="true" size={18} />
             <div>
               <p className="opsv2__panel-kicker">Results</p>
               <h2>{currentTitle}</h2>
               <p>{currentSubtitle}</p>
             </div>
-            <button type="button" aria-label={`Hide ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(false)}>
-              <PanelRightClose aria-hidden="true" size={17} />
+            <button type="button" className="opsv2__rail-btn" aria-label={`Collapse ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(false)}>
+              <ChevronRight aria-hidden="true" size={17} />
             </button>
           </div>
           <div className="opsv2__right-tabs" role="tablist" aria-label={`${resultLabel} result views`}>
@@ -2291,13 +2308,10 @@ export default function BiomedOpsWorkbenchPage({
               </>
             )}
           </div>
-        </aside>
-      ) : (
-        <button type="button" className="opsv2__reopen opsv2__reopen--right" onClick={() => setRightOpen(true)}>
-          <PanelRightOpen aria-hidden="true" size={16} />
-          Feature
-        </button>
-      )}
+        </>
+        )}
+      </aside>
+      </div>
 
       {!isAuthenticated && (
         <div className="opsv2__signin" role="dialog" aria-label="Sign in required">

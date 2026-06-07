@@ -4,23 +4,101 @@
   overflow: hidden;
   background: #dfe5ea;
   color: #12161c;
+  display: grid;
+  grid-template-rows: auto 1fr;
 }
 
-/* Shared RcAppBar pinned to the top of the absolute workbench layout. */
 .opsv2 > .rcbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 20;
 }
 
+/* Collapsible grid shell (livessaved rail model) */
+.opsv2__stage {
+  display: grid;
+  grid-template-columns: var(--ops-left, 360px) minmax(0, 1fr) var(--ops-right, 460px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.opsv2[data-left-open="false"] .opsv2__stage {
+  grid-template-columns: 52px minmax(0, 1fr) var(--ops-right, 460px);
+}
+
+.opsv2[data-right-open="false"] .opsv2__stage {
+  grid-template-columns: var(--ops-left, 360px) minmax(0, 1fr) 52px;
+}
+
+.opsv2[data-left-open="false"][data-right-open="false"] .opsv2__stage {
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+}
+
 .opsv2__map-shell {
-  position: absolute;
-  top: 74px;
-  right: 460px;
-  bottom: 0;
-  left: 360px;
+  position: relative;
+  grid-column: 2;
+  min-width: 0;
+}
+
+/* Collapsed rail */
+.opsv2__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  height: 100%;
+}
+
+.opsv2__rail-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d5dbe2;
+  border-radius: 8px;
+  background: #fff;
+  color: #12161c;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.opsv2__rail-btn:hover,
+.opsv2__panel-home:hover {
+  border-color: #ed1b2e;
+  color: #ed1b2e;
+}
+
+.opsv2__rail-home {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: #4a4a4a;
+}
+
+.opsv2__rail-home:hover {
+  color: #ed1b2e;
+}
+
+.opsv2__rail-label {
+  writing-mode: vertical-rl;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #69717d;
+}
+
+.opsv2__panel-home {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d5dbe2;
+  border-radius: 8px;
+  background: #fff;
+  color: #4a4a4a;
+  flex-shrink: 0;
 }
 
 .opsv2__arcgis {
@@ -163,13 +241,6 @@
   }
 }
 
-.opsv2[data-left-open="false"] .opsv2__map-shell {
-  left: 0;
-}
-
-.opsv2[data-right-open="false"] .opsv2__map-shell {
-  right: 0;
-}
 
 .opsv2__bar {
   position: absolute;
@@ -314,14 +385,12 @@
 }
 
 .opsv2__panel {
-  position: absolute;
-  top: 74px;
-  bottom: 0;
+  position: relative;
+  height: 100%;
+  min-height: 0;
   z-index: 12;
   display: flex;
   flex-direction: column;
-  min-width: 300px;
-  max-width: min(560px, 46vw);
   overflow: auto;
   background: rgba(255, 255, 255, 0.96);
   border-color: #d8dde3;
@@ -329,48 +398,25 @@
   box-shadow: 0 14px 38px rgba(18, 22, 28, 0.12);
 }
 
-@media (max-width: 1240px) {
-  .opsv2__bar {
-    grid-template-columns: 96px minmax(0, 1fr) auto;
-    grid-template-areas:
-      "home brand reset"
-      "preset preset auth";
-    align-items: end;
-  }
-
-  .opsv2__brand {
-    margin-left: 0;
-  }
-
-  .opsv2__panel {
-    top: 132px;
-  }
-
-  .opsv2__map-shell {
-    top: 132px;
-  }
-}
-
 .opsv2__panel--left {
-  left: 0;
-  width: 360px;
-  resize: horizontal;
+  grid-column: 1;
   overflow: hidden;
   border-width: 0 1px 0 0;
 }
 
 .opsv2__panel--right {
-  right: 0;
-  width: 460px;
-  max-width: min(720px, 52vw);
-  resize: horizontal;
+  grid-column: 3;
   border-width: 0 0 0 1px;
 }
 
+.opsv2__panel-head > div {
+  flex: 1;
+  min-width: 0;
+}
+
 .opsv2__panel-head {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: start;
+  display: flex;
+  align-items: center;
   gap: 12px;
   padding: 18px 20px 14px;
   border-bottom: 1px solid #e1e5ea;
