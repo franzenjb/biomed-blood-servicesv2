@@ -1368,7 +1368,11 @@ export default function BiomedOpsWorkbenchPage({
     () => (isAuthenticated ? layers.filter((layer) => layer.status !== "Loaded").length : 0),
     [isAuthenticated, layers],
   );
-  const mapIsInitializing = isAuthenticated && styledMapKey !== activeArcgisMapKey;
+  const pendingVisibleLayerCount = useMemo(
+    () => (isAuthenticated ? layers.filter((layer) => layer.visible && layer.status !== "Loaded").length : 0),
+    [isAuthenticated, layers],
+  );
+  const mapIsInitializing = isAuthenticated && (styledMapKey !== activeArcgisMapKey || pendingVisibleLayerCount > 0);
   const activeLayers = useMemo(() => layers.filter((layer) => layer.visible), [layers]);
   const inactiveLayers = useMemo(() => layers.filter((layer) => !layer.visible), [layers]);
 
@@ -1579,6 +1583,9 @@ export default function BiomedOpsWorkbenchPage({
   useEffect(() => {
     let cancelled = false;
     let restyleTimer: number | undefined;
+    let startupTimer: number | undefined;
+    let readyListenerElement: ArcgisMapElement | null = null;
+    let readyListener: (() => void) | null = null;
     const handles: WatchHandle[] = [];
 
     async function hydrateMap() {
@@ -1595,11 +1602,13 @@ export default function BiomedOpsWorkbenchPage({
       const mapElement = mapRef.current;
       const view = mapElement?.view as (MapView & { popupEnabled?: boolean; popup?: { close?: () => void } }) | undefined;
       if (!mapElement || !view) return;
+      if (mapElement.dataset.mapKey !== activeArcgisMapKey) return;
 
       await view.when?.();
       if (cancelled) return;
 
       const map = getMapElementMap(mapElement);
+      if (!map) return;
       await addArcgisPortalLayers(map, supplementalLayers);
       if (cancelled) return;
 
@@ -1655,7 +1664,7 @@ export default function BiomedOpsWorkbenchPage({
       refreshLayers();
       setStyledMapKey(activeArcgisMapKey);
 
-      [500, 1500, 3500, 7000].forEach((delay) => {
+      [500, 1500, 3500, 7000, 12000, 20000].forEach((delay) => {
         const timeout = window.setTimeout(() => {
           if (cancelled || !shouldRetryLayerHydration(map, supplementalLayers)) return;
           restyleSettledMap();
@@ -1685,13 +1694,45 @@ export default function BiomedOpsWorkbenchPage({
       handles.push(clickHandle);
     }
 
-    const mapElement = mapRef.current;
-    if (mapElement?.view) void hydrateMap();
-    else mapElement?.addEventListener("arcgisViewReadyChange", hydrateMap, { once: true } as AddEventListenerOptions);
+    function clearReadyListener() {
+      if (readyListenerElement && readyListener) {
+        readyListenerElement.removeEventListener("arcgisViewReadyChange", readyListener);
+      }
+      readyListenerElement = null;
+      readyListener = null;
+    }
+
+    function waitForExpectedMap(attempt = 0) {
+      if (cancelled) return;
+      const mapElement = mapRef.current;
+      if (!mapElement || mapElement.dataset.mapKey !== activeArcgisMapKey) {
+        if (attempt < 20) {
+          startupTimer = window.setTimeout(() => waitForExpectedMap(attempt + 1), 50);
+        }
+        return;
+      }
+
+      if (mapElement.view) {
+        void hydrateMap();
+        return;
+      }
+
+      clearReadyListener();
+      readyListenerElement = mapElement;
+      readyListener = () => {
+        clearReadyListener();
+        void hydrateMap();
+      };
+      mapElement.addEventListener("arcgisViewReadyChange", readyListener, { once: true } as AddEventListenerOptions);
+    }
+
+    waitForExpectedMap();
 
     return () => {
       cancelled = true;
       if (restyleTimer) window.clearTimeout(restyleTimer);
+      if (startupTimer) window.clearTimeout(startupTimer);
+      clearReadyListener();
       handles.forEach((handle) => handle.remove?.());
     };
   }, [activeArcgisMapKey, applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers, supplementalLayers]);
@@ -1893,6 +1934,7 @@ export default function BiomedOpsWorkbenchPage({
             center: CENTER,
             zoom: ZOOM,
             className: "opsv2__arcgis",
+            "data-map-key": activeArcgisMapKey,
             "data-testid": "biomed-ops-arcgis",
           },
           [
@@ -1917,7 +1959,11 @@ export default function BiomedOpsWorkbenchPage({
         {mapIsInitializing && (
           <div className="opsv2__map-loading" role="status" aria-live="polite">
             <strong>Preparing Workbench map</strong>
-            <span>Applying the clean layer style before showing source geography.</span>
+            <span>
+              {pendingVisibleLayerCount > 0
+                ? `Loading ${pendingVisibleLayerCount} visible source layer${pendingVisibleLayerCount === 1 ? "" : "s"} from ArcGIS.`
+                : "Applying the clean layer style before showing source geography."}
+            </span>
           </div>
         )}
       </div>
