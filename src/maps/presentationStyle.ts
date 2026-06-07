@@ -449,17 +449,20 @@ function applyTradeAreaBoundaryStyle(featureLayer: StyledFeatureLayer) {
   featureLayer.refresh?.();
 }
 
-// Signed area; ESRI polygon exterior rings are clockwise (negative here), holes
-// are counter-clockwise (positive).
-function ringIsHole(ring: number[][]) {
+// Signed ring area in coordinate units². ESRI polygon exterior rings are
+// clockwise (negative), holes are counter-clockwise (positive).
+function ringSignedArea(ring: number[][]) {
   let sum = 0;
   for (let i = 0; i < ring.length; i += 1) {
     const [x1, y1] = ring[i];
     const [x2, y2] = ring[(i + 1) % ring.length];
     sum += x1 * y2 - x2 * y1;
   }
-  return sum > 0;
+  return sum / 2;
 }
+
+// Drop simplification specks / tiny coastal slivers (deg²). Real islands clear it.
+const MIN_RING_AREA = 0.001;
 
 function isSimplifiedJurisdictionTitle(title: string) {
   const n = normalize(title);
@@ -519,11 +522,13 @@ async function applyHoleStrippedBoundary(featureLayer: StyledFeatureLayer, map: 
     for (const feature of result.features) {
       const geom = feature.geometry as { rings?: number[][][]; spatialReference?: unknown } | undefined;
       if (!geom?.rings?.length) continue;
-      const exterior = geom.rings.filter((ring) => !ringIsHole(ring));
-      if (!exterior.length) continue;
+      const exteriorAll = geom.rings.filter((ring) => ringSignedArea(ring) < 0); // exterior (CW)
+      const exterior = exteriorAll.filter((ring) => Math.abs(ringSignedArea(ring)) >= MIN_RING_AREA);
+      const rings = exterior.length ? exterior : exteriorAll; // never drop everything
+      if (!rings.length) continue;
       overlay.add(
         new Graphic({
-          geometry: new Polygon({ rings: exterior, spatialReference: geom.spatialReference as never }),
+          geometry: new Polygon({ rings, spatialReference: geom.spatialReference as never }),
           symbol: { type: "simple-fill", color: style.fill, outline }
         }),
       );
