@@ -1523,6 +1523,19 @@ export default function BiomedOpsWorkbenchPage({
       view.popupEnabled = false;
       view.popup?.close?.();
       disableSearchPopup();
+
+      // Web-map operational layers can finish loading after the view is ready;
+      // re-apply the preset as the layer collection settles so the default view
+      // isn't left with every layer visible on first load.
+      const layerCollection = (map as unknown as {
+        allLayers?: { on?: (event: string, cb: () => void) => WatchHandle };
+      } | undefined)?.allLayers;
+      const collectionHandle = layerCollection?.on?.("after-changes", () => {
+        if (cancelled) return;
+        applyPreset(preset);
+      });
+      if (collectionHandle) handles.push(collectionHandle);
+
       applyPreset(preset);
       refreshLayers();
 
