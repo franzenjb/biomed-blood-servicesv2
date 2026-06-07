@@ -323,21 +323,9 @@ export function isAppOverlayLayer(layer: Layer) {
   return typeof layer.id === "string" && layer.id.startsWith(CLEANED_OVERLAY_PREFIX);
 }
 
-export function isOperationalGroupLayer(layer: Layer) {
-  return layer.type === "group" && !isBasemapUtilityLayer(layer) && !isAppOverlayLayer(layer);
-}
-
-export function keepOperationalGroupLayersVisible(map?: ArcGISMap) {
-  ((map?.allLayers?.toArray?.() ?? []) as Layer[]).forEach((layer) => {
-    if (isOperationalGroupLayer(layer)) {
-      layer.visible = true;
-    }
-  });
-}
-
 export function collectArcJurisdictionLayers(map?: ArcGISMap): Layer[] {
   return ((map?.allLayers?.toArray?.() ?? []) as Layer[]).filter((layer) => {
-    return layer.type !== "group" && !isBasemapUtilityLayer(layer) && !isAppOverlayLayer(layer);
+    return !isBasemapUtilityLayer(layer) && !isAppOverlayLayer(layer);
   });
 }
 

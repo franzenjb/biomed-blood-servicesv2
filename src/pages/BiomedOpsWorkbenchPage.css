@@ -417,18 +417,6 @@
   outline: 0;
 }
 
-.opsv2__layer-load-note {
-  margin: 0 18px 10px;
-  border: 1px solid #dfe4ea;
-  border-radius: 7px;
-  background: #f6f8fa;
-  color: #58616d;
-  font-size: 12px;
-  font-weight: 900;
-  line-height: 1.35;
-  padding: 9px 11px;
-}
-
 .opsv2__results {
   display: grid;
   gap: 10px;

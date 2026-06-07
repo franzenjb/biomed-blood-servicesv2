@@ -44,7 +44,6 @@ import {
   getMapElementMap,
   hideBasemapUtilityLayers,
   isBasemapUtilityLayerTitle,
-  keepOperationalGroupLayersVisible,
   presenterModes,
   previewLayerSnapshots,
   safeLayerTitle,
@@ -199,11 +198,6 @@ function isTradeAreaBoundaryLayerTitle(title: string) {
   return normalized.includes("fsrsmotradeareas") || (normalized.includes("fsrsmo") && normalized.includes("tradeareas"));
 }
 
-function isZipOperatingLayerTitle(title: string) {
-  const normalized = title.toLowerCase();
-  return normalized.includes("zip") || normalized.includes("fy25");
-}
-
 function isSupplementalBioMedSourceLayerTitle(title: string) {
   return title.toLowerCase().replace(/[_-]+/g, " ").includes("biomed source layer");
 }
@@ -245,87 +239,9 @@ function previewWorkbenchLayerSnapshots(supplementalLayers: ArcJurisdictionSuppl
   return combineTradeAreaLayerSnapshots(previewLayerSnapshots(supplementalLayers));
 }
 
-function layerSnapshotKey(layer: Pick<BioMedLayerSnapshot, "title">) {
-  return layer.title.toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function intendedWorkbenchLayerSnapshots(
-  supplementalLayers: ArcJurisdictionSupplementalLayerSource[],
-  nextPreset: WorkbenchPreset
-) {
-  return previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({
-    ...layer,
-    visible: shouldShowLayerForPreset(layer, nextPreset),
-  }));
-}
-
-function mergeWorkbenchLayerSnapshots({
-  current,
-  live,
-  expected,
-  isAuthenticated,
-}: {
-  current: BioMedLayerSnapshot[];
-  live: BioMedLayerSnapshot[];
-  expected: BioMedLayerSnapshot[];
-  isAuthenticated: boolean;
-}) {
-  const currentByTitle = new Map(current.map((layer) => [layerSnapshotKey(layer), layer]));
-  const liveByTitle = new Map(live.map((layer) => [layerSnapshotKey(layer), layer]));
-  const expectedKeys = new Set(expected.map(layerSnapshotKey));
-
-  const merged = expected.map((expectedLayer) => {
-    const key = layerSnapshotKey(expectedLayer);
-    const liveLayer = liveByTitle.get(key);
-    if (liveLayer) {
-      return {
-        ...expectedLayer,
-        ...liveLayer,
-        title: expectedLayer.title,
-        category: expectedLayer.category,
-        role: expectedLayer.role,
-        summary: expectedLayer.summary,
-        useCase: expectedLayer.useCase,
-      };
-    }
-
-    return {
-      ...expectedLayer,
-      visible: currentByTitle.get(key)?.visible ?? expectedLayer.visible,
-      status: isAuthenticated ? "Loading" : expectedLayer.status,
-    };
-  });
-
-  live.forEach((liveLayer) => {
-    if (!expectedKeys.has(layerSnapshotKey(liveLayer))) merged.push(liveLayer);
-  });
-
-  return merged;
-}
-
-function shouldRetryLayerHydration(
-  map: ReturnType<typeof getMapElementMap>,
-  supplementalLayers: ArcJurisdictionSupplementalLayerSource[]
-) {
-  const expectedCount = previewWorkbenchLayerSnapshots(supplementalLayers).length;
-  const live = buildWorkbenchLayerSnapshots(map, supplementalLayers);
-  return live.length < expectedCount || live.some((layer) => layer.status !== "Loaded");
-}
-
 function featureDisplayTitle(feature: MasterFeatureSummary) {
   const tradeAreaZip = isTradeAreaLayerTitle(feature.layerTitle) && tradeAreaZipValue(feature);
   if (tradeAreaZip) return `ZIP ${tradeAreaZip}`;
-
-  if (isZipOperatingLayerTitle(feature.layerTitle)) {
-    const place = featureDetailValue(feature, ["NAME", "Name", "City", "Place"], { identifier: true }) || feature.title;
-    const state = featureDetailValue(feature, ["State", "STATE", "State Name", "RG_NAME"], { identifier: true });
-    const zip = featureDetailValue(feature, ["Zip Code", "ZIP", "ZipCode", "ZIP_CODE"], { identifier: true });
-    const location = [place, state].filter((value, index, values) => {
-      if (!value) return false;
-      return values.findIndex((candidate) => normalizeDisplayValue(candidate) === normalizeDisplayValue(value)) === index;
-    }).join(", ");
-    return [location || feature.title, zip].filter(Boolean).join(" ");
-  }
 
   const preferredPlaceTitle = featureSourceFieldValue(feature, [
     "Facility Name",
@@ -370,7 +286,6 @@ function featureKindLabel(feature: MasterFeatureSummary) {
 }
 
 const GEO_PILL_LABELS = new Set(["region", "district", "division", "chapter", "county", "state", "city", "zip"]);
-const ZIP_OPERATING_HIDDEN_LABELS = new Set(["zip", "hschaptercode"]);
 const STAT_ROW_LABELS = new Set([
   "collections",
   "units",
@@ -440,10 +355,6 @@ function partitionFeatureRows(rows: Array<{ label: string; value: string }>) {
     else other.push(row);
   });
   return { geo, stats: stats.slice(0, 4), other: other.slice(0, 8) };
-}
-
-function shouldHideZipOperatingRow(row: { label: string; value: string }) {
-  return ZIP_OPERATING_HIDDEN_LABELS.has(normalizeDisplayValue(row.label));
 }
 
 function featureAccentTone(feature: MasterFeatureSummary) {
@@ -829,13 +740,14 @@ function compactFeatureRows(feature: MasterFeatureSummary) {
     );
   }
 
-  if (isZipOperatingLayerTitle(feature.layerTitle)) {
+  if (layerTitle.includes("zip") || layerTitle.includes("fy25")) {
     return compactRows(
       [
         featureDetailRow(feature, "Collections", ["TotalColl", "Total Collections", "Collections"]),
         featureDetailRow(feature, "Drives", ["TotalDrives", "Total Drives", "Drives"]),
         featureDetailRow(feature, "Plasma", ["Plasma"]),
         featureDetailRow(feature, "SDP", ["SDP"]),
+        featureDetailRow(feature, "ZIP", ["Zip Code", "ZIP", "ZipCode", "ZIP_CODE"], { identifier: true }),
         featureDetailRow(feature, "Place", ["NAME", "Name"], { requireNamedValue: true }),
         featureDetailRow(feature, "Division", ["Biomed Division", "Division"], { requireNamedValue: true, rejectShortCode: true }),
         featureDetailRow(feature, "Region", ["Biomed Region"], { requireNamedValue: true, rejectShortCode: true }),
@@ -1083,8 +995,8 @@ function WorkbenchMapLoader({ pendingVisibleLayerCount }: { pendingVisibleLayerC
       <strong>Preparing Workbench map</strong>
       <span>
         {pendingVisibleLayerCount > 0
-          ? `Loading ${pendingVisibleLayerCount} visible source layer${pendingVisibleLayerCount === 1 ? "" : "s"} from ArcGIS.`
-          : "Applying the clean layer style before showing source geography."}
+          ? `Routing ${pendingVisibleLayerCount} source layer${pendingVisibleLayerCount === 1 ? "" : "s"} from ArcGIS…`
+          : "Loading the BioMed operating map…"}
       </span>
     </div>
   );
@@ -1094,14 +1006,13 @@ function FeatureInfoCard({ feature }: { feature: MasterFeatureSummary }) {
   if (isTradeAreaLayerTitle(feature.layerTitle)) return <TradeAreaFeatureCard feature={feature} />;
 
   const layerTitle = feature.layerTitle.toLowerCase();
-  const isZipLayer = isZipOperatingLayerTitle(feature.layerTitle);
+  const isZipLayer = layerTitle.includes("zip") || layerTitle.includes("fy25");
   const address = isZipLayer ? "" : composeFeatureAddress(feature);
   const title = featureDisplayTitle(feature);
   const tone = featureAccentTone(feature);
-  const insight = isZipLayer ? "" : featureInsight(feature);
+  const insight = featureInsight(feature);
   const baseRows = compactFeatureRows(feature);
-  const enrichedRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)]
-    .filter((row) => !isZipLayer || !shouldHideZipOperatingRow(row));
+  const enrichedRows = [...baseRows, ...extraSourceRows(feature, baseRows, address, title)];
   const { geo, stats, other } = partitionFeatureRows(enrichedRows);
   const directionsUrl = address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
@@ -1392,9 +1303,11 @@ export default function BiomedOpsWorkbenchPage({
   const searchRunRef = useRef(0);
   const [preset, setPreset] = useState<WorkbenchPreset>(DEFAULT_WORKBENCH_PRESET);
   const [layers, setLayers] = useState<BioMedLayerSnapshot[]>(() =>
-    intendedWorkbenchLayerSnapshots(supplementalLayers, DEFAULT_WORKBENCH_PRESET),
+    previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({
+      ...layer,
+      visible: shouldShowLayerForPreset(layer, DEFAULT_WORKBENCH_PRESET),
+    })),
   );
-  const [styledMapKey, setStyledMapKey] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
   const [searchResults, setSearchResults] = useState<FeatureSearchResult[]>([]);
@@ -1404,12 +1317,23 @@ export default function BiomedOpsWorkbenchPage({
   const [selectedFeature, setSelectedFeature] = useState<MasterFeatureSummary | null>(null);
   const [selectedGraphic, setSelectedGraphic] = useState<Graphic | null>(null);
   const [spatialRollup, setSpatialRollup] = useState<BioMedSpatialRollupSummary | null>(null);
-  const [mapLoadingGateExpired, setMapLoadingGateExpired] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
+  const [mapReady, setMapReady] = useState(false);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
-  const activeArcgisMapKey = isAuthenticated ? arcJurisdictionMapSource.webMapItemId : "opsv2-preview";
+
+  // Show the loader only while the authenticated map hydrates; fail open after 8s
+  // so a slow/odd ArcGIS init can never leave the loader stuck on screen.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMapReady(true);
+      return;
+    }
+    setMapReady(false);
+    const failOpen = window.setTimeout(() => setMapReady(true), 8000);
+    return () => window.clearTimeout(failOpen);
+  }, [isAuthenticated]);
 
   const filteredLayers = useMemo(
     () => layers.filter((layer) => layerMatchesQuery(layer, query)),
@@ -1429,15 +1353,6 @@ export default function BiomedOpsWorkbenchPage({
     [layers],
   );
 
-  const pendingLayerCount = useMemo(
-    () => (isAuthenticated ? layers.filter((layer) => layer.status !== "Loaded").length : 0),
-    [isAuthenticated, layers],
-  );
-  const pendingVisibleLayerCount = useMemo(
-    () => (isAuthenticated ? layers.filter((layer) => layer.visible && layer.status !== "Loaded").length : 0),
-    [isAuthenticated, layers],
-  );
-  const mapIsInitializing = isAuthenticated && !mapLoadingGateExpired && styledMapKey !== activeArcgisMapKey;
   const activeLayers = useMemo(() => layers.filter((layer) => layer.visible), [layers]);
   const inactiveLayers = useMemo(() => layers.filter((layer) => !layer.visible), [layers]);
 
@@ -1469,42 +1384,9 @@ export default function BiomedOpsWorkbenchPage({
     ? `${searchResults.length} feature result${searchResults.length === 1 ? "" : "s"}`
     : presetLabel;
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setMapLoadingGateExpired(false);
-      return;
-    }
-
-    setMapLoadingGateExpired(false);
-    const timeout = window.setTimeout(() => {
-      setMapLoadingGateExpired(true);
-    }, 8000);
-    return () => window.clearTimeout(timeout);
-  }, [activeArcgisMapKey, isAuthenticated]);
-
   const refreshLayers = useCallback(() => {
-    const map = getMapElementMap(mapRef.current);
-    const live = buildWorkbenchLayerSnapshots(map, supplementalLayers);
-    const expected = intendedWorkbenchLayerSnapshots(supplementalLayers, preset);
-    setLayers((current) => mergeWorkbenchLayerSnapshots({ current, live, expected, isAuthenticated }));
-  }, [isAuthenticated, preset, supplementalLayers]);
-
-  useEffect(() => {
-    if (!mapLoadingGateExpired || !isAuthenticated) return;
-    const map = getMapElementMap(mapRef.current);
-    keepOperationalGroupLayersVisible(map);
-    const mapLayers = collectArcJurisdictionLayers(map);
-    if (mapLayers.length > 0) {
-      const nextSnapshots = buildLayerSnapshots(map, supplementalLayers);
-      mapLayers.forEach((layer) => {
-        const snapshot = nextSnapshots.find((item) => item.id === layer.id);
-        if (!snapshot) return;
-        layer.visible = shouldShowLayerForPreset(snapshot, preset);
-      });
-      keepOperationalGroupLayersVisible(map);
-      refreshLayers();
-    }
-  }, [isAuthenticated, mapLoadingGateExpired, preset, refreshLayers, supplementalLayers]);
+    setLayers(buildWorkbenchLayerSnapshots(getMapElementMap(mapRef.current), supplementalLayers));
+  }, [supplementalLayers]);
 
   const closeSearchPopup = useCallback(() => {
     const view = mapRef.current?.view as (MapView & { popup?: { close?: () => void } }) | undefined;
@@ -1577,17 +1459,9 @@ export default function BiomedOpsWorkbenchPage({
       setPreset(nextPreset);
       const map = getMapElementMap(mapRef.current);
       hideBasemapUtilityLayers(map);
-      keepOperationalGroupLayersVisible(map);
       const mapLayers = collectArcJurisdictionLayers(map);
       if (!map || mapLayers.length === 0) {
-        setLayers((current) =>
-          mergeWorkbenchLayerSnapshots({
-            current,
-            live: [],
-            expected: intendedWorkbenchLayerSnapshots(supplementalLayers, nextPreset),
-            isAuthenticated,
-          }),
-        );
+        setLayers((current) => current.map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, nextPreset) })));
         return;
       }
 
@@ -1597,10 +1471,9 @@ export default function BiomedOpsWorkbenchPage({
         if (!snapshot) return;
         layer.visible = shouldShowLayerForPreset(snapshot, nextPreset);
       });
-      keepOperationalGroupLayersVisible(map);
       refreshLayers();
     },
-    [isAuthenticated, refreshLayers, supplementalLayers],
+    [refreshLayers, supplementalLayers],
   );
 
   useEffect(() => {
@@ -1679,33 +1552,26 @@ export default function BiomedOpsWorkbenchPage({
 
   useEffect(() => {
     let cancelled = false;
-    let restyleTimer: number | undefined;
-    let startupTimer: number | undefined;
-    let readyListenerElement: ArcgisMapElement | null = null;
-    let readyListener: (() => void) | null = null;
     const handles: WatchHandle[] = [];
 
     async function hydrateMap() {
       if (!isAuthenticated) {
-        setStyledMapKey(activeArcgisMapKey);
-        setLayers(intendedWorkbenchLayerSnapshots(supplementalLayers, preset));
+        setLayers(previewWorkbenchLayerSnapshots(supplementalLayers).map((layer) => ({ ...layer, visible: shouldShowLayerForPreset(layer, preset) })));
         setSelectedFeature(null);
         setSelectedGraphic(null);
         setSpatialRollup(null);
         return;
       }
 
-      setStyledMapKey(null);
       const mapElement = mapRef.current;
       const view = mapElement?.view as (MapView & { popupEnabled?: boolean; popup?: { close?: () => void } }) | undefined;
       if (!mapElement || !view) return;
-      if (mapElement.dataset.mapKey !== activeArcgisMapKey) return;
 
       await view.when?.();
       if (cancelled) return;
+      setMapReady(true); // map surface is live; reveal it (loader fades out)
 
       const map = getMapElementMap(mapElement);
-      if (!map) return;
       await addArcgisPortalLayers(map, supplementalLayers);
       if (cancelled) return;
 
@@ -1735,39 +1601,17 @@ export default function BiomedOpsWorkbenchPage({
       // Web-map operational layers can finish loading after the view is ready;
       // re-apply the preset as the layer collection settles so the default view
       // isn't left with every layer visible on first load.
-      const restyleSettledMap = () => {
-        if (restyleTimer) window.clearTimeout(restyleTimer);
-        restyleTimer = window.setTimeout(() => {
-          if (cancelled) return;
-          setStyledMapKey(null);
-          void Promise.allSettled([applyPresentationMapStyle(map, view), applyPresentationMarkers(map)]).then(() => {
-            if (cancelled) return;
-            applyPreset(preset);
-            refreshLayers();
-            setStyledMapKey(activeArcgisMapKey);
-          });
-        }, 120);
-      };
       const layerCollection = (map as unknown as {
         allLayers?: { on?: (event: string, cb: () => void) => WatchHandle };
       } | undefined)?.allLayers;
       const collectionHandle = layerCollection?.on?.("after-changes", () => {
         if (cancelled) return;
-        restyleSettledMap();
+        applyPreset(preset);
       });
       if (collectionHandle) handles.push(collectionHandle);
 
       applyPreset(preset);
       refreshLayers();
-      setStyledMapKey(activeArcgisMapKey);
-
-      [500, 1500, 3500, 7000, 12000, 20000].forEach((delay) => {
-        const timeout = window.setTimeout(() => {
-          if (cancelled || !shouldRetryLayerHydration(map, supplementalLayers)) return;
-          restyleSettledMap();
-        }, delay);
-        handles.push({ remove: () => window.clearTimeout(timeout) });
-      });
 
       const clickHandle = view.on("click", async (event) => {
         try {
@@ -1791,48 +1635,15 @@ export default function BiomedOpsWorkbenchPage({
       handles.push(clickHandle);
     }
 
-    function clearReadyListener() {
-      if (readyListenerElement && readyListener) {
-        readyListenerElement.removeEventListener("arcgisViewReadyChange", readyListener);
-      }
-      readyListenerElement = null;
-      readyListener = null;
-    }
-
-    function waitForExpectedMap(attempt = 0) {
-      if (cancelled) return;
-      const mapElement = mapRef.current;
-      if (!mapElement || mapElement.dataset.mapKey !== activeArcgisMapKey) {
-        if (attempt < 20) {
-          startupTimer = window.setTimeout(() => waitForExpectedMap(attempt + 1), 50);
-        }
-        return;
-      }
-
-      if (mapElement.view) {
-        void hydrateMap();
-        return;
-      }
-
-      clearReadyListener();
-      readyListenerElement = mapElement;
-      readyListener = () => {
-        clearReadyListener();
-        void hydrateMap();
-      };
-      mapElement.addEventListener("arcgisViewReadyChange", readyListener, { once: true } as AddEventListenerOptions);
-    }
-
-    waitForExpectedMap();
+    const mapElement = mapRef.current;
+    if (mapElement?.view) void hydrateMap();
+    else mapElement?.addEventListener("arcgisViewReadyChange", hydrateMap, { once: true } as AddEventListenerOptions);
 
     return () => {
       cancelled = true;
-      if (restyleTimer) window.clearTimeout(restyleTimer);
-      if (startupTimer) window.clearTimeout(startupTimer);
-      clearReadyListener();
       handles.forEach((handle) => handle.remove?.());
     };
-  }, [activeArcgisMapKey, applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers, supplementalLayers]);
+  }, [applyPreset, disableSearchPopup, isAuthenticated, preset, refreshLayers, supplementalLayers]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2024,14 +1835,13 @@ export default function BiomedOpsWorkbenchPage({
         {createElement(
           "arcgis-map",
           {
-            key: activeArcgisMapKey,
+            key: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : "opsv2-preview",
             ref: mapRef,
             itemId: isAuthenticated ? arcJurisdictionMapSource.webMapItemId : undefined,
             basemap: isAuthenticated ? undefined : quietOpsBasemapId(),
             center: CENTER,
             zoom: ZOOM,
             className: "opsv2__arcgis",
-            "data-map-key": activeArcgisMapKey,
             "data-testid": "biomed-ops-arcgis",
           },
           [
@@ -2053,8 +1863,9 @@ export default function BiomedOpsWorkbenchPage({
             ),
           ],
         )}
-        {mapIsInitializing && (
-          <WorkbenchMapLoader pendingVisibleLayerCount={pendingVisibleLayerCount} />
+
+        {isAuthenticated && !mapReady && (
+          <WorkbenchMapLoader pendingVisibleLayerCount={layers.filter((layer) => layer.visible).length} />
         )}
       </div>
 
@@ -2075,11 +1886,6 @@ export default function BiomedOpsWorkbenchPage({
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
             <Filter aria-hidden="true" size={16} />
           </label>
-          {pendingLayerCount > 0 && (
-            <div className="opsv2__layer-load-note" role="status">
-              Loading {pendingLayerCount} source layer{pendingLayerCount === 1 ? "" : "s"} from ArcGIS.
-            </div>
-          )}
           {query.trim().length > 0 && (
             <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
               {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
