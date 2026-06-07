@@ -36,6 +36,7 @@
 
 .opsv2__map-shell {
   position: relative;
+  grid-row: 1;
   grid-column: 2;
   min-width: 0;
 }
@@ -386,7 +387,6 @@
 
 .opsv2__panel {
   position: relative;
-  height: 100%;
   min-height: 0;
   z-index: 12;
   display: flex;
@@ -399,12 +399,14 @@
 }
 
 .opsv2__panel--left {
+  grid-row: 1;
   grid-column: 1;
   overflow: hidden;
   border-width: 0 1px 0 0;
 }
 
 .opsv2__panel--right {
+  grid-row: 1;
   grid-column: 3;
   border-width: 0 0 0 1px;
 }
