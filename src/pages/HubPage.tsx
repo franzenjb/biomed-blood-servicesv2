@@ -141,6 +141,15 @@ export default function HubPage() {
         </div>
       </header>
 
+      <Link to="/ops?tour=1" className="hub__tourcta" data-testid="hub-explore-regions-tour">
+        <span className="hub__tourcta-mark"><RcMark size={26} /></span>
+        <span className="hub__tourcta-body">
+          <strong>Explore Regions — Guided Tour</strong>
+          <span>Pick a region, fly there on the live BioMed map, and step through its donor story.</span>
+        </span>
+        <span className="hub__tourcta-go">Start tour →</span>
+      </Link>
+
       <nav className="hub__grid" aria-label="Sections">
         {sections.map((s) => (
           <Link
@@ -202,7 +211,7 @@ export default function HubPage() {
         </Link>
 
         <Link
-          to="/regions"
+          to="/ops?tour=1"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/explore-regions-map.png)" }}
           data-testid="hub-card-explore-regions"
@@ -211,7 +220,7 @@ export default function HubPage() {
           <span className="hub__index mono">09</span>
           <span className="hub__body">
             <span className="hub__title">Explore Regions</span>
-            <span className="hub__q">Pick a region — donors, hospitals, fixed-site trade areas, and community impact.</span>
+            <span className="hub__q">Guided tour — pick a region, fly there on the live map, and step through its donor story.</span>
           </span>
         </Link>
       </nav>

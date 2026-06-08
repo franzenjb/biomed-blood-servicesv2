@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Compass,
   Filter,
   HelpCircle,
   Home,
@@ -24,6 +25,7 @@ import {
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
+import RegionTour from "../maps/RegionTour";
 import {
   arcJurisdictionMapSource,
   biomedWorkbenchSupplementalLayers,
@@ -1504,7 +1506,19 @@ export default function BiomedOpsWorkbenchPage({
   const [leftTab, setLeftTab] = useState<LeftTab>("filter");
   const [mapReady, setMapReady] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourRegion, setTourRegion] = useState<string | null>(null);
+  const [tourFlying, setTourFlying] = useState(false);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
+
+  // Deep-link: /ops?tour=1 opens the guided region tour straight away.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("tour")) {
+      setTourActive(true);
+      setLeftOpen(false);
+      setRightOpen(false);
+    }
+  }, []);
 
   // Show the loader only while the authenticated map hydrates; fail open after 8s
   // so a slow/odd ArcGIS init can never leave the loader stuck on screen.
@@ -2043,6 +2057,78 @@ export default function BiomedOpsWorkbenchPage({
     }
   }
 
+  const openTour = useCallback(() => {
+    setTourActive(true);
+    setLeftOpen(false);
+    setRightOpen(false);
+  }, []);
+
+  const closeTour = useCallback(() => {
+    setTourActive(false);
+    setTourRegion(null);
+    setLeftOpen(true);
+  }, []);
+
+  // Fly the live map to a region by querying the trade-area layers for its extent.
+  const flyToRegion = useCallback(
+    async (name: string) => {
+      setTourRegion(name);
+      const map = getMapElementMap(mapRef.current);
+      const view = mapRef.current?.view as MapView | undefined;
+      if (!map || !view) return;
+
+      const tradeAreaLayers = collectArcJurisdictionLayers(map).filter((layer) =>
+        isTradeAreaCompositeLayerTitle(safeLayerTitle(layer)),
+      );
+      tradeAreaLayers.forEach((layer) => {
+        layer.visible = true;
+      });
+      refreshLayers();
+
+      setTourFlying(true);
+      try {
+        const safeName = name.replace(/'/g, "''");
+        const candidates = (tradeAreaLayers.length
+          ? tradeAreaLayers
+          : collectArcJurisdictionLayers(map)
+        ).filter(isSearchableFeatureLayer) as FeatureLayer[];
+
+        let union: Extent | null = null;
+        for (const layer of candidates) {
+          try {
+            await layer.load?.();
+            const hasRegion = (layer.fields ?? []).some((field: Field) => field.name?.toLowerCase() === "region");
+            if (!hasRegion) continue;
+            const regionQuery = layer.createQuery();
+            regionQuery.where = `Region = '${safeName}'`;
+            regionQuery.returnGeometry = true;
+            regionQuery.outFields = [];
+            const result = await layer.queryFeatures(regionQuery);
+            const extents = result.features
+              .map((feature) => (feature.geometry as Geometry | null)?.extent as Extent | null | undefined)
+              .filter((ext): ext is Extent => Boolean(ext))
+              .map((ext) => ext.clone());
+            if (extents.length > 0) {
+              union = extents.reduce((acc, ext) => acc.union(ext));
+              break;
+            }
+          } catch {
+            // try the next layer
+          }
+        }
+
+        if (union) {
+          await view.goTo(union.expand(1.25), { duration: 900 });
+        }
+      } catch {
+        // navigation can be interrupted; the slide panel still shows
+      } finally {
+        setTourFlying(false);
+      }
+    },
+    [refreshLayers],
+  );
+
   const authLabel =
     status === "checking"
       ? "Checking ArcGIS"
@@ -2078,10 +2164,15 @@ export default function BiomedOpsWorkbenchPage({
           <RotateCcw aria-hidden="true" size={16} />
           Reset map
         </button>
+        <button type="button" className="rcbar__btn" data-active={tourActive ? "true" : "false"} onClick={tourActive ? closeTour : openTour}>
+          <Compass aria-hidden="true" size={16} />
+          {tourActive ? "Exit tour" : "Region tour"}
+        </button>
         <button type="button" className="rcbar__icon" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
           <HelpCircle aria-hidden="true" size={18} />
         </button>
         <div className="rcbar__auth" data-on={isAuthenticated ? "true" : "false"} data-authenticated={isAuthenticated ? "true" : "false"}>
+
           <span />
           <strong>{authLabel}</strong>
           {!isAuthenticated && (
@@ -2128,6 +2219,15 @@ export default function BiomedOpsWorkbenchPage({
 
         {isAuthenticated && !mapReady && (
           <WorkbenchMapLoader pendingVisibleLayerCount={layers.filter((layer) => layer.visible).length} />
+        )}
+
+        {tourActive && (
+          <RegionTour
+            activeRegion={tourRegion}
+            flying={tourFlying}
+            onSelectRegion={(name) => void flyToRegion(name)}
+            onClose={closeTour}
+          />
         )}
       </div>
 

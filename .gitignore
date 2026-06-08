@@ -10,3 +10,4 @@ graphify-out/.graphify_*
 graphify-out/cache/
 supabase/.temp/
 storymaps-export/
+region-story-mockup/

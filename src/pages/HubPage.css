@@ -472,3 +472,60 @@
 }
 
 .hub__devnote[data-tone="discuss"] { border-left-color: #5b3c88; }
+
+/* Explore Regions — guided tour CTA banner */
+.hub__tourcta {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 20px 0 4px;
+  padding: 16px 22px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(120deg, var(--arc-red, #ed1b2e), var(--arc-red-deep, #c41e3a));
+  box-shadow: var(--d-shadow, 0 18px 44px rgba(26, 26, 26, 0.16));
+  transition: transform 0.16s var(--ease, ease), box-shadow 0.16s ease;
+}
+.hub__tourcta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 56px rgba(196, 30, 58, 0.32);
+}
+.hub__tourcta-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+  flex: 0 0 44px;
+}
+.hub__tourcta-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.hub__tourcta-body strong {
+  font-family: var(--font-headline, "Libre Baskerville", serif);
+  font-size: 18px;
+  font-weight: 700;
+}
+.hub__tourcta-body span {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.88);
+}
+.hub__tourcta-go {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 9px;
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .hub__tourcta-go { display: none; }
+}
