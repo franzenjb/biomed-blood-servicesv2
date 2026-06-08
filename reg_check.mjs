@@ -1,0 +1,15 @@
+import { chromium } from '@playwright/test';
+const b = await chromium.launch();
+const p = await b.newPage();
+const errs=[], logs=[];
+p.on('console', m => { if(m.type()==='error') logs.push(m.text()); });
+p.on('pageerror', e => errs.push(e.message+'\n'+(e.stack||'').split('\n').slice(0,4).join('\n')));
+await p.goto('https://biomed-blood-servicesv2.vercel.app/regions', {waitUntil:'networkidle', timeout:30000}).catch(e=>errs.push('GOTO: '+e.message));
+await p.waitForTimeout(2500);
+const bodyLen = (await p.locator('body').innerText().catch(()=>'')).length;
+const rootHtml = (await p.locator('#root').innerHTML().catch(()=>'')).slice(0,200);
+console.log('=== pageerrors ==='); console.log(errs.join('\n---\n')||'none');
+console.log('=== console errors ==='); console.log(logs.slice(0,8).join('\n')||'none');
+console.log('=== body text length ==='); console.log(bodyLen);
+console.log('=== #root html head ==='); console.log(rootHtml||'EMPTY');
+await b.close();
