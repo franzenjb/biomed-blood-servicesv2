@@ -179,6 +179,20 @@ const collections: Section = {
       },
     },
     {
+      id: "mobile-collections",
+      kind: "content",
+      title: "Mobile collections: the chair on the move",
+      body: "Mobile drives extend the blood mission into communities — through employers, schools, faith groups, and local sponsors. For the national view, the live Jurisdiction Dashboard and Explore Regions let you filter mobile collections by Division, Region, and Chapter.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "National reach", detail: "Pop-up drives carry donation into nearly every county, not just where a center stands." },
+          { title: "Sponsor-hosted", detail: "Workplaces, campuses, and faith communities host the calendar and rally their own turnout." },
+          { title: "Filterable live", detail: "Division, Region, and Chapter views of mobile collections live in the signed-in BioMed maps." },
+        ],
+      },
+    },
+    {
       id: "built-on-summer",
       kind: "content",
       title: "A supply built on summer break",
@@ -206,6 +220,34 @@ const collections: Section = {
       },
     },
     {
+      id: "fixed-sites",
+      kind: "content",
+      title: "Fixed sites: standing capacity",
+      body: "Fixed sites are permanent donor centers that anchor a community and support time-intensive donations like platelets. The Fixed Site Growth Program is a strategic effort to strengthen access, capacity, and reliability — its exact goals are being confirmed with BioMed leadership.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "What they are", detail: "Standing locations for blood donation that complement the mobile drive calendar." },
+          { title: "Fixed Site Growth Program", detail: "A strategic initiative to expand access, capacity, and community reach over time." },
+          { title: "Filterable live", detail: "Division, Region, and Chapter views of fixed sites — and their trade areas — live in Explore Regions." },
+        ],
+      },
+    },
+    {
+      id: "diversity",
+      kind: "content",
+      title: "Donor diversity and population representation",
+      body: "Who donates matters to the mission. Donor populations and community representation shape both the collection story and patient outcomes. This is a high-level introduction — Explore Regions carries the deeper local story. Language here is drafted for review with Marketing & Communications.",
+      block: {
+        kind: "list",
+        items: [
+          { title: "African American donors", detail: "Closest-matched blood for many sickle cell patients — a high-leverage focus for the supply." },
+          { title: "Latino donors", detail: "The fastest-growing share of the patient base and a generational opportunity for donation." },
+          { title: "LGBTQ+ donors", detail: "Updated eligibility guidance welcomes many donors who were excluded under prior rules." },
+        ],
+      },
+    },
+    {
       id: "volunteer",
       kind: "content",
       title: "Volunteers run the door",
@@ -216,6 +258,19 @@ const collections: Section = {
           { title: "Drive coordinators", detail: "Recruit sponsors, secure venues, set goals, and rally turnout in their own community." },
           { title: "Donor ambassadors", detail: "Greet, check in, escort donors through the visit, and run the recovery / canteen area." },
           { title: "Mobile crew support", detail: "Help set up and break down pop-up sites — workplace lobbies, school gyms, faith communities." },
+        ],
+      },
+    },
+    {
+      id: "boundary",
+      kind: "content",
+      title: "A note on geography",
+      body: "BioMed operational boundaries do not always align one-to-one with Humanitarian Services boundaries. Some geographic and operational exceptions exist, including areas where chapter, region, or division relationships may differ. The live maps show geography by name, and the boundary views are provided for orientation with known exceptions.",
+      block: {
+        kind: "split",
+        items: [
+          { title: "BioMed operational geography", detail: "Divisions, regions, and districts organized around how blood is collected and moved." },
+          { title: "Humanitarian Services geography", detail: "Chapter boundaries shown for orientation — they may not match BioMed boundaries exactly." },
         ],
       },
     },

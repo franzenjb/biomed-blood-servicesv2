@@ -430,3 +430,13 @@ test("Hub dev notes: PDF download link is present and points to the asset", asyn
   await expect(dl).toHaveAttribute("href", "/biomed-capabilities-status.pdf");
   await expect(dl).toHaveAttribute("download", /\.pdf$/);
 });
+
+test("BioMed Collections is restructured into the spec sequence", async ({ page }) => {
+  await page.goto("/s/collections");
+  await expect(page.getByTestId("deck")).toHaveAttribute("data-section", "collections");
+  // 10 informational slides after the rebuild.
+  await expect(page.getByTestId("deck-counter")).toContainText("/ 10");
+  // Last slide is the BioMed-vs-HS boundary note.
+  await page.keyboard.press("End");
+  await expect(page.getByRole("heading", { name: "A note on geography" })).toBeVisible();
+});

@@ -71,6 +71,7 @@ export const hubDevNotes: HubDevNoteGroup[] = [
       "Tile 9 — Explore Regions built live on real layers: region selection, FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons.",
       "Content moves: Clara AI / RapidPass / Track Your Blood → Blood Journey; Sickle Cell → Explore Regions.",
       "Volunteer sections in Blood 101, Blood Journey, Hospital Distribution, and Collections.",
+      "Tile 5 — BioMed Collections restructured: overview → Mobile Collections → Fixed Sites + Fixed Site Growth Program → Donor Diversity → Volunteers → BioMed-vs-Humanitarian-Services boundary note. Filtered territory maps live in the Jurisdiction Dashboard and Explore Regions.",
       "Data Sources & Methodology “About the Data” credibility layer added app-wide.",
     ],
   },
@@ -78,7 +79,6 @@ export const hubDevNotes: HubDevNoteGroup[] = [
     group: "In Progress",
     tone: "progress",
     items: [
-      "Tile 5 — BioMed Collections: Mobile Collections + Fixed Sites (incl. Fixed Site Growth Program), Diversity / population section, Division/Region/Chapter filters, territory map, BioMed-vs-Humanitarian-Services boundary disclaimer.",
       "Tile 7 — Operations Workbench: design retained; adding GOAT boundary bookmarks (Division/Region/District/Chapter), boundary disclaimer, and confirming the infrastructure layers.",
     ],
   },
