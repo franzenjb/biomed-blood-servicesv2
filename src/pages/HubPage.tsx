@@ -77,7 +77,7 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
             {openPanel === "devnotes" && (
               <div className="hub__accordion-body">
                 <p className="hub__devnote-intro">
-                  Where we are against the review notes — refining, not rebuilding. Updated June 7, 2026.
+                  Where we are against the review notes — refining, not rebuilding. Updated June 8, 2026.
                 </p>
                 {hubDevNotes.map((g) => (
                   <div key={g.group} className="hub__devnote" data-tone={g.tone}>

@@ -56,7 +56,7 @@ export const hubSources: HubSource[] = [
 // status writeup; keep concise and plain-language.
 export type HubDevNoteGroup = {
   group: string;
-  tone: "discuss" | "done" | "progress" | "troy" | "jennifer";
+  tone: "discuss" | "summary" | "done" | "progress" | "troy" | "jennifer" | "note";
   items: string[];
 };
 
@@ -69,43 +69,57 @@ export const hubDevNotes: HubDevNoteGroup[] = [
     ],
   },
   {
+    group: "Summary",
+    tone: "summary",
+    items: [
+      "The core experience tested well and we are refining, not rebuilding. The structural changes and the biggest new feature (Explore Regions) are in and working on real Red Cross data. The remaining work is mostly content depth in Collections, a few enhancements to the Operations Workbench, and items that depend on data or sign-off from Troy and Marketing & Communications.",
+    ],
+  },
+  {
     group: "Done",
     tone: "done",
     items: [
-      "Home page renamed to “Inside BioMed Capabilities.”",
-      "Nine-tile structure confirmed, ordered foundation → regional.",
-      "Tile 6 — BioMed Blood Map merged into the Jurisdiction Dashboard (one authoritative geography view).",
-      "Tile 9 — Explore Regions built live on real layers: region selection, FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons.",
-      "Content moves: Clara AI / RapidPass / Track Your Blood → Blood Journey; Sickle Cell → Explore Regions.",
-      "Volunteer sections in Blood 101, Blood Journey, Hospital Distribution, and Collections.",
-      "Tile 5 — BioMed Collections restructured: overview → Mobile Collections → Fixed Sites + Fixed Site Growth Program → Donor Diversity → Volunteers → BioMed-vs-Humanitarian-Services boundary note. Filtered territory maps live in the Jurisdiction Dashboard and Explore Regions.",
-      "Data Sources & Methodology “About the Data” credibility layer added app-wide.",
+      "Home page: renamed to “Inside BioMed Capabilities.”",
+      "Nine-tile structure: confirmed at nine tiles, ordered foundation to regional.",
+      "Tile 6 — Jurisdiction Dashboard: BioMed Blood Map merged into the Jurisdiction Dashboard (one authoritative geography view, no duplicate map).",
+      "Tile 9 — Explore Regions: built and live on real layers — region selection, live FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons (Troy's FS Map Layer). Community impact, donor diversity, and Sickle Cell now live here.",
+      "Content moves: Clara AI / RapidPass / Track Your Blood moved into Blood Journey; Sickle Cell moved into Explore Regions.",
+      "Volunteers: volunteer sections present in Blood 101, Blood Journey, Hospital Distribution, and Collections.",
+      "Data Sources & Methodology: new “About the Data” modal — the source-traceability layer Troy asked for. Lists datasets, refresh status, definitions, methodology, limitations, and stewards. Available app-wide; not a tenth tile.",
     ],
   },
   {
     group: "In Progress",
     tone: "progress",
     items: [
-      "Tile 7 — Operations Workbench: design retained; adding GOAT boundary bookmarks (Division/Region/District/Chapter), boundary disclaimer, and confirming the infrastructure layers.",
+      "Tile 5 — BioMed Collections: restructure into Mobile Collections and Fixed Sites (including the Fixed Site Growth Program), add the Diversity / population section, Division/Region/Chapter filters, a high-level territory map, and the BioMed-vs-Humanitarian-Services boundary disclaimer.",
+      "Tile 7 — Operations Workbench: design retained as requested. Still to add — GOAT boundary bookmarks (Division/Region/District/Chapter), boundary disclaimer, and confirm the infrastructure layers (Staging, Manufacturing, Kitting, IRL, Distribution) are the authoritative ones.",
     ],
   },
   {
-    group: "Needs Troy",
+    group: "Outstanding — Needs Troy",
     tone: "troy",
     items: [
-      "Future Demand — verify the flagged numbers and confirm sources before finalizing.",
-      "Tile 8 — Hospital Network: held for Troy’s dashboard concept (placeholder, not over-built).",
-      "Platelet (SDP) trade areas — confirm the blessed current SDP layer before adding a red-cell / platelet toggle.",
-      "Regional detail metrics (chapters, hospitals served, staging, products distributed) — “to be determined.”",
-      "Complete data sources list to finish populating About the Data.",
+      "Future Demand: verify the numbers Jennifer flagged and confirm their sources before we finalize the tile.",
+      "Tile 8 — Hospital Network: held for Troy's dashboard concept (kept as a placeholder, not over-built).",
+      "Platelet (SDP) trade areas: red cell is live now; platelet is a later phase. Need Troy to confirm which SDP trade-area layer is the blessed current one before we add a red-cell / platelet toggle.",
+      "Regional detail metrics: chapters, hospitals served, staging locations, products distributed by region were “to be determined.” Explore Regions is ready to show them once provided.",
+      "Complete data sources list: to finish populating the About the Data modal.",
     ],
   },
   {
-    group: "Needs Jennifer / Marketing & Communications",
+    group: "Outstanding — Needs Jennifer / Marketing & Communications",
     tone: "jennifer",
     items: [
       "Validate Blood 101 content and all volunteer, diversity, and Sickle Cell language.",
       "Confirm which Future Demand figures were the concern.",
+    ],
+  },
+  {
+    group: "Note on Data",
+    tone: "note",
+    items: [
+      "Where BioMed-specific regional numbers are not available yet, regional geography and population context use Red Cross Humanitarian Services geography — labeled as such, for discussion, until BioMed figures are finalized.",
     ],
   },
 ];

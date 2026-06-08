@@ -417,8 +417,9 @@ test.describe("Hub dev notes", () => {
     await expect(modal).toBeVisible();
     await expect(modal.getByText("Development Notes — for Jennifer & Troy")).toBeVisible();
     // Status groups present.
-    await expect(modal.getByText("Needs Troy", { exact: true })).toBeVisible();
+    await expect(modal.getByText("Outstanding — Needs Troy", { exact: true })).toBeVisible();
     await expect(modal.getByText("In Progress", { exact: true })).toBeVisible();
+    await expect(modal.getByText("Summary", { exact: true })).toBeVisible();
   });
 });
 

@@ -447,10 +447,12 @@
   padding-left: 12px;
   border-left: 3px solid var(--arc-gray-100, #e5e5e5);
 }
+.hub__devnote[data-tone="summary"] { border-left-color: #3a3a3a; }
 .hub__devnote[data-tone="done"] { border-left-color: #1f6b35; }
 .hub__devnote[data-tone="progress"] { border-left-color: #1e4a6d; }
 .hub__devnote[data-tone="troy"] { border-left-color: var(--arc-red, #ed1b2e); }
 .hub__devnote[data-tone="jennifer"] { border-left-color: #8a5a00; }
+.hub__devnote[data-tone="note"] { border-left-color: #6b6b6b; }
 
 .hub__devnote-group {
   margin: 0 0 6px;
