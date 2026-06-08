@@ -33,39 +33,27 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
           <p className="jd__modal-meta">American Red Cross · BioMed</p>
           <h2 className="jd__modal-title">About This Hub</h2>
           <p className="jd__modal-lead">
-            One front door to the Red Cross Blood Services story and the BioMed operating tools — five narrative chapters
-            and four live maps, in nine numbered sections.
+            One front door to Red Cross Blood Services — nine sections: five guided chapters, then four live maps.
           </p>
 
-          <div className="jd__modal-callout">
-            <RcMark size={30} />
-            <div>
-              <strong>One Front Door</strong>
-              <span>Read the story, then open the live BioMed maps — all from one place.</span>
-            </div>
-          </div>
-
           <p>
-            Sections 01–05 are guided chapters that explain blood donation and supply. Sections 06–09 are the live,
-            sign-in BioMed tools — the Jurisdiction Dashboard, Ops Workbench, Hospital Network, and Explore Regions.
+            <b>01–05</b> are chapters on blood donation and supply. <b>06–09</b> are live maps — Jurisdiction
+            Dashboard, Ops Workbench, Hospital Network, and Explore Regions.
           </p>
 
           <div className="jd__modal-callout jd__modal-callout--alert">
             <LogIn size={26} aria-hidden="true" />
             <div>
-              <strong>Sections 06–09 Require a Red Cross ArcGIS Sign-In</strong>
-              <span>
-                Open them with your Red Cross ArcGIS Online account. Visitors without org access will see the
-                ArcGIS sign-in prompt and cannot load the live layers.
-              </span>
+              <strong>06–09 need a Red Cross ArcGIS sign-in</strong>
+              <span>Without a Red Cross ArcGIS account you'll see the sign-in prompt and can't load the layers.</span>
             </div>
           </div>
 
           <h3>How To Use It</h3>
           <ul>
-            <li><b>Click a card</b> — chapters open a slide deck; tools open a live map (sign in with your Red Cross ArcGIS account).</li>
-            <li><b>Start anywhere</b> — the sections stand on their own; numbers are a suggested order, not a requirement.</li>
-            <li><b>Use the help icon</b> — every tool has its own <b>?</b> with controls and definitions for that view.</li>
+            <li><b>Click a card</b> — chapters open a slide deck; tools open a live map.</li>
+            <li><b>Start anywhere</b> — numbers suggest an order, not a requirement.</li>
+            <li><b>Each tool has a “?”</b> — controls and definitions for that view.</li>
           </ul>
 
           <section className="hub__accordion" data-open={openPanel === "devnotes" ? "true" : "false"}>
