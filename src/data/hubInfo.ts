@@ -48,7 +48,7 @@ export const hubDevNotes: HubDevNoteGroup[] = [
     group: "Done",
     tone: "done",
     items: [
-      "Home page: renamed to “Inside BioMed Capabilities.”",
+      "Home page: renamed to “Inside Biomedical Capabilities” — Biomedical spelled out, more appropriate than the BioMed shorthand.",
       "Nine-tile structure: confirmed at nine tiles, ordered foundation to regional.",
       "Tile 6 — Jurisdiction Dashboard: BioMed Blood Map merged into the Jurisdiction Dashboard (one authoritative geography view, no duplicate map).",
       "Tile 9 — Explore Regions: built and live on real layers — region selection, live FY collection metrics, fixed sites, and the Red Cell fixed-site trade-area polygons (Troy's FS Map Layer). Community impact, donor diversity, and Sickle Cell now live here.",
