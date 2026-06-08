@@ -2067,9 +2067,11 @@ export default function BiomedOpsWorkbenchPage({
     setTourActive(false);
     setTourRegion(null);
     setLeftOpen(true);
+    const view = mapRef.current?.view as MapView | undefined;
+    if (view) view.padding = { top: 0, right: 0, bottom: 0, left: 0 };
   }, []);
 
-  // Fly the live map to a region by querying the trade-area layers for its extent.
+  // Fly the live map to a BioMed region by querying its boundary polygon extent.
   const flyToRegion = useCallback(
     async (name: string) => {
       setTourRegion(name);
@@ -2077,30 +2079,37 @@ export default function BiomedOpsWorkbenchPage({
       const view = mapRef.current?.view as MapView | undefined;
       if (!map || !view) return;
 
-      const tradeAreaLayers = collectArcJurisdictionLayers(map).filter((layer) =>
-        isTradeAreaCompositeLayerTitle(safeLayerTitle(layer)),
-      );
-      tradeAreaLayers.forEach((layer) => {
-        layer.visible = true;
-      });
-      refreshLayers();
-
       setTourFlying(true);
       try {
         const safeName = name.replace(/'/g, "''");
-        const candidates = (tradeAreaLayers.length
-          ? tradeAreaLayers
-          : collectArcJurisdictionLayers(map)
-        ).filter(isSearchableFeatureLayer) as FeatureLayer[];
+        const allLayers = (map.allLayers?.toArray?.() ?? map.layers?.toArray?.() ?? []) as Layer[];
+        const featureLayers = allLayers.filter(isSearchableFeatureLayer) as FeatureLayer[];
+
+        // The region NAME lives on the "Biomed Regions" boundary layer (field "Biomed_Region").
+        // Rank that layer first; fall back to any name-bearing region field.
+        const ranked = featureLayers
+          .map((layer) => {
+            const title = safeLayerTitle(layer).toLowerCase();
+            const fields = layer.fields ?? [];
+            const field =
+              fields.find((candidate: Field) => /^biomed[_ ]?region$/i.test(candidate.name ?? "")) ??
+              fields.find((candidate: Field) => /(^|_)region$/i.test(candidate.name ?? "") && !/id$/i.test(candidate.name ?? ""));
+            let score = 0;
+            if (field) score += 4;
+            if (title.includes("biomed regions")) score += 10;
+            if (layer.geometryType === "polygon") score += 2;
+            return { layer, field, score };
+          })
+          .filter((candidate) => Boolean(candidate.field))
+          .sort((a, b) => b.score - a.score);
 
         let union: Extent | null = null;
-        for (const layer of candidates) {
+        for (const { layer, field } of ranked) {
+          if (!field) continue;
           try {
             await layer.load?.();
-            const hasRegion = (layer.fields ?? []).some((field: Field) => field.name?.toLowerCase() === "region");
-            if (!hasRegion) continue;
             const regionQuery = layer.createQuery();
-            regionQuery.where = `Region = '${safeName}'`;
+            regionQuery.where = `${field.name} = '${safeName}'`;
             regionQuery.returnGeometry = true;
             regionQuery.outFields = [];
             const result = await layer.queryFeatures(regionQuery);
@@ -2113,12 +2122,20 @@ export default function BiomedOpsWorkbenchPage({
               break;
             }
           } catch {
-            // try the next layer
+            // try the next candidate layer
           }
         }
 
         if (union) {
-          await view.goTo(union.expand(1.25), { duration: 900 });
+          // Offset the view so the region lands in the window between the tour panels.
+          const width = view.width || window.innerWidth;
+          view.padding = {
+            top: 58,
+            bottom: 28,
+            left: 300,
+            right: Math.min(470, Math.round(width * 0.34)),
+          };
+          await view.goTo(union.expand(1.12), { duration: 950 });
         }
       } catch {
         // navigation can be interrupted; the slide panel still shows
@@ -2126,7 +2143,7 @@ export default function BiomedOpsWorkbenchPage({
         setTourFlying(false);
       }
     },
-    [refreshLayers],
+    [],
   );
 
   const authLabel =
