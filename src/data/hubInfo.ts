@@ -56,11 +56,18 @@ export const hubSources: HubSource[] = [
 // status writeup; keep concise and plain-language.
 export type HubDevNoteGroup = {
   group: string;
-  tone: "done" | "progress" | "troy" | "jennifer";
+  tone: "discuss" | "done" | "progress" | "troy" | "jennifer";
   items: string[];
 };
 
 export const hubDevNotes: HubDevNoteGroup[] = [
+  {
+    group: "To Discuss Today — Jennifer & Troy",
+    tone: "discuss",
+    items: [
+      "Interactive territory map inside the Collections tile: Troy's notes ask for “territory footprint map visualizations” with Division / Region / Chapter filters. Open design question — embed a live map directly inside a Collections slide, or a button on the slide that opens the map in a pop-up modal with an accordion? Decide scope and which slide before we build it.",
+    ],
+  },
   {
     group: "Done",
     tone: "done",

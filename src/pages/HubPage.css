@@ -492,3 +492,5 @@
 .hub__devnote-download svg {
   color: #fff;
 }
+
+.hub__devnote[data-tone="discuss"] { border-left-color: #5b3c88; }
