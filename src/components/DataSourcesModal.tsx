@@ -4,6 +4,7 @@ import { Info, X } from "lucide-react";
 import RcMark from "./RcMark";
 import {
   datasets,
+  references,
   definitions,
   methodology,
   limitations,
@@ -15,6 +16,7 @@ import "./DataSourcesModal.css";
 
 const SECTION_ORDER: DataSourcesSectionId[] = [
   "sources",
+  "references",
   "refresh",
   "definitions",
   "methodology",
@@ -168,6 +170,23 @@ function renderSection(id: DataSourcesSectionId) {
             </article>
           ))}
         </div>
+      );
+    case "references":
+      return (
+        <ol className="dsm__refs">
+          {references.map((source) => (
+            <li key={source.title}>
+              {source.url ? (
+                <a href={source.url} target="_blank" rel="noreferrer">
+                  {source.title}
+                </a>
+              ) : (
+                <span>{source.title}</span>
+              )}
+              <em className="dsm__ref-kind">{source.kind}</em>
+            </li>
+          ))}
+        </ol>
       );
     case "refresh":
       return (

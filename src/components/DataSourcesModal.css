@@ -302,6 +302,42 @@
   color: var(--arc-gray-700, #4a4a4a);
 }
 
+.dsm__refs {
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.dsm__refs li {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--arc-gray-700, #4a4a4a);
+}
+
+.dsm__refs a {
+  color: #1e4a6d;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.dsm__refs a:hover {
+  text-decoration: underline;
+}
+
+.dsm__ref-kind {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--arc-gray-100, #f1f1ef);
+  color: var(--arc-gray-500, #737373);
+  font-family: var(--font-data, "IBM Plex Mono", monospace);
+  font-size: 10px;
+  font-style: normal;
+}
+
 /* ---- footer ---- */
 .dsm__foot {
   margin: 22px 0 0;

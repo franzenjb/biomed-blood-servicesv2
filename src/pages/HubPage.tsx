@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Download, HelpCircle, LogIn, X } from "lucide-react";
 import { sections } from "../data/sections";
-import { hubDevNotes, hubSectionIndex, hubSources } from "../data/hubInfo";
+import { hubDevNotes, hubSectionIndex } from "../data/hubInfo";
 import RcMark from "../components/RcMark";
 import ThemeToggle from "../components/ThemeToggle";
 import "./HubPage.css";
 
 function HubHelpModal({ onClose }: { onClose: () => void }) {
-  const [openPanel, setOpenPanel] = useState<"devnotes" | "index" | "sources" | null>("devnotes");
+  const [openPanel, setOpenPanel] = useState<"devnotes" | "index" | null>("devnotes");
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -119,30 +119,6 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
                     </div>
                   </article>
                 ))}
-              </div>
-            )}
-          </section>
-
-          <section className="hub__accordion" data-open={openPanel === "sources" ? "true" : "false"}>
-            <button type="button" className="hub__accordion-head" onClick={() => setOpenPanel(openPanel === "sources" ? null : "sources")}>
-              <span>Sources</span>
-              <b>{hubSources.length}</b>
-              <ChevronDown aria-hidden="true" size={18} />
-            </button>
-            {openPanel === "sources" && (
-              <div className="hub__accordion-body">
-                <ol className="hub__sources">
-                  {hubSources.map((source) => (
-                    <li key={source.title}>
-                      {source.url ? (
-                        <a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>
-                      ) : (
-                        <span>{source.title}</span>
-                      )}
-                      <em className="hub__source-kind">{source.kind}</em>
-                    </li>
-                  ))}
-                </ol>
               </div>
             )}
           </section>

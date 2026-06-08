@@ -353,7 +353,7 @@ test.describe("Maps (shared shell)", () => {
 });
 
 test.describe("Data Sources & Methodology modal", () => {
-  test("global dock opens the modal with all six accordion sections", async ({ page }) => {
+  test("global dock opens the modal with all seven accordion sections", async ({ page }) => {
     await page.goto("/s/future-demand");
     const trigger = page.getByTestId("about-the-data");
     await expect(trigger).toBeVisible();
@@ -362,6 +362,7 @@ test.describe("Data Sources & Methodology modal", () => {
     await expect(modal).toBeVisible();
     for (const name of [
       "Data Sources",
+      "Reference Library",
       "Refresh Schedule",
       "Definitions",
       "Methodology",

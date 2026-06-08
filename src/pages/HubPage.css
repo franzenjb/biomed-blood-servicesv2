@@ -411,30 +411,6 @@
 
 .hub__index-row span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.45; color: #5a5a5a; }
 
-.hub__sources { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; }
-
-.hub__sources li { font-size: 13px; line-height: 1.4; color: #2d2d2d; }
-
-.hub__sources a { color: #1e4a6d; text-decoration: none; font-weight: 600; }
-
-.hub__sources a:hover { text-decoration: underline; }
-
-.hub__source-kind {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: #f1f1ef;
-  color: #737373;
-  font-family: var(--font-data, "IBM Plex Mono", monospace);
-  font-size: 10px;
-  font-style: normal;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  vertical-align: middle;
-}
-
 /* ---- Development Notes accordion (Jennifer & Troy) ---- */
 .hub__devnote-intro {
   margin: 0 0 12px;
