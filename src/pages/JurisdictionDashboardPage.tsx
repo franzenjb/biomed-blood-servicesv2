@@ -28,7 +28,7 @@ import {
   jurisdictionDashboardSupplementalLayers,
   type ArcJurisdictionSupplementalLayerSource,
 } from "../config/arcgisLayers";
-import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
+import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
@@ -1287,6 +1287,19 @@ export default function JurisdictionDashboardPage({
 
         // Everything is applied — now reveal the finished map.
         if (!cancelled) setMapReady(true);
+
+        // Lift the chapter-view BIOMED layers in as a hidden group (non-blocking —
+        // they default off, so this never gates the reveal). Available for the
+        // right-panel popups; disable their Esri popups + refresh the snapshot list.
+        void addChapterViewBiomedGroup(map).then(({ added }) => {
+          if (cancelled || added.length === 0) return;
+          collectArcJurisdictionLayers(map).forEach((layer) => {
+            if ("popupEnabled" in layer) (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
+            if ("popupTemplate" in layer) (layer as Layer & { popupTemplate?: unknown }).popupTemplate = null;
+          });
+          discoverLayers(map);
+          refreshLayerSnaps();
+        });
 
         // Seed filters/KPIs/sites after reveal (does not gate the map).
         await refreshOptionsFor("all", EMPTY_SELECTION);

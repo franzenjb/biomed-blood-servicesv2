@@ -270,6 +270,31 @@ export const supplementalBiomedSourceLayer = {
     "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=6af8a323a0b5468f9427baa4d6ee7481"
 } satisfies ArcJurisdictionSupplementalLayerSource;
 
+// Chapter-view BIOMED layers (maps.jbf.com/chapter-view source web map). These
+// 12 styled layers are lifted into the biomed views at runtime as a hidden
+// "BIOMED" group — see addChapterViewBiomedGroup(). Editing nothing in AGOL;
+// the layer instances carry their own renderers + popups from this web map.
+export const chapterViewBiomedSource = {
+  webMapItemId: "2b947b613f0f4eb79132da593f0db7b4",
+  title: "Chapter View — BIOMED layers",
+  groupTitle: "BIOMED",
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=2b947b613f0f4eb79132da593f0db7b4",
+  layerTitles: [
+    "Blood Drives by Type",
+    "Blood Drives Planned or Completed",
+    "Latino Blood Drives",
+    "Total Collections (RBC)",
+    "Drives by County",
+    "Drives by Chapter",
+    "Drives by Region",
+    "Drives by Division",
+    "RBC Collections by County",
+    "RBC Collections by Chapter",
+    "RBC Collections by Region",
+    "RBC Collections by Division",
+  ],
+};
+
 export const hospitalLocationsLayerSource = {
   title: "Hospital Locations",
   itemId: "87e9189c3b284ecb900749eecfb64a05",

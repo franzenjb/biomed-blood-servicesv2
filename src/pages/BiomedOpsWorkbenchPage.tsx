@@ -41,7 +41,7 @@ import {
   tradeAreaBreakForDonorShare,
   tradeAreaDonorShareBreaks
 } from "../maps/presentationStyle";
-import { addArcgisPortalLayers } from "../utils/arcgisMasterLayers";
+import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
@@ -1806,6 +1806,18 @@ export default function BiomedOpsWorkbenchPage({
       }
       if (cancelled) return;
       setMapReady(true); // painted surface is live; loader fades out
+
+      // Lift the chapter-view BIOMED layers in as a hidden group (non-blocking —
+      // they default off, so this never delays the reveal). Disable their popups
+      // and refresh the layer panel once they land.
+      void addChapterViewBiomedGroup(map).then(({ added }) => {
+        if (cancelled || added.length === 0) return;
+        collectArcJurisdictionLayers(map).forEach((layer) => {
+          if ("popupEnabled" in layer) (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
+          if ("popupTemplate" in layer) (layer as Layer & { popupTemplate?: unknown }).popupTemplate = null;
+        });
+        refreshLayers();
+      });
 
       collectArcJurisdictionLayers(map).forEach((layer) => {
         if ("popupEnabled" in layer) {
