@@ -262,6 +262,28 @@
   color: var(--arc-red, #ed1b2e);
 }
 
+.jd__collapse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--arc-gray-100, #e5e5e5);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jd__collapse-btn:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
 .jd__rail-home {
   display: inline-grid;
   place-items: center;

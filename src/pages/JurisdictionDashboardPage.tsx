@@ -1495,7 +1495,7 @@ export default function JurisdictionDashboardPage({
         <aside className="jd__panel jd__panel--left" aria-label="Filters" data-collapsed={leftOpen ? "false" : "true"}>
           {!leftOpen && (
             <div className="jd__rail">
-              <button type="button" className="jd__rail-btn" aria-label="Open filters" onClick={() => setLeftOpen(true)}>
+              <button type="button" className="jd__rail-btn" aria-label="Open filters" title="Show filters" onClick={() => setLeftOpen(true)}>
                 <ChevronRight aria-hidden="true" size={18} />
               </button>
               <Link to="/hub" className="jd__rail-home" aria-label="Home" title="Home">
@@ -1514,8 +1514,9 @@ export default function JurisdictionDashboardPage({
                 <h2>{leftTab === "filters" ? "Filter by Geography" : "Map Layers"}</h2>
                 <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
-              <button type="button" className="jd__rail-btn" aria-label="Collapse filters" onClick={() => setLeftOpen(false)}>
-                <ChevronLeft aria-hidden="true" size={18} />
+              <button type="button" className="jd__collapse-btn" aria-label="Collapse filters" title="Hide filters panel" onClick={() => setLeftOpen(false)}>
+                <ChevronLeft aria-hidden="true" size={16} />
+                Hide
               </button>
             </div>
 
@@ -1653,7 +1654,7 @@ export default function JurisdictionDashboardPage({
         <aside className="jd__panel jd__panel--right" aria-label="Sites and detail" data-collapsed={rightOpen ? "false" : "true"}>
           {!rightOpen && (
             <div className="jd__rail">
-              <button type="button" className="jd__rail-btn" aria-label="Open sites" onClick={() => setRightOpen(true)}>
+              <button type="button" className="jd__rail-btn" aria-label="Open sites" title="Show sites panel" onClick={() => setRightOpen(true)}>
                 <ChevronLeft aria-hidden="true" size={18} />
               </button>
               <span className="jd__rail-label">Sites</span>
@@ -1666,8 +1667,9 @@ export default function JurisdictionDashboardPage({
                 <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed Site List"}</h2>
                 <p>{rightTab === "detail" && activeFeature ? activeFeature.layerTitle : "Click a site to fly to it"}</p>
               </div>
-              <button type="button" className="jd__rail-btn" aria-label="Collapse sites" onClick={() => setRightOpen(false)}>
-                <ChevronRight aria-hidden="true" size={18} />
+              <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>
+                Hide
+                <ChevronRight aria-hidden="true" size={16} />
               </button>
             </div>
 
