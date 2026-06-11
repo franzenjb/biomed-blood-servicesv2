@@ -24,7 +24,7 @@ test.describe("Hub", () => {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
-    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Pick a region — donors, hospitals, fixed-site trade areas, and community impact.");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Guided tour — pick a region, fly there on the live map, and step through its donor story.");
     await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
@@ -35,7 +35,7 @@ test.describe("Hub", () => {
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/jurisdiction-dashboard");
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
     await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
-    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/regions");
+    await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/ops?tour=1");
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("style", /dashboard-preview\.svg/);
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("style", /explore-regions-map\.png/);
     await page.getByTestId("hub-card-distribution").click();
@@ -387,11 +387,10 @@ test.describe("Data Sources & Methodology modal", () => {
 });
 
 test.describe("Explore Regions", () => {
-  test("hub tile 09 opens the live regional engine", async ({ page }) => {
+  test("hub tile 09 opens the guided region tour on the ops workbench", async ({ page }) => {
     await page.goto("/hub");
     await page.getByTestId("hub-card-explore-regions").click();
-    await expect(page).toHaveURL(/\/regions$/);
-    await expect(page.getByTestId("explore-regions-live")).toBeVisible();
+    await expect(page).toHaveURL(/\/ops\?tour=1$/);
   });
 
   test("reuses the live jurisdiction engine, branded Explore Regions, with its own sign-in gate", async ({ page }) => {
