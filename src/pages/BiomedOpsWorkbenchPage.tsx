@@ -27,7 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
-import RegionTour from "../maps/RegionTour";
+import RegionTour, { type TourSlideContext } from "../maps/RegionTour";
 import {
   arcJurisdictionMapSource,
   biomedWorkbenchSupplementalLayers,
@@ -2208,6 +2208,20 @@ export default function BiomedOpsWorkbenchPage({
     setLeftOpen(true);
     const view = mapRef.current?.view as MapView | undefined;
     if (view) view.padding = { top: 0, right: 0, bottom: 0, left: 0 };
+    // Turn the story overlays back off so the workbench returns to its own state.
+    const map = getMapElementMap(mapRef.current);
+    const group = ((map?.layers?.toArray?.() ?? []) as Layer[]).find(
+      (layer) => layer.type === "group" && (layer.title ?? "").trim().toUpperCase() === "BIOMED",
+    ) as (Layer & { layers?: { toArray?: () => Layer[] } }) | undefined;
+    if (group) {
+      group.visible = false;
+      (group.layers?.toArray?.() ?? []).forEach((sub) => {
+        sub.visible = false;
+        try {
+          (sub as FeatureLayer).definitionExpression = "";
+        } catch { /* ignore */ }
+      });
+    }
   }, [clearSiteHighlight]);
 
   // Fly the live map to a BioMed region by querying its boundary polygon extent.
@@ -2402,6 +2416,70 @@ export default function BiomedOpsWorkbenchPage({
     [clearSiteHighlight, flyToRegion, tourRegion],
   );
 
+  // ---- Tour story → map layer sync ---------------------------------------
+  // Each story page lights up the matching lifted BIOMED layer so the map tells
+  // the same story as the slide: drive-point dots for the Mobile Story, county
+  // choropleths for performance/heat views. Choropleths are filtered to the
+  // active region when the service carries a matching Region name (verified by
+  // a cached count query); drive points have no region field, so the region
+  // zoom does the cropping.
+  const tourRegionFilterCache = useRef<Record<string, boolean>>({});
+
+  const applyTourStoryLayers = useCallback(
+    async (ctx: TourSlideContext | null) => {
+      const map = getMapElementMap(mapRef.current);
+      if (!map) return;
+      const group = ((map.layers?.toArray?.() ?? []) as Layer[]).find(
+        (layer) => layer.type === "group" && (layer.title ?? "").trim().toUpperCase() === "BIOMED",
+      ) as (Layer & { layers?: { toArray?: () => Layer[] } }) | undefined;
+      if (!group) return;
+
+      const key =
+        ctx == null
+          ? "off"
+          : ctx.kind === "deck"
+            ? `deck-${ctx.slide}`
+            : ctx.kind === "story"
+              ? `story-${ctx.story}-${ctx.slide}`
+              : "site";
+      const PLAN: Record<string, string[]> = {
+        "deck-1": ["RBC Collections by County"],
+        "story-mobile-0": ["Blood Drives by Type"],
+        "story-mobile-1": ["Drives by County"],
+      };
+      const wanted = new Set(PLAN[key] ?? []);
+      group.visible = wanted.size > 0;
+
+      const region = tourRegion;
+      for (const sub of group.layers?.toArray?.() ?? []) {
+        const on = wanted.has((sub.title ?? "").trim());
+        sub.visible = on;
+        if (!on || !region) continue;
+        const fl = sub as FeatureLayer;
+        try {
+          await fl.load?.();
+          const regionField = (fl.fields ?? []).find((field) => field.name === "Region");
+          if (!regionField) continue;
+          const where = `Region = '${region.replace(/'/g, "''")}'`;
+          const cacheKey = `${fl.id}::${region}`;
+          if (!(cacheKey in tourRegionFilterCache.current)) {
+            const countQuery = fl.createQuery();
+            countQuery.where = where;
+            countQuery.returnGeometry = false;
+            const count = (await fl.queryFeatureCount?.(countQuery)) ?? 0;
+            tourRegionFilterCache.current[cacheKey] = count > 0;
+          }
+          // Region names that don't match this service fall back to the national
+          // layer — the region zoom still frames the local picture.
+          fl.definitionExpression = tourRegionFilterCache.current[cacheKey] ? where : "";
+        } catch {
+          // leave the layer unfiltered
+        }
+      }
+    },
+    [tourRegion],
+  );
+
   const authLabel =
     status === "checking"
       ? "Checking ArcGIS"
@@ -2503,6 +2581,7 @@ export default function BiomedOpsWorkbenchPage({
             flying={tourFlying}
             onSelectRegion={(name) => void flyToRegion(name)}
             onSelectSite={(siteName) => void flyToSite(siteName)}
+            onSlideChange={(ctx) => void applyTourStoryLayers(ctx)}
             onClose={closeTour}
           />
         )}

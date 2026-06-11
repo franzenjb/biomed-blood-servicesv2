@@ -187,7 +187,7 @@ function MobileStorySlide({ r, index, run }: { r: RegionSummary; index: number; 
           <Kpi value={r.districtCount} label="Districts" run={run} />
           <Kpi value={r.population} label="Trade-area population" run={run} />
         </div>
-        <p className="rt-note">Mobile donor count is a live value; narrative is a draft pending client story content.</p>
+        <p className="rt-note">Map shows CY24 blood-drive locations, colored by drive type. Mobile donor count is a live value; narrative is a draft pending client story content.</p>
       </div>
     );
   }
@@ -208,7 +208,7 @@ function MobileStorySlide({ r, index, run }: { r: RegionSummary; index: number; 
       </div>
       <div className="rt-cta"><h4>Mobile drives carry the region&apos;s reach.</h4>
         <p>Draft panel — swap in the region&apos;s mobile-program narrative: sponsor highlights, school &amp; employer drives, rural coverage.</p></div>
-      <p className="rt-note">Donor counts are live; story framing is a draft pending client content.</p>
+      <p className="rt-note">Map shades counties by drive activity — darker means more drives. Donor counts are live; story framing is a draft pending client content.</p>
     </div>
   );
 }
@@ -292,15 +292,21 @@ type TourView =
   | { kind: "story"; story: StoryKind; slide: number }
   | { kind: "site"; siteName: string };
 
+export type TourSlideContext =
+  | { kind: "deck"; slide: number }
+  | { kind: "story"; story: StoryKind; slide: number }
+  | { kind: "site" };
+
 export interface RegionTourProps {
   activeRegion: string | null;
   onSelectRegion: (name: string) => void;
   onSelectSite?: (siteName: string | null) => void;
+  onSlideChange?: (ctx: TourSlideContext) => void;
   onClose: () => void;
   flying?: boolean;
 }
 
-export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onClose, flying }: RegionTourProps) {
+export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onSlideChange, onClose, flying }: RegionTourProps) {
   const [view, setView] = useState<TourView>({ kind: "deck", slide: 0 });
   const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
@@ -320,6 +326,19 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
       onSelectSite?.(activeSiteName);
     }
   }, [activeSiteName, onSelectSite]);
+
+  // Tell the host which slide is showing so it can swap map layers per story page
+  // (drive dots for the Mobile Story, county choropleths for performance views).
+  useEffect(() => {
+    if (!activeRegion) return;
+    onSlideChange?.(
+      view.kind === "deck"
+        ? { kind: "deck", slide: view.slide }
+        : view.kind === "story"
+          ? { kind: "story", story: view.story, slide: view.slide }
+          : { kind: "site" },
+    );
+  }, [view, activeRegion, onSlideChange]);
 
   const groups = useMemo(() => {
     const byDiv = new Map<string, RegionSummary[]>();
