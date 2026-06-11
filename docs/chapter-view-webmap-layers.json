@@ -1,0 +1,646 @@
+{
+  "webmap": "2b947b613f0f4eb79132da593f0db7b4",
+  "operationalLayers": [
+    {
+      "group": "",
+      "title": "RED CROSS GEOGRAPHY",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "a70303b85e32425f839080c66106a0db",
+      "visibility": true,
+      "id": "19572f3b31d-layer-321"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "Census Tract",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Census_Tracts/FeatureServer/0",
+      "itemId": "9ebbf83b541f4ce5ba3d4068b4a80dcb",
+      "visibility": "",
+      "id": "19572f3b3e6-layer-322"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "ZipCode",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Boundaries_2023/FeatureServer/3",
+      "itemId": "7efc5cad213c4eb4a6c7be7f586dfce5",
+      "visibility": true,
+      "id": "19572f3b3e8-layer-323"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "Counties",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Master_ARC_Geography_2022/FeatureServer/5",
+      "itemId": "8c6753c3c5814d05be65723cd4615d7c",
+      "visibility": "",
+      "id": "19572f3b3e9-layer-324"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "Chapter",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Master_ARC_Geography_2022/FeatureServer/3",
+      "itemId": "d170e997daab4b889f5a73784a8b1979",
+      "visibility": "",
+      "id": "19ce1f610ab-layer-70"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "Regions",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Master_ARC_Geography_2022/FeatureServer/2",
+      "itemId": "8c6753c3c5814d05be65723cd4615d7c",
+      "visibility": "",
+      "id": "19572f3b3ed-layer-327"
+    },
+    {
+      "group": "RED CROSS GEOGRAPHY",
+      "title": "Divisions",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Master_ARC_Geography_2022/FeatureServer/1",
+      "itemId": "8c6753c3c5814d05be65723cd4615d7c",
+      "visibility": "",
+      "id": "19572f3b3ef-layer-328"
+    },
+    {
+      "group": "",
+      "title": "ARC FACILITIES",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "1978a58c024-layer-39"
+    },
+    {
+      "group": "ARC FACILITIES",
+      "title": "Headquarters - Region & Chapter",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Master_ARC_Geography_2022/FeatureServer/0",
+      "itemId": "8c6753c3c5814d05be65723cd4615d7c",
+      "visibility": false,
+      "id": "19572f3b3f0-layer-329"
+    },
+    {
+      "group": "ARC FACILITIES",
+      "title": "Real Estate Facilities",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/CoStarActivePortfolioV2/FeatureServer/0",
+      "itemId": "0ac831210d79488481ebe52b4beba35d",
+      "visibility": true,
+      "id": "19b09db0c66-layer-64"
+    },
+    {
+      "group": "",
+      "title": "DISASTER CYCLE SERVICES",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "995792f8463d421eae2e1371dff4c929",
+      "visibility": false,
+      "id": "1971c416e68-layer-32"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "Mission CPR Communities",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "1979eac3804-layer-169"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES/Mission CPR Communities",
+      "title": "Mission CPR Counties",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Mission_CPR_Counties/FeatureServer/0",
+      "itemId": "5a6960549cbc4fe094bc1c94651ce6e4",
+      "visibility": true,
+      "id": "1979ea81788-layer-167"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES/Mission CPR Communities",
+      "title": "Mission CPR Cities",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Mission_CPR_Priority_Cities/FeatureServer/0",
+      "itemId": "cc97af9ff7d045459eb2b815c676ee4c",
+      "visibility": true,
+      "id": "1979e93ff43-layer-41"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "Pacific Division Fleet",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Pacific_Division_Fleet_October_2025_Map/FeatureServer/0",
+      "itemId": "9ac32f3ecc594cd6b4039cb547378d11",
+      "visibility": false,
+      "id": "19a3af292dc-layer-56"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "Home Fires Lives Saved",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Lives_Saved_Map_29_Feb_2024/FeatureServer/0",
+      "itemId": "1c93bfd8f07b4446b47c64fd04091193",
+      "visibility": false,
+      "id": "1971c416f02-layer-34"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "SWARM Shelters 23_25 Roll Up",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/SWARM_Shelters_23_25_Roll_Up/FeatureServer/0",
+      "itemId": "729580d6f0ac4463b5c5fb654bdfcfde",
+      "visibility": false,
+      "id": "19a9ed3b97f-layer-61"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "Smoke Alarm Installs",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/GIS_MAP_FY15_to_FY24/FeatureServer/0",
+      "itemId": "1b5ae48d73c8461eac1310a74a2daba0",
+      "visibility": false,
+      "id": "1971c416f02-layer-35"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "All Calls",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/EventLog/FeatureServer/0",
+      "itemId": "bbb362a2350f472a886b2452360b328e",
+      "visibility": false,
+      "id": "1971c416f03-layer-36"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "SFF / MFF",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/EventLog/FeatureServer/0",
+      "itemId": "c71ff269ca8d4b02b3e3a3cf2a70f408",
+      "visibility": false,
+      "id": "1971c416f03-layer-37"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "CPEP",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/CPEP_geocodio/FeatureServer/0",
+      "itemId": "4af82c71d3e54084aa9fd061805b6b3d",
+      "visibility": false,
+      "id": "1979e16a27c-layer-40"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "CPEP FY21 FY26",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/CPEP_FY21_FY26_geocodio/FeatureServer/0",
+      "itemId": "89fda0f9754541028993eb90cc651b0e",
+      "visibility": false,
+      "id": "19a7e8fb5d9-layer-57"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "CLIMATE HAZARD MASTER LAYER",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Climate_Hazard_Visit/FeatureServer/0",
+      "itemId": "6428d5a541d94df192bdaeb2296768fb",
+      "visibility": false,
+      "id": "1971c42cfaa-layer-38"
+    },
+    {
+      "group": "DISASTER CYCLE SERVICES",
+      "title": "National 800-RedCross Calls by County (FY24-FY26)",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/DRO_National_Calls_by_County_FY/FeatureServer/0",
+      "itemId": "824e8beb0581464daec1892b5fdd8352",
+      "visibility": false,
+      "id": "calls_by_county_fy"
+    },
+    {
+      "group": "",
+      "title": "RISK DEMOGRAPHICS",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "f20c3a6d93c94f1b99681d3c45e202ae",
+      "visibility": true,
+      "id": "1971c4168ae-layer-22"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "FLARE_counties Total Fires",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/FLARE_counties/FeatureServer/0",
+      "itemId": "6cfb67cba4bb4c769ff33824ac5e2fd1",
+      "visibility": false,
+      "id": "19c7274c8a5-layer-64"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "FLARE_counties Gap Rate",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/FLARE_counties/FeatureServer/0",
+      "itemId": "7f31a4de464048288100e83805825a9b",
+      "visibility": false,
+      "id": "19c7274cfdc-layer-65"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "FLARE_counties Fires per 10K",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/FLARE_counties/FeatureServer/0",
+      "itemId": "4ff966d9fdab48069ee211f99b77985f",
+      "visibility": false,
+      "id": "19c7274e137-layer-66"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "Mobile_Home_Parks_FEMA RAPT",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Mobile_Home_Parks_FEMA_RAPT/FeatureServer/0",
+      "itemId": "2ca5e6e593e14bb181a7dedb0833c8b1",
+      "visibility": false,
+      "id": "197b7a2a619-layer-46"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "Centennial Partner Facilities",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Centennial_Partner_Facilities/FeatureServer/0",
+      "itemId": "4d3effdf8bd24daf8e7d6d0bb7fbd103",
+      "visibility": false,
+      "id": "1979e996211-layer-103"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "Top 10% risk score in Chapter CAP",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/CAP_Risk_Scoring/FeatureServer/0",
+      "itemId": "0b1f7f082e0e433b8ea430bfd471fc93",
+      "visibility": false,
+      "id": "1971c416966-layer-24"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "FEMA Community Resilience (CRCI) Census Tracts",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/Census_Tracts_FEMA_Community_Resilience_Challenges_Index_(CRCI)/FeatureServer/44",
+      "itemId": "4e43295b0f1f404aac2c0c1115d44293",
+      "visibility": false,
+      "id": "1971c416967-layer-25"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "National Risk Index Census Tracts",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/National_Risk_Index_Census_Tracts/FeatureServer/0",
+      "itemId": "9da4eeb936544335a6db0cd7a8448a51",
+      "visibility": false,
+      "id": "1971c416967-layer-26"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "Alice US Counties 2023 - Partial States",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/alice_counties_2023/FeatureServer/0",
+      "itemId": "be9a89e21c854aa09e292f43f6f237f1",
+      "visibility": false,
+      "id": "199f3bd8654-layer-52"
+    },
+    {
+      "group": "RISK DEMOGRAPHICS",
+      "title": "Open Shelters - Public Use",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Open_Shelters/FeatureServer/0",
+      "itemId": "793212cef5334078b6cbb6b9b1cf1f88",
+      "visibility": false,
+      "id": "19a02ae3a07-layer-53"
+    },
+    {
+      "group": "",
+      "title": "PARTNERSHIPS",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "199cac7ca5a-layer-53"
+    },
+    {
+      "group": "PARTNERSHIPS",
+      "title": "CAP Partners - CAP 2025 Partnerships IV Public",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/CAP_2025_Partnerships_IV/FeatureServer/0",
+      "itemId": "1f85d0aacbc14f999d69949277cd1714",
+      "visibility": false,
+      "id": "199cac753f4-layer-52"
+    },
+    {
+      "group": "",
+      "title": "BIOMED",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "biomed_master"
+    },
+    {
+      "group": "BIOMED",
+      "title": "RBC Collections by Division",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_divisions/FeatureServer/0",
+      "itemId": "dcf3e421e182454e92a1f1b4df03957a",
+      "visibility": false,
+      "id": "units_units_(rbc)_divisions"
+    },
+    {
+      "group": "BIOMED",
+      "title": "RBC Collections by Region",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_regions/FeatureServer/0",
+      "itemId": "481daca088bf403c8e5406cea3e1dd50",
+      "visibility": false,
+      "id": "units_units_(rbc)_regions"
+    },
+    {
+      "group": "BIOMED",
+      "title": "RBC Collections by Chapter",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_chapters/FeatureServer/0",
+      "itemId": "7452507d542647d19a87663f01495a5d",
+      "visibility": false,
+      "id": "units_units_(rbc)_chapters"
+    },
+    {
+      "group": "BIOMED",
+      "title": "RBC Collections by County",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_counties/FeatureServer/0",
+      "itemId": "a00a649a1720482293e72d072fc01bf3",
+      "visibility": false,
+      "id": "units_units_(rbc)_counties"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Drives by Division",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_divisions/FeatureServer/0",
+      "itemId": "dcf3e421e182454e92a1f1b4df03957a",
+      "visibility": false,
+      "id": "19a60187d87-layer-5"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Drives by Region",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_regions/FeatureServer/0",
+      "itemId": "481daca088bf403c8e5406cea3e1dd50",
+      "visibility": false,
+      "id": "19a6018786b-layer-4"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Drives by Chapter",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_chapters/FeatureServer/0",
+      "itemId": "7452507d542647d19a87663f01495a5d",
+      "visibility": true,
+      "id": "19a601873bc-layer-3"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Drives by County",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_counties/FeatureServer/0",
+      "itemId": "a00a649a1720482293e72d072fc01bf3",
+      "visibility": false,
+      "id": "19a600e7bf3-layer-2"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Total Collections (RBC)",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_drive_points/FeatureServer/0",
+      "itemId": "0673a6243b18471589c24b4ce7210680",
+      "visibility": false,
+      "id": "19cd94adf1a-layer-69"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Latino Blood Drives",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_drive_points/FeatureServer/0",
+      "itemId": "09e6dcd2f11d49788856cf8f9f050199",
+      "visibility": false,
+      "id": "19cd94b5bb1-layer-70"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Blood Drives Planned or Completed",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_drive_points/FeatureServer/0",
+      "itemId": "47433bc60f5c47af822e405f55e07c43",
+      "visibility": false,
+      "id": "19cd94ad311-layer-68"
+    },
+    {
+      "group": "BIOMED",
+      "title": "Blood Drives by Type",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/biomed_drive_points/FeatureServer/0",
+      "itemId": "add26285083e4ce18876c0283f788f97",
+      "visibility": false,
+      "id": "19cd94accc9-layer-67"
+    },
+    {
+      "group": "",
+      "title": "MILITARY",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "4bec18ef1e1b4cd1bc392b4220990ac6",
+      "visibility": false,
+      "id": "1971c415d62-layer-13"
+    },
+    {
+      "group": "MILITARY",
+      "title": "CM - Military Bases",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/xOi1kZaI0eWDREZv/arcgis/rest/services/NTAD_Military_Bases/FeatureServer/0",
+      "itemId": "ae3399ce7d064f15b2e5d45c1d8891ee",
+      "visibility": true,
+      "id": "1971c415ddd-layer-16"
+    },
+    {
+      "group": "MILITARY",
+      "title": "CM - ACS Veteran Status Variables",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/ACS_Veteran_Status_by_Sex_and_Age_Centroids/FeatureServer/2",
+      "itemId": "446896dd6c3c42ad951e984026e5d25b",
+      "visibility": true,
+      "id": "1971c415dda-layer-14"
+    },
+    {
+      "group": "",
+      "title": "EMPLOYEES",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "employees_group"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "Employees by Division",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/ARC_Employees_by_Division/FeatureServer/0",
+      "itemId": "",
+      "visibility": false,
+      "id": "arc_employees_division"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "Employees by Region",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/ARC_Employees_by_Region/FeatureServer/0",
+      "itemId": "",
+      "visibility": false,
+      "id": "arc_employees_region"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "Employees by Chapter",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/ARC_Employees_by_Chapter/FeatureServer/0",
+      "itemId": "",
+      "visibility": false,
+      "id": "arc_employees_chapter"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "Employees by County",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/ARC_Employees_by_County/FeatureServer/0",
+      "itemId": "",
+      "visibility": true,
+      "id": "arc_employees_county"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "HS Employees by ZIP Code",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/HS_Employees_Zip/FeatureServer/0",
+      "itemId": "81591734e3f14d4bb6cd765aa7d380b5",
+      "visibility": false,
+      "id": "hs-employees-zip"
+    },
+    {
+      "group": "EMPLOYEES",
+      "title": "Community Job Count FY23-25",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Community_Job_Count_FY23_25/FeatureServer/0",
+      "itemId": "c7208ee297a5435fac75ab406eaec1bb",
+      "visibility": false,
+      "id": "community-job-count"
+    },
+    {
+      "group": "",
+      "title": "VOLUNTEERS",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "19572cff593-layer-171"
+    },
+    {
+      "group": "VOLUNTEERS",
+      "title": "Applicants 2025",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Applicants_2025/FeatureServer/0",
+      "itemId": "3be8a837e79041079e64264751cd2d98",
+      "visibility": true,
+      "id": "197f6f9b3a9-layer-49"
+    },
+    {
+      "group": "VOLUNTEERS",
+      "title": "Volunteers 2025",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Volunteers_2025/FeatureServer/0",
+      "itemId": "586cf73c170747c491de9349d6dacb44",
+      "visibility": false,
+      "id": "197f6f9ba47-layer-50"
+    },
+    {
+      "group": "",
+      "title": "FUNDRAISING",
+      "layerType": "GroupLayer",
+      "url": "",
+      "itemId": "",
+      "visibility": false,
+      "id": "19b09d489c5-layer-61"
+    },
+    {
+      "group": "FUNDRAISING",
+      "title": "National Influencers OrgView",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/National_Influencers_OrgView/FeatureServer/0",
+      "itemId": "8ea6ee1dbfcc41e797d14c8fc745a0c0",
+      "visibility": true,
+      "id": "19b0a5c33f6-layer-63"
+    },
+    {
+      "group": "FUNDRAISING",
+      "title": "Chairmans Council List Nov2025 OrgView",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Chairmans_Council_List_Nov2025_OrgView/FeatureServer/0",
+      "itemId": "5b17ec8f509e4609a394f2eb9c4aee24",
+      "visibility": false,
+      "id": "19b09d5016a-layer-62"
+    },
+    {
+      "group": "FUNDRAISING",
+      "title": "ADGP Mission Leader List Nov2025 OrgView",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/ADGP_Mission_Leader_List_Nov2025_OrgView/FeatureServer/0",
+      "itemId": "2c79efc5b9294005b8f7135fa8b59c26",
+      "visibility": false,
+      "id": "19b09d50cea-layer-63"
+    },
+    {
+      "group": "FUNDRAISING",
+      "title": "5K plus donors past 12 months as of 9 2025",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/5K_plus_donors_past_12_months_as_of_9_2025/FeatureServer/0",
+      "itemId": "394f3b4115b3401f93944e7d40feeace",
+      "visibility": false,
+      "id": "19935a3847b-layer-50"
+    },
+    {
+      "group": "",
+      "title": "Chapter Priority Areas",
+      "layerType": "ArcGISFeatureLayer",
+      "url": "https://services.arcgis.com/pGfbNJoYypmNq86F/arcgis/rest/services/Chapter_Priority_Areas/FeatureServer/0",
+      "itemId": "fc4079dcb79c49d3aafead6b8fe70115",
+      "visibility": false,
+      "id": "chapter-priority-areas"
+    }
+  ],
+  "baseMapLayers": [
+    {
+      "group": "(basemap)",
+      "title": "Light Gray Base",
+      "layerType": "VectorTileLayer",
+      "url": "",
+      "itemId": "12124841a631489fb71aa1c0c8952c49",
+      "visibility": "",
+      "id": "1950628fc3e-layer-2"
+    },
+    {
+      "group": "(basemap)",
+      "title": "Light Gray Reference",
+      "layerType": "VectorTileLayer",
+      "url": "",
+      "itemId": "b14e8a2500864810a4f7ea0d2049ecd9",
+      "visibility": true,
+      "id": "195067777d1-layer-3"
+    }
+  ]
+}
