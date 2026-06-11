@@ -34,6 +34,15 @@
   grid-template-columns: 52px minmax(0, 1fr) 52px;
 }
 
+/* Guided tour: the tour brings its own region picker, so the workbench
+   layer/results panels (and their collapsed rails) get out of the way. */
+.opsv2[data-tour="true"] .opsv2__stage {
+  grid-template-columns: 0 minmax(0, 1fr) 0 !important;
+}
+.opsv2[data-tour="true"] .opsv2__panel {
+  display: none;
+}
+
 .opsv2__map-shell {
   position: relative;
   grid-row: 1;

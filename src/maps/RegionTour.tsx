@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, MapPin, List } from "lucide-react";
 import { REGION_BY_NAME, type RegionSummary } from "../data/regionSummaries";
 import "./RegionTour.css";
 
@@ -170,6 +170,7 @@ export interface RegionTourProps {
 
 export default function RegionTour({ activeRegion, onSelectRegion, onClose, flying }: RegionTourProps) {
   const [slide, setSlide] = useState(0);
+  const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
   useEffect(() => {
     if (activeRegion && activeRegion !== lastRegion.current) { setSlide(0); lastRegion.current = activeRegion; }
@@ -193,8 +194,19 @@ export default function RegionTour({ activeRegion, onSelectRegion, onClose, flyi
         <button className="rt-topbar__close" onClick={onClose} aria-label="Exit tour"><X size={16} /> Exit tour</button>
       </div>
 
-      <aside className="rt-picker">
-        <div className="rt-picker__hd">Pick a region <span>{Object.keys(REGION_BY_NAME).length}</span></div>
+      {!pickerOpen && (
+        <button type="button" className="rt-picker-pill" title="Show region list" onClick={() => setPickerOpen(true)}>
+          <List size={15} /> Regions <ChevronRight size={14} />
+        </button>
+      )}
+
+      <aside className="rt-picker" data-collapsed={pickerOpen ? "false" : "true"}>
+        <div className="rt-picker__hd">
+          <span className="rt-picker__hd-label">Pick a region <span>{Object.keys(REGION_BY_NAME).length}</span></span>
+          <button type="button" className="rt-picker__hide" title="Hide region list" aria-label="Hide region list" onClick={() => setPickerOpen(false)}>
+            <ChevronLeft size={14} /> Hide
+          </button>
+        </div>
         <div className="rt-picker__list">
           {groups.map(({ div, regs }) => (
             <div key={div}>

@@ -2160,6 +2160,7 @@ export default function BiomedOpsWorkbenchPage({
       className="opsv2"
       data-left-open={leftOpen ? "true" : "false"}
       data-right-open={rightOpen ? "true" : "false"}
+      data-tour={tourActive ? "true" : "false"}
       data-testid={testId}
       aria-label={title}
     >
