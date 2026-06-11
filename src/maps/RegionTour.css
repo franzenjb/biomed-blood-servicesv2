@@ -75,7 +75,7 @@
 .rt-panel__body{ flex:1; overflow-y:auto; }
 .rt-slide{ padding:clamp(12px, 2vh, 20px) 24px; }
 .rt-slabel{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--arc-red); font-weight:600; margin-bottom:8px; }
-.rt-narr{ font-size:14.5px; line-height:1.6; color:var(--arc-gray-700); margin:0 0 16px; }
+.rt-narr{ font-size:14px; line-height:1.5; color:var(--arc-gray-700); margin:0 0 clamp(8px, 1.4vh, 14px); }
 .rt-narr em{ font-family:var(--font-headline); font-style:italic; color:var(--arc-black); }
 
 .rt-kpigrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
@@ -114,19 +114,22 @@
 .rt-note{ font-size:10.5px; color:var(--arc-gray-500); font-style:italic; margin-top:8px; border-top:1px dashed var(--d-line); padding-top:6px; }
 
 /* story buttons on the Overall summary slide */
-.rt-storybtns{ display:flex; flex-direction:column; gap:8px; margin:clamp(8px, 1.4vh, 14px) 0 0; }
+.rt-storybtns{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:clamp(7px, 1.2vh, 12px) 0 0; }
 .rt-storybtn{
-  display:flex; align-items:center; gap:11px; width:100%; text-align:left;
+  display:flex; align-items:center; gap:8px; width:100%; text-align:left;
   background:#fff; border:1px solid var(--d-line); border-radius:10px;
-  padding:clamp(8px, 1.2vh, 12px) 14px; font:inherit; cursor:pointer; color:var(--arc-black);
+  padding:clamp(7px, 1.1vh, 10px) 12px; font:inherit; cursor:pointer; color:var(--arc-black);
   transition:border-color .15s, background .15s;
 }
 .rt-storybtn:hover{ border-color:var(--arc-red); background:#fbe9e9; }
 .rt-storybtn > svg:first-child{ color:var(--arc-red); flex:0 0 auto; }
 .rt-storybtn > svg:last-child{ color:var(--arc-gray-500); margin-left:auto; flex:0 0 auto; }
-.rt-storybtn span{ display:flex; flex-direction:column; gap:1px; min-width:0; }
-.rt-storybtn strong{ font-size:13.5px; font-weight:700; }
-.rt-storybtn small{ font-size:11px; color:var(--arc-gray-500); }
+.rt-storybtn strong{ font-size:13px; font-weight:700; white-space:nowrap; }
+
+.rt-kpigrid--four{ grid-template-columns:repeat(4, 1fr); gap:8px; }
+.rt-kpigrid--four .rt-kpi{ padding:clamp(7px, 1.1vh, 10px) 10px; }
+.rt-kpigrid--four .rt-kpi__v{ font-size:18px; }
+.rt-kpigrid--four .rt-kpi__l{ font-size:10.5px; }
 
 .rt-slabel--story{ display:flex; align-items:center; gap:6px; }
 .rt-backlink{

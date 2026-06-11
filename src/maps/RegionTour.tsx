@@ -127,12 +127,10 @@ function Slide({ r, index, run, onOpenStory }: {
         </div>
         <div className="rt-storybtns">
           <button type="button" className="rt-storybtn" onClick={() => onOpenStory("mobile")}>
-            <Truck size={16} /><span><strong>Mobile Story</strong><small>Blood drives across the region</small></span>
-            <ChevronRight size={15} />
+            <Truck size={16} /><strong>Mobile Story</strong><ChevronRight size={15} />
           </button>
           <button type="button" className="rt-storybtn" onClick={() => onOpenStory("fixed")}>
-            <Building2 size={16} /><span><strong>Fixed Site Story</strong><small>Donation centers &amp; site detail</small></span>
-            <ChevronRight size={15} />
+            <Building2 size={16} /><strong>Fixed Site Story</strong><ChevronRight size={15} />
           </button>
         </div>
         <p className="rt-note">Donors, sites, population &amp; drive distance are live values from the trade-area layer.</p>
@@ -266,14 +264,18 @@ function SiteStory({ r, site, run }: { r: RegionSummary; site: RegionSite; run: 
       <h3 className="rt-sitename">{shortSite(site.name)}</h3>
       <p className="rt-narr">{shortSite(site.name)} welcomed {fmt(site.donors)} donors in CY24 — {share}% of all
         fixed-site donors in {r.region} — ranking #{rank} of the region&apos;s {r.siteCount} donation centers.</p>
-      <div className="rt-kpigrid">
+      <div className="rt-kpigrid rt-kpigrid--four">
         <Kpi value={site.donors} label="CY24 donors" accent run={run} />
         <Kpi value={site.rbc} label="RBC donors" run={run} />
-        <Kpi value={share} label="of region fixed-site donors" suffix="%" run={run} />
-        <Kpi value={rank} label={`rank of ${r.siteCount} centers`} run={run} />
+        <Kpi value={share} label="Region share" suffix="%" run={run} />
+        <Kpi value={rank} label={`Rank of ${r.siteCount}`} run={run} />
       </div>
       <div className="rt-chartbox"><h4>Centers in {r.region}</h4>
-        <HBarChart items={r.topSites.slice(0, 7)} highlight={site.name} />
+        <HBarChart
+          items={r.topSites.slice(0, 5).some((s) => s.name === site.name)
+            ? r.topSites.slice(0, 5)
+            : [...r.topSites.slice(0, 4), site]}
+          highlight={site.name} />
       </div>
       <p className="rt-note">Donor &amp; RBC counts are live CY24 values; site narrative is a draft pending client story content.</p>
     </div>
