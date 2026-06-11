@@ -43,6 +43,35 @@
   display: none;
 }
 
+/* Differentiate the Tour map from the Workbench map: while the guided tour is
+   active, frame the map with a Red Cross accent ring + soft vignette so it reads
+   as a distinct mode at a glance. Pointer-events off so it never blocks the map
+   or the tour controls. */
+.opsv2[data-tour="true"] .opsv2__map-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border: 3px solid #ed1b2e;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), inset 0 0 90px rgba(20, 30, 45, 0.18);
+}
+.opsv2[data-tour="true"] .opsv2__map-shell::before {
+  content: "GUIDED TOUR";
+  position: absolute;
+  z-index: 4;
+  right: 14px;
+  bottom: 46px;
+  padding: 4px 10px;
+  font: 700 11px/1 "Inter", system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: #ed1b2e;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
 .opsv2__map-shell {
   position: relative;
   grid-row: 1;
