@@ -292,11 +292,12 @@ type TourView =
 export interface RegionTourProps {
   activeRegion: string | null;
   onSelectRegion: (name: string) => void;
+  onSelectSite?: (siteName: string | null) => void;
   onClose: () => void;
   flying?: boolean;
 }
 
-export default function RegionTour({ activeRegion, onSelectRegion, onClose, flying }: RegionTourProps) {
+export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onClose, flying }: RegionTourProps) {
   const [view, setView] = useState<TourView>({ kind: "deck", slide: 0 });
   const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
@@ -306,6 +307,16 @@ export default function RegionTour({ activeRegion, onSelectRegion, onClose, flyi
       lastRegion.current = activeRegion;
     }
   }, [activeRegion]);
+
+  // Tell the host map when a site story opens (zoom to site) or closes (restore region).
+  const activeSiteName = view.kind === "site" ? view.siteName : null;
+  const lastSite = useRef<string | null>(null);
+  useEffect(() => {
+    if (activeSiteName !== lastSite.current) {
+      lastSite.current = activeSiteName;
+      onSelectSite?.(activeSiteName);
+    }
+  }, [activeSiteName, onSelectSite]);
 
   const groups = useMemo(() => {
     const byDiv = new Map<string, RegionSummary[]>();

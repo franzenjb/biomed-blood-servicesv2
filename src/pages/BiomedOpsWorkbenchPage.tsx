@@ -2,6 +2,7 @@ import { createElement, useCallback, useEffect, useMemo, useRef, useState } from
 import type Graphic from "@arcgis/core/Graphic";
 import type Geometry from "@arcgis/core/geometry/Geometry";
 import type Extent from "@arcgis/core/geometry/Extent";
+import type Point from "@arcgis/core/geometry/Point";
 import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Layer from "@arcgis/core/layers/Layer";
 import type Field from "@arcgis/core/layers/support/Field";
@@ -2063,18 +2064,27 @@ export default function BiomedOpsWorkbenchPage({
     setRightOpen(false);
   }, []);
 
+  const siteHighlightRef = useRef<Graphic | null>(null);
+  const clearSiteHighlight = useCallback(() => {
+    const view = mapRef.current?.view as MapView | undefined;
+    if (view && siteHighlightRef.current) view.graphics.remove(siteHighlightRef.current);
+    siteHighlightRef.current = null;
+  }, []);
+
   const closeTour = useCallback(() => {
     setTourActive(false);
     setTourRegion(null);
+    clearSiteHighlight();
     setLeftOpen(true);
     const view = mapRef.current?.view as MapView | undefined;
     if (view) view.padding = { top: 0, right: 0, bottom: 0, left: 0 };
-  }, []);
+  }, [clearSiteHighlight]);
 
   // Fly the live map to a BioMed region by querying its boundary polygon extent.
   const flyToRegion = useCallback(
     async (name: string) => {
       setTourRegion(name);
+      clearSiteHighlight();
       const map = getMapElementMap(mapRef.current);
       const view = mapRef.current?.view as MapView | undefined;
       if (!map || !view) return;
@@ -2143,7 +2153,105 @@ export default function BiomedOpsWorkbenchPage({
         setTourFlying(false);
       }
     },
-    [],
+    [clearSiteHighlight],
+  );
+
+  // Fly the live map to a fixed collection site by name and drop a highlight ring.
+  // A null siteName means the site story closed — restore the region extent.
+  const flyToSite = useCallback(
+    async (siteName: string | null) => {
+      clearSiteHighlight();
+      if (!siteName) {
+        if (tourRegion) void flyToRegion(tourRegion);
+        return;
+      }
+      const map = getMapElementMap(mapRef.current);
+      const view = mapRef.current?.view as MapView | undefined;
+      if (!map || !view) return;
+
+      setTourFlying(true);
+      try {
+        const allLayers = (map.allLayers?.toArray?.() ?? map.layers?.toArray?.() ?? []) as Layer[];
+        const featureLayers = allLayers.filter(isSearchableFeatureLayer) as FeatureLayer[];
+
+        // Site names live on the donor-facing point layers; rank "Fixed Sites" first.
+        const ranked = featureLayers
+          .map((layer) => {
+            const title = safeLayerTitle(layer).toLowerCase();
+            const fields = layer.fields ?? [];
+            const field = fields.find(
+              (candidate: Field) =>
+                candidate.type === "string" && /name|site|facility/i.test(candidate.name ?? ""),
+            );
+            let score = 0;
+            if (field) score += 2;
+            if (layer.geometryType === "point") score += 4;
+            if (title.includes("fixed")) score += 10;
+            if (title.includes("donor") || title.includes("donation")) score += 4;
+            return { layer, field, score };
+          })
+          .filter((candidate) => Boolean(candidate.field) && candidate.score >= 6)
+          .sort((a, b) => b.score - a.score);
+
+        const safeName = siteName.replace(/'/g, "''");
+        // Trade-area names carry suffixes ("... Blood Donation Center") that the
+        // operational point layer may abbreviate — fall back to the root name.
+        const rootName = siteName
+          .replace(/\s+(blood\s+)?(donation|donor)\s+center$/i, "")
+          .trim()
+          .replace(/'/g, "''");
+
+        let target: Graphic | null = null;
+        for (const { layer, field } of ranked) {
+          if (!field) continue;
+          try {
+            await layer.load?.();
+            const siteQuery = layer.createQuery();
+            siteQuery.returnGeometry = true;
+            siteQuery.outFields = [field.name];
+            siteQuery.where = `UPPER(${field.name}) = UPPER('${safeName}')`;
+            let result = await layer.queryFeatures(siteQuery);
+            if (result.features.length === 0 && rootName && rootName !== safeName) {
+              siteQuery.where = `UPPER(${field.name}) LIKE UPPER('${rootName}%')`;
+              result = await layer.queryFeatures(siteQuery);
+            }
+            const hit = result.features.find((feature) => feature.geometry);
+            if (hit) {
+              target = hit;
+              break;
+            }
+          } catch {
+            // try the next candidate layer
+          }
+        }
+
+        const geometry = target?.geometry as Geometry | undefined;
+        const center = geometry?.type === "point" ? (geometry as Point) : geometry?.extent?.center;
+        if (center) {
+          const [{ default: GraphicCtor }, { default: SimpleMarkerSymbol }] = await Promise.all([
+            import("@arcgis/core/Graphic"),
+            import("@arcgis/core/symbols/SimpleMarkerSymbol"),
+          ]);
+          const ring = new GraphicCtor({
+            geometry: center,
+            symbol: new SimpleMarkerSymbol({
+              style: "circle",
+              color: [237, 27, 46, 0.14],
+              size: 34,
+              outline: { color: [237, 27, 46, 0.95], width: 2.5 },
+            }),
+          });
+          view.graphics.add(ring);
+          siteHighlightRef.current = ring;
+          await view.goTo({ target: center, zoom: Math.max(view.zoom ?? 0, 12) }, { duration: 950 });
+        }
+      } catch {
+        // navigation can be interrupted; the site story panel still shows
+      } finally {
+        setTourFlying(false);
+      }
+    },
+    [clearSiteHighlight, flyToRegion, tourRegion],
   );
 
   const authLabel =
@@ -2244,6 +2352,7 @@ export default function BiomedOpsWorkbenchPage({
             activeRegion={tourRegion}
             flying={tourFlying}
             onSelectRegion={(name) => void flyToRegion(name)}
+            onSelectSite={(siteName) => void flyToSite(siteName)}
             onClose={closeTour}
           />
         )}
