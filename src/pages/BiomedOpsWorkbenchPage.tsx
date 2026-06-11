@@ -2320,10 +2320,12 @@ export default function BiomedOpsWorkbenchPage({
           <RotateCcw aria-hidden="true" size={16} />
           Reset map
         </button>
-        <button type="button" className="rcbar__btn" data-active={tourActive ? "true" : "false"} onClick={tourActive ? closeTour : openTour}>
-          <Compass aria-hidden="true" size={16} />
-          {tourActive ? "Exit tour" : "Region tour"}
-        </button>
+        {!tourActive && (
+          <button type="button" className="rcbar__btn" onClick={openTour}>
+            <Compass aria-hidden="true" size={16} />
+            Region tour
+          </button>
+        )}
         <button type="button" className="rcbar__icon" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
           <HelpCircle aria-hidden="true" size={18} />
         </button>
