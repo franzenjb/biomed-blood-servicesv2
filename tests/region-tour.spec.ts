@@ -88,15 +88,16 @@ test.describe("Region stories", () => {
     await page.getByRole("button", { name: "Back to overall summary" }).click();
     await expect(page.locator(".rt-slabel")).toContainText("Overall summary");
 
-    // Fixed Site story → per-site story
+    // Fixed Site story: centers list is page 1; click a center → per-site story
     await page.getByRole("button", { name: /Fixed Site Story/ }).click();
     await expect(page.locator(".rt-slabel")).toContainText("Fixed Site Story · 1 of 2");
-    await page.getByRole("button", { name: /^Next/ }).click();
-    await expect(page.locator(".rt-slabel")).toContainText("Fixed Site Story · 2 of 2");
     await page.locator(".rt-sitebtn").first().click();
     await expect(page.locator(".rt-slabel")).toContainText("Site Story");
     await expect(page.locator(".rt-sitename")).toContainText("East End Louisville");
     await page.getByRole("button", { name: "Back to centers" }).first().click();
+    await expect(page.locator(".rt-slabel")).toContainText("Fixed Site Story · 1 of 2");
+    // Page 2 is the regional rollup
+    await page.getByRole("button", { name: /^Next/ }).click();
     await expect(page.locator(".rt-slabel")).toContainText("Fixed Site Story · 2 of 2");
   });
 
@@ -124,11 +125,11 @@ test.describe("Region stories", () => {
       await page.getByRole("button", { name: "Back to overall summary" }).click();
       await page.getByRole("button", { name: /Fixed Site Story/ }).click();
       await check(`${region} fixed 1`);
-      await page.getByRole("button", { name: /^Next/ }).click();
-      await check(`${region} fixed 2`);
       await page.locator(".rt-sitebtn").first().click();
       await check(`${region} site story`);
       await page.getByRole("button", { name: "Back to centers" }).first().click();
+      await page.getByRole("button", { name: /^Next/ }).click();
+      await check(`${region} fixed 2`);
       await page.getByRole("button", { name: "Back to overall summary" }).click();
     }
     expect(problems, problems.join("\n")).toEqual([]);

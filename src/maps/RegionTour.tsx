@@ -222,34 +222,37 @@ function FixedStorySlide({ r, index, run, onOpenSite }: {
       <div className="rt-slide">
         <div className="rt-slabel rt-slabel--story"><Building2 size={13} /> Fixed Site Story · 1 of 2</div>
         <p className="rt-narr"><em>Donation centers in {r.region}.</em> The region&apos;s {r.siteCount} fixed donation
-          center{r.siteCount === 1 ? "" : "s"} welcomed {fmt(r.totalDonors)} donors in CY24 — {fmt(r.rbcDonors)} of them
-          giving red blood cells — with the typical donor traveling about {r.avgDrive.toFixed(1)} miles to give.</p>
-        <div className="rt-kpigrid">
-          <Kpi value={r.totalDonors} label="CY24 fixed-site donors" accent run={run} />
-          <Kpi value={r.siteCount} label="Fixed donation centers" run={run} />
-          <Kpi value={r.rbcDonors} label="RBC donors" run={run} />
-          <Kpi value={r.avgDrive} label="Avg. donor drive distance" decimals={1} suffix=" mi" run={run} />
+          center{r.siteCount === 1 ? "" : "s"} welcomed {fmt(r.totalDonors)} donors in CY24. Select a center to fly the
+          map to it and open its site story.</p>
+        <div className="rt-chartbox rt-chartbox--sites">
+          <h4>Donation centers — select one for its site story</h4>
+          <div className="rt-sites">
+            {r.topSites.map((s) => (
+              <button type="button" className="rt-sitebtn" key={s.name} onClick={() => onOpenSite(s.name)}>
+                <span className="rt-sitebtn__name" title={s.name}>{shortSite(s.name)}</span>
+                <span className="rt-sitebtn__n">{fmt(s.donors)} donors</span>
+                <ChevronRight size={14} />
+              </button>
+            ))}
+          </div>
         </div>
-        <p className="rt-note">All values on this slide are live from the trade-area layer; narrative is a draft pending client story content.</p>
+        <p className="rt-note">Per-site donor counts are live CY24 values from the trade-area layer.</p>
       </div>
     );
   }
   return (
     <div className="rt-slide">
       <div className="rt-slabel rt-slabel--story"><Building2 size={13} /> Fixed Site Story · 2 of 2</div>
-      <div className="rt-chartbox rt-chartbox--sites">
-        <h4>Donation centers — select one for its site story</h4>
-        <div className="rt-sites">
-          {r.topSites.map((s) => (
-            <button type="button" className="rt-sitebtn" key={s.name} onClick={() => onOpenSite(s.name)}>
-              <span className="rt-sitebtn__name" title={s.name}>{shortSite(s.name)}</span>
-              <span className="rt-sitebtn__n">{fmt(s.donors)} donors</span>
-              <ChevronRight size={14} />
-            </button>
-          ))}
-        </div>
+      <p className="rt-narr"><em>Regional rollup.</em> Across {r.region}, fixed sites welcomed {fmt(r.totalDonors)} donors
+        in CY24 — {fmt(r.rbcDonors)} giving red blood cells — with the typical donor traveling about
+        {" "}{r.avgDrive.toFixed(1)} miles to give.</p>
+      <div className="rt-kpigrid">
+        <Kpi value={r.totalDonors} label="CY24 fixed-site donors" accent run={run} />
+        <Kpi value={r.siteCount} label="Fixed donation centers" run={run} />
+        <Kpi value={r.rbcDonors} label="RBC donors" run={run} />
+        <Kpi value={r.avgDrive} label="Avg. donor drive distance" decimals={1} suffix=" mi" run={run} />
       </div>
-      <p className="rt-note">Per-site donor counts are live CY24 values from the trade-area layer.</p>
+      <p className="rt-note">All values on this slide are live from the trade-area layer; narrative is a draft pending client story content.</p>
     </div>
   );
 }
@@ -340,12 +343,12 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
     setView(view.kind === "story" ? { ...view, slide: d } : { kind: "deck", slide: d });
 
   const navBack = () => {
-    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 1 });
+    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 0 });
     else if (view.kind === "story") view.slide === 0 ? backToSummary() : setView({ ...view, slide: view.slide - 1 });
     else setView({ kind: "deck", slide: Math.max(0, view.slide - 1) });
   };
   const navNext = () => {
-    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 1 });
+    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 0 });
     else if (view.kind === "story") view.slide >= 1 ? backToSummary() : setView({ ...view, slide: view.slide + 1 });
     else if (view.slide === 2) {
       // End of deck returns to the region picker — never exits the tour/app.
@@ -402,7 +405,7 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
             <h2>{r.region}{flying ? <span className="rt-flying">flying to region…</span> : null}</h2>
             {view.kind !== "deck" && (
               <button type="button" className="rt-backlink"
-                onClick={view.kind === "site" ? () => setView({ kind: "story", story: "fixed", slide: 1 }) : backToSummary}>
+                onClick={view.kind === "site" ? () => setView({ kind: "story", story: "fixed", slide: 0 }) : backToSummary}>
                 <ArrowLeft size={13} /> {view.kind === "site" ? "Back to centers" : "Back to overall summary"}
               </button>
             )}

@@ -2174,51 +2174,69 @@ export default function BiomedOpsWorkbenchPage({
         const allLayers = (map.allLayers?.toArray?.() ?? map.layers?.toArray?.() ?? []) as Layer[];
         const featureLayers = allLayers.filter(isSearchableFeatureLayer) as FeatureLayer[];
 
-        // Site names live on the donor-facing point layers; rank "Fixed Sites" first.
+        // The point/polygon name format varies by layer (full "... Blood Donation
+        // Center", abbreviated, or punctuated). Match on a normalized comparison
+        // rather than an exact string so layout differences don't break the zoom.
+        const norm = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        const rootName = siteName.replace(/\s+(blood\s+)?(donation|donor)\s+center$/i, "").trim();
+        const targetNorms = [norm(siteName), norm(rootName)].filter((s) => s.length >= 4);
+        const generic = new Set(["BLOOD", "DONATION", "DONOR", "CENTER", "THE", "OF", "AND", "NORTH", "SOUTH", "EAST", "WEST"]);
+        // Pick the most distinctive word to anchor a loose server-side LIKE.
+        const anchor =
+          rootName
+            .split(/\s+/)
+            .filter((w) => w.replace(/[^A-Za-z0-9]/g, "").length >= 4 && !generic.has(w.toUpperCase()))
+            .sort((a, b) => b.length - a.length)[0] ??
+          rootName.split(/\s+/).sort((a, b) => b.length - a.length)[0] ??
+          rootName;
+        const safeAnchor = anchor.replace(/[^A-Za-z0-9]/g, "").replace(/'/g, "''");
+
+        const matches = (value: unknown) => {
+          if (typeof value !== "string") return false;
+          const v = norm(value);
+          if (v.length < 4) return false;
+          return targetNorms.some((t) => t === v || t.includes(v) || v.includes(t));
+        };
+
         const ranked = featureLayers
           .map((layer) => {
             const title = safeLayerTitle(layer).toLowerCase();
             const fields = layer.fields ?? [];
-            const field = fields.find(
+            const nameFields = fields.filter(
               (candidate: Field) =>
-                candidate.type === "string" && /name|site|facility/i.test(candidate.name ?? ""),
+                candidate.type === "string" && /name|site|facility|center|label|fsrsmo|title/i.test(candidate.name ?? ""),
             );
             let score = 0;
-            if (field) score += 2;
+            if (nameFields.length > 0) score += 2;
             if (layer.geometryType === "point") score += 4;
             if (title.includes("fixed")) score += 10;
+            if (title.includes("trade") || title.includes("fsrsmo")) score += 8;
             if (title.includes("donor") || title.includes("donation")) score += 4;
-            return { layer, field, score };
+            return { layer, nameFields, score };
           })
-          .filter((candidate) => Boolean(candidate.field) && candidate.score >= 6)
+          .filter((candidate) => candidate.nameFields.length > 0)
           .sort((a, b) => b.score - a.score);
 
-        const safeName = siteName.replace(/'/g, "''");
-        // Trade-area names carry suffixes ("... Blood Donation Center") that the
-        // operational point layer may abbreviate — fall back to the root name.
-        const rootName = siteName
-          .replace(/\s+(blood\s+)?(donation|donor)\s+center$/i, "")
-          .trim()
-          .replace(/'/g, "''");
-
         let target: Graphic | null = null;
-        for (const { layer, field } of ranked) {
-          if (!field) continue;
+        for (const { layer, nameFields } of ranked) {
+          if (target) break;
           try {
             await layer.load?.();
-            const siteQuery = layer.createQuery();
-            siteQuery.returnGeometry = true;
-            siteQuery.outFields = [field.name];
-            siteQuery.where = `UPPER(${field.name}) = UPPER('${safeName}')`;
-            let result = await layer.queryFeatures(siteQuery);
-            if (result.features.length === 0 && rootName && rootName !== safeName) {
-              siteQuery.where = `UPPER(${field.name}) LIKE UPPER('${rootName}%')`;
-              result = await layer.queryFeatures(siteQuery);
-            }
-            const hit = result.features.find((feature) => feature.geometry);
-            if (hit) {
-              target = hit;
-              break;
+            for (const field of nameFields) {
+              const siteQuery = layer.createQuery();
+              siteQuery.returnGeometry = true;
+              siteQuery.outFields = [field.name];
+              siteQuery.where = safeAnchor
+                ? `UPPER(${field.name}) LIKE UPPER('%${safeAnchor}%')`
+                : "1=1";
+              const result = await layer.queryFeatures(siteQuery);
+              const hit = result.features.find(
+                (feature) => feature.geometry && matches(feature.attributes?.[field.name]),
+              );
+              if (hit) {
+                target = hit;
+                break;
+              }
             }
           } catch {
             // try the next candidate layer
