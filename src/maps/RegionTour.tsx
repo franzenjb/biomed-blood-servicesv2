@@ -172,7 +172,15 @@ function Slide({ r, index, run, onOpenStory }: {
 }
 
 /* -------------------------- mobile story ---------------------------- */
-function MobileStorySlide({ r, index, run }: { r: RegionSummary; index: number; run: boolean }) {
+export type TourMobileStats = {
+  serviceRegion: string;
+  drives2024: number | null;
+  units2024: number | null;
+};
+
+function MobileStorySlide({ r, index, run, stats }: {
+  r: RegionSummary; index: number; run: boolean; stats?: TourMobileStats | null;
+}) {
   const mobileShare = Math.round((r.mobileDonors / Math.max(1, r.mobileDonors + r.totalDonors)) * 100);
   if (index === 0) {
     return (
@@ -182,12 +190,14 @@ function MobileStorySlide({ r, index, run }: { r: RegionSummary; index: number; 
           across the region&apos;s {r.districtCount} district{r.districtCount === 1 ? "" : "s"} — {mobileShare}% of all donors,
           extending collection well beyond the {r.siteCount} fixed donation centers.</p>
         <div className="rt-kpigrid">
-          <Kpi value={r.mobileDonors} label="CY24 mobile-drive donors" accent run={run} />
+          {stats?.drives2024 != null && <Kpi value={stats.drives2024} label="CY24 blood drives" accent run={run} />}
+          {stats?.units2024 != null && <Kpi value={stats.units2024} label="CY24 units collected" run={run} />}
+          <Kpi value={r.mobileDonors} label="CY24 mobile-drive donors" accent={stats?.drives2024 == null} run={run} />
           <Kpi value={mobileShare} label="of all regional donors" suffix="%" run={run} />
-          <Kpi value={r.districtCount} label="Districts" run={run} />
-          <Kpi value={r.population} label="Trade-area population" run={run} />
+          {stats?.drives2024 == null && <Kpi value={r.districtCount} label="Districts" run={run} />}
+          {stats?.units2024 == null && <Kpi value={r.population} label="Trade-area population" run={run} />}
         </div>
-        <p className="rt-note">Map shows CY24 blood-drive locations, colored by drive type. Mobile donor count is a live value; narrative is a draft pending client story content.</p>
+        <p className="rt-note">Map shows CY24 blood-drive locations, colored by drive type. Drive, unit &amp; donor counts are live monthly values.</p>
       </div>
     );
   }
@@ -304,9 +314,10 @@ export interface RegionTourProps {
   onSlideChange?: (ctx: TourSlideContext) => void;
   onClose: () => void;
   flying?: boolean;
+  mobileStats?: TourMobileStats | null;
 }
 
-export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onSlideChange, onClose, flying }: RegionTourProps) {
+export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onSlideChange, onClose, flying, mobileStats }: RegionTourProps) {
   const [view, setView] = useState<TourView>({ kind: "deck", slide: 0 });
   const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
@@ -431,7 +442,7 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
           </div>
           <div className="rt-panel__body">
             {view.kind === "deck" && <Slide r={r} index={view.slide} run={!flying} onOpenStory={openStory} />}
-            {view.kind === "story" && view.story === "mobile" && <MobileStorySlide r={r} index={view.slide} run={!flying} />}
+            {view.kind === "story" && view.story === "mobile" && <MobileStorySlide r={r} index={view.slide} run={!flying} stats={mobileStats} />}
             {view.kind === "story" && view.story === "fixed" && (
               <FixedStorySlide r={r} index={view.slide} run={!flying}
                 onOpenSite={(siteName) => setView({ kind: "site", siteName })} />

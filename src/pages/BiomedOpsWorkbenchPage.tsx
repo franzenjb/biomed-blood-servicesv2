@@ -27,7 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
-import RegionTour, { type TourSlideContext } from "../maps/RegionTour";
+import RegionTour, { type TourSlideContext, type TourMobileStats } from "../maps/RegionTour";
 import {
   arcJurisdictionMapSource,
   biomedWorkbenchSupplementalLayers,
@@ -2201,9 +2201,69 @@ export default function BiomedOpsWorkbenchPage({
     siteHighlightRef.current = null;
   }, []);
 
+  // The lifted services use ARC region names ("Indiana Region", "Alabama and
+  // Mississippi Region") while the tour uses trade-area names ("Indiana",
+  // "Alabama Mississippi"). Resolve by token-subset match: every tour word must
+  // appear in the service name; fewest extra words wins. The resolved name also
+  // feeds live drives/units KPIs onto the Mobile Story slide.
+  const tourServiceRegionRef = useRef<Record<string, string | null>>({});
+  const [tourStats, setTourStats] = useState<TourMobileStats | null>(null);
+  const tourStatsCache = useRef<Record<string, TourMobileStats | null>>({});
+
+  const findLiftedBiomedGroup = useCallback(() => {
+    const map = getMapElementMap(mapRef.current);
+    return ((map?.layers?.toArray?.() ?? []) as Layer[]).find(
+      (layer) => layer.type === "group" && (layer.title ?? "").trim().toUpperCase() === "BIOMED",
+    ) as (Layer & { layers?: { toArray?: () => Layer[] } }) | undefined;
+  }, []);
+
+  const fetchTourStats = useCallback(async (region: string) => {
+    if (region in tourStatsCache.current) {
+      setTourStats(tourStatsCache.current[region]);
+      return;
+    }
+    setTourStats(null);
+    const group = findLiftedBiomedGroup();
+    const sub = (group?.layers?.toArray?.() ?? []).find((layer) =>
+      /by region/i.test(layer.title ?? ""),
+    ) as FeatureLayer | undefined;
+    if (!sub) return;
+    try {
+      await sub.load?.();
+      const normTokens = (s: string) =>
+        s.toLowerCase().replace(/\bregion\b/g, " ").replace(/\band\b/g, " ").replace(/[^a-z]+/g, " ").trim().split(/\s+/).filter(Boolean);
+      const want = normTokens(region);
+      const query = sub.createQuery();
+      query.where = "1=1";
+      query.outFields = ["Region", "F2024", "U2024"];
+      query.returnGeometry = false;
+      query.num = 100;
+      const result = await sub.queryFeatures(query);
+      let best: { name: string; extra: number; attrs: Record<string, unknown> } | null = null;
+      for (const feature of result.features) {
+        const name = feature.attributes?.Region;
+        if (typeof name !== "string") continue;
+        const have = new Set(normTokens(name));
+        if (!want.every((token) => have.has(token))) continue;
+        const extra = have.size - want.length;
+        if (!best || extra < best.extra) best = { name, extra, attrs: feature.attributes ?? {} };
+      }
+      tourServiceRegionRef.current[region] = best?.name ?? null;
+      const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+      const stats: TourMobileStats | null = best
+        ? { serviceRegion: best.name, drives2024: num(best.attrs.F2024), units2024: num(best.attrs.U2024) }
+        : null;
+      tourStatsCache.current[region] = stats;
+      setTourStats(stats);
+    } catch {
+      tourStatsCache.current[region] = null;
+    }
+  }, [findLiftedBiomedGroup]);
+
   const closeTour = useCallback(() => {
     setTourActive(false);
     setTourRegion(null);
+    setTourStats(null);
     clearSiteHighlight();
     setLeftOpen(true);
     const view = mapRef.current?.view as MapView | undefined;
@@ -2229,6 +2289,7 @@ export default function BiomedOpsWorkbenchPage({
     async (name: string) => {
       setTourRegion(name);
       clearSiteHighlight();
+      void fetchTourStats(name);
       const map = getMapElementMap(mapRef.current);
       const view = mapRef.current?.view as MapView | undefined;
       if (!map || !view) return;
@@ -2297,7 +2358,7 @@ export default function BiomedOpsWorkbenchPage({
         setTourFlying(false);
       }
     },
-    [clearSiteHighlight],
+    [clearSiteHighlight, fetchTourStats],
   );
 
   // Fly the live map to a fixed collection site by name and drop a highlight ring.
@@ -2460,8 +2521,9 @@ export default function BiomedOpsWorkbenchPage({
           await fl.load?.();
           const regionField = (fl.fields ?? []).find((field) => field.name === "Region");
           if (!regionField) continue;
-          const where = `Region = '${region.replace(/'/g, "''")}'`;
-          const cacheKey = `${fl.id}::${region}`;
+          const serviceName = tourServiceRegionRef.current[region] ?? region;
+          const where = `Region = '${serviceName.replace(/'/g, "''")}'`;
+          const cacheKey = `${fl.id}::${serviceName}`;
           if (!(cacheKey in tourRegionFilterCache.current)) {
             const countQuery = fl.createQuery();
             countQuery.where = where;
@@ -2583,6 +2645,7 @@ export default function BiomedOpsWorkbenchPage({
             onSelectSite={(siteName) => void flyToSite(siteName)}
             onSlideChange={(ctx) => void applyTourStoryLayers(ctx)}
             onClose={closeTour}
+            mobileStats={tourStats}
           />
         )}
       </div>
