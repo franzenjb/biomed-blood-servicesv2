@@ -252,6 +252,15 @@ test.describe("Maps (shared shell)", () => {
     expect(searchResultBottomGap).toBeLessThanOrEqual(24);
     await page.getByPlaceholder("Search counties, regions, sites").fill("");
     await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "false");
+
+    // Geography drill-down tab (ported from the dashboard): three cascading
+    // selects, child levels disabled until the parent is chosen.
+    await page.getByRole("tab", { name: "Geography" }).click();
+    await expect(page.getByTestId("ops-geo-division")).toBeVisible();
+    await expect(page.getByTestId("ops-geo-region")).toBeDisabled();
+    await expect(page.getByTestId("ops-geo-district")).toBeDisabled();
+    await page.getByRole("tab", { name: "Filter" }).click();
+
     await page.getByRole("button", { name: "Reset map" }).click();
     await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();

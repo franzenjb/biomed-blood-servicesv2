@@ -17,6 +17,7 @@ import {
   Home,
   Info,
   List,
+  MapPin,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -43,6 +44,18 @@ import {
 } from "../maps/presentationStyle";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import {
+  LEVELS,
+  EMPTY_SELECTION,
+  type LevelId,
+  type Selection as GeoSelection,
+  buildWhereForLayer,
+  layerHasAnyLevelField,
+  loadLevelOptions,
+  computeLiveIconExtent,
+  levelLabel,
+  levelAllLabel,
+} from "../utils/biomedGeographyFilter";
+import {
   buildLayerSnapshots,
   collectArcJurisdictionLayers,
   getMapElementMap,
@@ -64,7 +77,7 @@ import "./BiomedOpsWorkbenchPage.css";
 type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
 type RightTab = "current" | "detail" | "list";
-type LeftTab = "search" | "filter";
+type LeftTab = "search" | "filter" | "geography";
 type ArcgisSearchElement = HTMLElement & {
   popupDisabled?: boolean;
   popupTemplate?: unknown;
@@ -1510,6 +1523,13 @@ export default function BiomedOpsWorkbenchPage({
   const [tourActive, setTourActive] = useState(false);
   const [tourRegion, setTourRegion] = useState<string | null>(null);
   const [tourFlying, setTourFlying] = useState(false);
+
+  // Geography drill-down (division → region → district), ported from the
+  // Jurisdiction Dashboard so the Workbench offers the same Filter by Geography.
+  const [geoSelection, setGeoSelection] = useState<GeoSelection>(EMPTY_SELECTION);
+  const [geoOptions, setGeoOptions] = useState<Record<LevelId, string[]>>({ division: [], region: [], district: [] });
+  const geoSourceLayerRef = useRef<FeatureLayer | null>(null);
+  const geoChosenFieldRef = useRef<Partial<Record<LevelId, string>>>({});
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
 
   // Deep-link: /ops?tour=1 opens the guided region tour straight away.
@@ -1819,6 +1839,10 @@ export default function BiomedOpsWorkbenchPage({
         refreshLayers();
       });
 
+      // Discover the geography source layer + seed the division dropdown so the
+      // Geography tab is ready (non-blocking).
+      if (discoverGeoSourceLayer(map)) void refreshGeoOptions(EMPTY_SELECTION);
+
       collectArcJurisdictionLayers(map).forEach((layer) => {
         if ("popupEnabled" in layer) {
           (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
@@ -2075,6 +2099,100 @@ export default function BiomedOpsWorkbenchPage({
     setLeftOpen(false);
     setRightOpen(false);
   }, []);
+
+  // ---- Geography drill-down (division → region → district) --------------
+  // Pick the source layer that carries jurisdiction NAME fields (prefer the
+  // FY25 / ZIP data layer with the widest coverage), then cache it.
+  const discoverGeoSourceLayer = useCallback((map?: ReturnType<typeof getMapElementMap>) => {
+    if (!map) return null;
+    const featureLayers = collectArcJurisdictionLayers(map).filter(isSearchableFeatureLayer) as FeatureLayer[];
+    const byTitle = (token: string) =>
+      featureLayers.find((layer) => safeLayerTitle(layer).toLowerCase().includes(token) && layerHasAnyLevelField(layer));
+    const source =
+      byTitle("fy25") ||
+      byTitle("zip") ||
+      featureLayers.find((layer) => layerHasAnyLevelField(layer)) ||
+      null;
+    geoSourceLayerRef.current = source;
+    return source;
+  }, []);
+
+  const refreshGeoOptions = useCallback(async (sel: GeoSelection) => {
+    const layer = geoSourceLayerRef.current;
+    const chosen = geoChosenFieldRef.current;
+    const next: Record<LevelId, string[]> = { division: [], region: [], district: [] };
+    const div = await loadLevelOptions(layer, "division", EMPTY_SELECTION, chosen);
+    next.division = div.values;
+    if (div.field) chosen.division = div.field;
+    if (sel.division) {
+      const reg = await loadLevelOptions(layer, "region", { ...sel, region: "", district: "" }, chosen);
+      next.region = reg.values;
+      if (reg.field) chosen.region = reg.field;
+    }
+    if (sel.region) {
+      const dist = await loadLevelOptions(layer, "district", { ...sel, district: "" }, chosen);
+      next.district = dist.values;
+      if (dist.field) chosen.district = dist.field;
+    }
+    setGeoOptions(next);
+  }, []);
+
+  // Apply the selection to the live map: filter queryable layers by their own
+  // jurisdiction fields, then zoom to the selected geography's live point icons.
+  const applyGeographyToMap = useCallback(async (sel: GeoSelection) => {
+    const map = getMapElementMap(mapRef.current);
+    const view = mapRef.current?.view as MapView | undefined;
+    if (!map) return;
+
+    collectArcJurisdictionLayers(map)
+      .filter(isSearchableFeatureLayer)
+      .forEach((layer) => {
+        const fl = layer as FeatureLayer;
+        const where = buildWhereForLayer(fl, sel, geoChosenFieldRef.current);
+        if (where !== "1=1" && !layerHasAnyLevelField(fl)) return;
+        try {
+          fl.definitionExpression = where;
+        } catch {
+          // some sublayers reject definitionExpression; ignore
+        }
+      });
+
+    const hasSelection = LEVELS.some((level) => sel[level]);
+    if (!view) return;
+    if (!hasSelection) {
+      try {
+        await view.goTo({ center: homeCenter, zoom: homeZoom }, { duration: 650 });
+      } catch { /* interrupted */ }
+      return;
+    }
+    try {
+      const iconExtent = await computeLiveIconExtent(map, sel, geoChosenFieldRef.current);
+      if (iconExtent) await view.goTo(iconExtent, { duration: 650 });
+    } catch {
+      // navigation can be interrupted; the filter still applies
+    }
+  }, []);
+
+  const onGeoSelect = useCallback(
+    (level: LevelId, value: string) => {
+      setGeoSelection((current) => {
+        const next: GeoSelection = { ...current, [level]: value };
+        // Clear descendants when a parent changes.
+        if (level === "division") { next.region = ""; next.district = ""; }
+        if (level === "region") next.district = "";
+        void refreshGeoOptions(next);
+        void applyGeographyToMap(next);
+        return next;
+      });
+    },
+    [refreshGeoOptions, applyGeographyToMap],
+  );
+
+  const resetGeography = useCallback(() => {
+    setGeoSelection(EMPTY_SELECTION);
+    void refreshGeoOptions(EMPTY_SELECTION);
+    void applyGeographyToMap(EMPTY_SELECTION);
+  }, [refreshGeoOptions, applyGeographyToMap]);
 
   const siteHighlightRef = useRef<Graphic | null>(null);
   const clearSiteHighlight = useCallback(() => {
@@ -2437,6 +2555,17 @@ export default function BiomedOpsWorkbenchPage({
               <Filter aria-hidden="true" size={17} />
               Filter
             </button>
+            <button
+              type="button"
+              className={leftTab === "geography" ? "is-active" : ""}
+              onClick={() => setLeftTab("geography")}
+              role="tab"
+              aria-selected={leftTab === "geography"}
+              data-testid="ops-tab-geography"
+            >
+              <MapPin aria-hidden="true" size={17} />
+              Geography
+            </button>
           </div>
           {leftTab === "search" && (
           <>
@@ -2575,6 +2704,50 @@ export default function BiomedOpsWorkbenchPage({
                 </section>
               );
             })}
+          </div>
+          </>
+          )}
+          {leftTab === "geography" && (
+          <>
+          <div className="opsv2__geo">
+            <p className="opsv2__geo-intro">Drill from division to district. Filters the map and zooms to the selection.</p>
+            {LEVELS.map((level) => {
+              const disabled =
+                !isAuthenticated ||
+                (level === "region" && !geoSelection.division) ||
+                (level === "district" && !geoSelection.region);
+              return (
+                <label key={level} className="opsv2__geo-field" data-disabled={disabled ? "true" : "false"}>
+                  <span>{levelLabel(level)}</span>
+                  <select
+                    value={geoSelection[level]}
+                    disabled={disabled}
+                    onChange={(event) => onGeoSelect(level, event.target.value)}
+                    data-testid={`ops-geo-${level}`}
+                  >
+                    <option value="">{levelAllLabel(level)}</option>
+                    {geoOptions[level].map((value) => (
+                      <option key={value} value={value}>{value}</option>
+                    ))}
+                  </select>
+                </label>
+              );
+            })}
+            {LEVELS.some((level) => geoSelection[level]) && (
+              <div className="opsv2__geo-chips" aria-label="Active geography filters">
+                {LEVELS.filter((level) => geoSelection[level]).map((level) => (
+                  <button key={level} type="button" className="opsv2__geo-chip" onClick={() => onGeoSelect(level, "")}>
+                    <em>{levelLabel(level)}</em>
+                    {geoSelection[level]}
+                    <X aria-hidden="true" size={13} />
+                  </button>
+                ))}
+                <button type="button" className="opsv2__geo-chip opsv2__geo-chip--clear" onClick={resetGeography}>
+                  Clear all
+                </button>
+              </div>
+            )}
+            {!isAuthenticated && <p className="opsv2__search-hint">Sign in to filter by geography.</p>}
           </div>
           </>
           )}

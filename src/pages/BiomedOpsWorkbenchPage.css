@@ -700,6 +700,75 @@
   line-height: 1.5;
 }
 
+/* Geography drill-down (division → region → district) */
+.opsv2__geo {
+  display: grid;
+  gap: 14px;
+  padding: 14px 18px 12px;
+}
+.opsv2__geo-intro {
+  margin: 0;
+  color: #6b7785;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.opsv2__geo-field {
+  display: grid;
+  gap: 6px;
+}
+.opsv2__geo-field > span {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #44515f;
+}
+.opsv2__geo-field select {
+  min-height: 44px;
+  border: 1px solid #d5dbe2;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f172a;
+  padding: 0 12px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.opsv2__geo-field[data-disabled="true"] {
+  opacity: 0.55;
+}
+.opsv2__geo-field[data-disabled="true"] select {
+  background: #f1f4f7;
+  cursor: not-allowed;
+}
+.opsv2__geo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.opsv2__geo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #f3b9bf;
+  background: #fdeff1;
+  color: #9b1c2a;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.opsv2__geo-chip em {
+  font-style: normal;
+  font-weight: 700;
+  color: #c0303c;
+}
+.opsv2__geo-chip--clear {
+  border-color: #d5dbe2;
+  background: #fff;
+  color: #44515f;
+}
+
 .opsv2__right-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
