@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, MapPin, List } from "lucide-react";
-import { REGION_BY_NAME, type RegionSummary } from "../data/regionSummaries";
+import { X, ChevronLeft, ChevronRight, MapPin, List, Truck, Building2, ArrowLeft } from "lucide-react";
+import { REGION_BY_NAME, type RegionSummary, type RegionSite } from "../data/regionSummaries";
 import "./RegionTour.css";
 
 const DIV_COLORS: Record<string, string> = {
@@ -13,6 +13,7 @@ const DIV_COLORS: Record<string, string> = {
 };
 const divColor = (d: string) => DIV_COLORS[d] ?? "#737373";
 const fmt = (n: number) => n.toLocaleString("en-US");
+const shortSite = (name: string) => name.replace(/ Blood Don(?:ation|or) Center$/, "");
 
 /* ----------------------------- count-up ----------------------------- */
 function useCountUp(target: number, run: boolean, decimals = 0) {
@@ -64,13 +65,13 @@ function BarChart({ data, labels }: { data: number[]; labels: string[] }) {
   );
 }
 
-function HBarChart({ items }: { items: { name: string; donors: number }[] }) {
+function HBarChart({ items, highlight }: { items: { name: string; donors: number }[]; highlight?: string }) {
   const max = Math.max(1, ...items.map((s) => s.donors));
   return (
     <div className="rt-hbars">
       {items.map((s) => (
-        <div className="rt-hbar" key={s.name}>
-          <span className="rt-hbar__name" title={s.name}>{s.name.replace(/ Blood Donation Center$/, "")}</span>
+        <div className={`rt-hbar${highlight === s.name ? " rt-hbar--hl" : ""}`} key={s.name}>
+          <span className="rt-hbar__name" title={s.name}>{shortSite(s.name)}</span>
           <span className="rt-hbar__track"><span className="rt-hbar__fill" style={{ width: `${(s.donors / max) * 100}%` }} /></span>
           <span className="rt-hbar__val">{fmt(s.donors)}</span>
         </div>
@@ -109,18 +110,30 @@ function Donut({ mix }: { mix: { label: string; value: number }[] }) {
   );
 }
 
-/* ----------------------------- slides ------------------------------- */
-function Slide({ r, index, run }: { r: RegionSummary; index: number; run: boolean }) {
+/* ------------------------- overview slides -------------------------- */
+function Slide({ r, index, run, onOpenStory }: {
+  r: RegionSummary; index: number; run: boolean; onOpenStory: (s: StoryKind) => void;
+}) {
   if (index === 0) {
     return (
       <div className="rt-slide">
-        <div className="rt-slabel">Slide 1 · Regional snapshot</div>
+        <div className="rt-slabel">Slide 1 · Overall summary</div>
         <p className="rt-narr"><em>{r.region}.</em> {r.narrative}</p>
         <div className="rt-kpigrid">
-          <Kpi value={r.totalDonors} label="CY24 donors" accent run={run} />
+          <Kpi value={r.totalDonors} label="CY24 fixed-site donors" accent run={run} />
           <Kpi value={r.siteCount} label="Fixed donation centers" run={run} />
           <Kpi value={r.population} label="Trade-area population" run={run} />
           <Kpi value={r.avgDrive} label="Avg. donor drive distance" decimals={1} suffix=" mi" run={run} />
+        </div>
+        <div className="rt-storybtns">
+          <button type="button" className="rt-storybtn" onClick={() => onOpenStory("mobile")}>
+            <Truck size={16} /><span><strong>Mobile Story</strong><small>Blood drives across the region</small></span>
+            <ChevronRight size={15} />
+          </button>
+          <button type="button" className="rt-storybtn" onClick={() => onOpenStory("fixed")}>
+            <Building2 size={16} /><span><strong>Fixed Site Story</strong><small>Donation centers &amp; site detail</small></span>
+            <ChevronRight size={15} />
+          </button>
         </div>
         <p className="rt-note">Donors, sites, population &amp; drive distance are live values from the trade-area layer.</p>
       </div>
@@ -160,7 +173,120 @@ function Slide({ r, index, run }: { r: RegionSummary; index: number; run: boolea
   );
 }
 
+/* -------------------------- mobile story ---------------------------- */
+function MobileStorySlide({ r, index, run }: { r: RegionSummary; index: number; run: boolean }) {
+  const mobileShare = Math.round((r.mobileDonors / Math.max(1, r.mobileDonors + r.totalDonors)) * 100);
+  if (index === 0) {
+    return (
+      <div className="rt-slide">
+        <div className="rt-slabel rt-slabel--story"><Truck size={13} /> Mobile Story · 1 of 2</div>
+        <p className="rt-narr"><em>Blood drives in {r.region}.</em> In CY24, mobile blood drives reached {fmt(r.mobileDonors)} donors
+          across the region&apos;s {r.districtCount} district{r.districtCount === 1 ? "" : "s"} — {mobileShare}% of all donors,
+          extending collection well beyond the {r.siteCount} fixed donation centers.</p>
+        <div className="rt-kpigrid">
+          <Kpi value={r.mobileDonors} label="CY24 mobile-drive donors" accent run={run} />
+          <Kpi value={mobileShare} label="of all regional donors" suffix="%" run={run} />
+          <Kpi value={r.districtCount} label="Districts" run={run} />
+          <Kpi value={r.population} label="Trade-area population" run={run} />
+        </div>
+        <p className="rt-note">Mobile donor count is a live value; narrative is a draft pending client story content.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="rt-slide">
+      <div className="rt-slabel rt-slabel--story"><Truck size={13} /> Mobile Story · 2 of 2</div>
+      <div className="rt-chartbox"><h4>Mobile drives vs fixed sites — CY24 donors</h4>
+        <HBarChart items={[
+          { name: "Mobile blood drives", donors: r.mobileDonors },
+          { name: "Fixed donation centers", donors: r.totalDonors },
+        ]} highlight="Mobile blood drives" />
+      </div>
+      <div className="rt-impact">
+        <div className="rt-impact__big">
+          <div className="rt-impact__v">{mobileShare}%</div>
+          <div className="rt-impact__l">of the region&apos;s donors gave at a mobile drive</div>
+        </div>
+      </div>
+      <div className="rt-cta"><h4>Mobile drives carry the region&apos;s reach.</h4>
+        <p>Draft panel — swap in the region&apos;s mobile-program narrative: sponsor highlights, school &amp; employer drives, rural coverage.</p></div>
+      <p className="rt-note">Donor counts are live; story framing is a draft pending client content.</p>
+    </div>
+  );
+}
+
+/* ------------------------- fixed-site story ------------------------- */
+function FixedStorySlide({ r, index, run, onOpenSite }: {
+  r: RegionSummary; index: number; run: boolean; onOpenSite: (name: string) => void;
+}) {
+  if (index === 0) {
+    return (
+      <div className="rt-slide">
+        <div className="rt-slabel rt-slabel--story"><Building2 size={13} /> Fixed Site Story · 1 of 2</div>
+        <p className="rt-narr"><em>Donation centers in {r.region}.</em> The region&apos;s {r.siteCount} fixed donation
+          center{r.siteCount === 1 ? "" : "s"} welcomed {fmt(r.totalDonors)} donors in CY24 — {fmt(r.rbcDonors)} of them
+          giving red blood cells — with the typical donor traveling about {r.avgDrive.toFixed(1)} miles to give.</p>
+        <div className="rt-kpigrid">
+          <Kpi value={r.totalDonors} label="CY24 fixed-site donors" accent run={run} />
+          <Kpi value={r.siteCount} label="Fixed donation centers" run={run} />
+          <Kpi value={r.rbcDonors} label="RBC donors" run={run} />
+          <Kpi value={r.avgDrive} label="Avg. donor drive distance" decimals={1} suffix=" mi" run={run} />
+        </div>
+        <p className="rt-note">All values on this slide are live from the trade-area layer; narrative is a draft pending client story content.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="rt-slide">
+      <div className="rt-slabel rt-slabel--story"><Building2 size={13} /> Fixed Site Story · 2 of 2</div>
+      <div className="rt-chartbox rt-chartbox--sites">
+        <h4>Donation centers — select one for its site story</h4>
+        <div className="rt-sites">
+          {r.topSites.map((s) => (
+            <button type="button" className="rt-sitebtn" key={s.name} onClick={() => onOpenSite(s.name)}>
+              <span className="rt-sitebtn__name" title={s.name}>{shortSite(s.name)}</span>
+              <span className="rt-sitebtn__n">{fmt(s.donors)} donors</span>
+              <ChevronRight size={14} />
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="rt-note">Per-site donor counts are live CY24 values from the trade-area layer.</p>
+    </div>
+  );
+}
+
+/* --------------------------- site story ----------------------------- */
+function SiteStory({ r, site, run }: { r: RegionSummary; site: RegionSite; run: boolean }) {
+  const rank = r.topSites.findIndex((s) => s.name === site.name) + 1;
+  const share = Math.round((site.donors / Math.max(1, r.totalDonors)) * 100);
+  return (
+    <div className="rt-slide">
+      <div className="rt-slabel rt-slabel--story"><Building2 size={13} /> Site Story</div>
+      <h3 className="rt-sitename">{shortSite(site.name)}</h3>
+      <p className="rt-narr">{shortSite(site.name)} welcomed {fmt(site.donors)} donors in CY24 — {share}% of all
+        fixed-site donors in {r.region} — ranking #{rank} of the region&apos;s {r.siteCount} donation centers.</p>
+      <div className="rt-kpigrid">
+        <Kpi value={site.donors} label="CY24 donors" accent run={run} />
+        <Kpi value={site.rbc} label="RBC donors" run={run} />
+        <Kpi value={share} label="of region fixed-site donors" suffix="%" run={run} />
+        <Kpi value={rank} label={`rank of ${r.siteCount} centers`} run={run} />
+      </div>
+      <div className="rt-chartbox"><h4>Centers in {r.region}</h4>
+        <HBarChart items={r.topSites.slice(0, 7)} highlight={site.name} />
+      </div>
+      <p className="rt-note">Donor &amp; RBC counts are live CY24 values; site narrative is a draft pending client story content.</p>
+    </div>
+  );
+}
+
 /* --------------------------- main overlay --------------------------- */
+type StoryKind = "mobile" | "fixed";
+type TourView =
+  | { kind: "deck"; slide: number }
+  | { kind: "story"; story: StoryKind; slide: number }
+  | { kind: "site"; siteName: string };
+
 export interface RegionTourProps {
   activeRegion: string | null;
   onSelectRegion: (name: string) => void;
@@ -169,11 +295,14 @@ export interface RegionTourProps {
 }
 
 export default function RegionTour({ activeRegion, onSelectRegion, onClose, flying }: RegionTourProps) {
-  const [slide, setSlide] = useState(0);
+  const [view, setView] = useState<TourView>({ kind: "deck", slide: 0 });
   const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
   useEffect(() => {
-    if (activeRegion && activeRegion !== lastRegion.current) { setSlide(0); lastRegion.current = activeRegion; }
+    if (activeRegion && activeRegion !== lastRegion.current) {
+      setView({ kind: "deck", slide: 0 });
+      lastRegion.current = activeRegion;
+    }
   }, [activeRegion]);
 
   const groups = useMemo(() => {
@@ -186,6 +315,36 @@ export default function RegionTour({ activeRegion, onSelectRegion, onClose, flyi
   }, []);
 
   const r = activeRegion ? REGION_BY_NAME[activeRegion] : null;
+  const site = r && view.kind === "site" ? r.topSites.find((s) => s.name === view.siteName) ?? null : null;
+
+  const openStory = (story: StoryKind) => setView({ kind: "story", story, slide: 0 });
+  const backToSummary = () => setView({ kind: "deck", slide: 0 });
+
+  /* nav state per view */
+  const dotCount = view.kind === "deck" ? 3 : view.kind === "story" ? 2 : 0;
+  const dotIndex = view.kind === "deck" ? view.slide : view.kind === "story" ? view.slide : 0;
+  const setDot = (d: number) =>
+    setView(view.kind === "story" ? { ...view, slide: d } : { kind: "deck", slide: d });
+
+  const navBack = () => {
+    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 1 });
+    else if (view.kind === "story") view.slide === 0 ? backToSummary() : setView({ ...view, slide: view.slide - 1 });
+    else setView({ kind: "deck", slide: Math.max(0, view.slide - 1) });
+  };
+  const navNext = () => {
+    if (view.kind === "site") setView({ kind: "story", story: "fixed", slide: 1 });
+    else if (view.kind === "story") view.slide >= 1 ? backToSummary() : setView({ ...view, slide: view.slide + 1 });
+    else if (view.slide === 2) {
+      // End of deck returns to the region picker — never exits the tour/app.
+      setView({ kind: "deck", slide: 0 });
+      setPickerOpen(true);
+    } else setView({ kind: "deck", slide: Math.min(2, view.slide + 1) });
+  };
+  const nextLabel = view.kind === "site" ? "Back to centers"
+    : view.kind === "story" ? (view.slide >= 1 ? "Overall summary" : "Next")
+    : view.slide === 2 ? "Pick another region" : "Next";
+
+  const viewKey = view.kind === "deck" ? "deck" : view.kind === "story" ? `story-${view.story}` : `site`;
 
   return (
     <div className="rt-root">
@@ -224,26 +383,38 @@ export default function RegionTour({ activeRegion, onSelectRegion, onClose, flyi
       </aside>
 
       {r && (
-        <section className="rt-panel" key={r.region}>
+        <section className="rt-panel" key={`${r.region}:${viewKey}`}>
           <div className="rt-panel__hd">
             <div className="rt-panel__div" style={{ color: divColor(r.division) }}>{r.division.toUpperCase()}</div>
             <h2>{r.region}{flying ? <span className="rt-flying">flying to region…</span> : null}</h2>
+            {view.kind !== "deck" && (
+              <button type="button" className="rt-backlink"
+                onClick={view.kind === "site" ? () => setView({ kind: "story", story: "fixed", slide: 1 }) : backToSummary}>
+                <ArrowLeft size={13} /> {view.kind === "site" ? "Back to centers" : "Back to overall summary"}
+              </button>
+            )}
           </div>
           <div className="rt-panel__body">
-            <Slide r={r} index={slide} run={!flying} />
+            {view.kind === "deck" && <Slide r={r} index={view.slide} run={!flying} onOpenStory={openStory} />}
+            {view.kind === "story" && view.story === "mobile" && <MobileStorySlide r={r} index={view.slide} run={!flying} />}
+            {view.kind === "story" && view.story === "fixed" && (
+              <FixedStorySlide r={r} index={view.slide} run={!flying}
+                onOpenSite={(siteName) => setView({ kind: "site", siteName })} />
+            )}
+            {view.kind === "site" && site && <SiteStory r={r} site={site} run={!flying} />}
           </div>
           <div className="rt-panel__nav">
             <div className="rt-dots">
-              {[0, 1, 2].map((d) => (
-                <button key={d} className={`rt-dot2${d === slide ? " on" : ""}`} onClick={() => setSlide(d)} aria-label={`Slide ${d + 1}`} />
+              {Array.from({ length: dotCount }, (_, d) => (
+                <button key={d} className={`rt-dot2${d === dotIndex ? " on" : ""}`} onClick={() => setDot(d)} aria-label={`Slide ${d + 1}`} />
               ))}
             </div>
             <div className="rt-navbtns">
-              <button className="rt-nav rt-nav--ghost" disabled={slide === 0} onClick={() => setSlide((s) => Math.max(0, s - 1))}>
+              <button className="rt-nav rt-nav--ghost" disabled={view.kind === "deck" && view.slide === 0} onClick={navBack}>
                 <ChevronLeft size={15} /> Back
               </button>
-              <button className="rt-nav rt-nav--solid" onClick={() => (slide === 2 ? onClose() : setSlide((s) => Math.min(2, s + 1)))}>
-                {slide === 2 ? "Done" : "Next"} <ChevronRight size={15} />
+              <button className="rt-nav rt-nav--solid" onClick={navNext}>
+                {nextLabel} <ChevronRight size={15} />
               </button>
             </div>
           </div>
