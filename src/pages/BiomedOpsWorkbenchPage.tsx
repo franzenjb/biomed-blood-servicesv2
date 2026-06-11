@@ -2209,6 +2209,9 @@ export default function BiomedOpsWorkbenchPage({
   const tourServiceRegionRef = useRef<Record<string, string | null>>({});
   const [tourStats, setTourStats] = useState<TourMobileStats | null>(null);
   const tourStatsCache = useRef<Record<string, TourMobileStats | null>>({});
+  // Live mirror of the active tour region so async filter work can detect that
+  // the user switched regions mid-flight and drop its stale result.
+  const tourRegionLiveRef = useRef<string | null>(null);
 
   const findLiftedBiomedGroup = useCallback(() => {
     const map = getMapElementMap(mapRef.current);
@@ -2216,6 +2219,40 @@ export default function BiomedOpsWorkbenchPage({
       (layer) => layer.type === "group" && (layer.title ?? "").trim().toUpperCase() === "BIOMED",
     ) as (Layer & { layers?: { toArray?: () => Layer[] } }) | undefined;
   }, []);
+
+  // Region boundary polygon (from the lifted "by Region" service) — used to
+  // spatially clip the drive-point dot layers, which carry no Region field.
+  const tourRegionGeomCache = useRef<Record<string, Geometry | null>>({});
+
+  const getTourRegionGeometry = useCallback(async (region: string) => {
+    if (region in tourRegionGeomCache.current) return tourRegionGeomCache.current[region];
+    let geometry: Geometry | null = null;
+    try {
+      const group = findLiftedBiomedGroup();
+      const sub = (group?.layers?.toArray?.() ?? []).find((layer) =>
+        /by region/i.test(layer.title ?? ""),
+      ) as FeatureLayer | undefined;
+      if (sub) {
+        await sub.load?.();
+        const serviceName = tourServiceRegionRef.current[region] ?? region;
+        const query = sub.createQuery();
+        query.where = `Region = '${serviceName.replace(/'/g, "''")}'`;
+        query.returnGeometry = true;
+        query.outFields = [];
+        query.num = 1;
+        const result = await sub.queryFeatures(query);
+        geometry = (result.features[0]?.geometry as Geometry | undefined) ?? null;
+      }
+    } catch {
+      geometry = null;
+    }
+    // Don't pin a null result before the name resolver has run — a later call
+    // with the resolved service name may still succeed.
+    if (geometry || region in tourServiceRegionRef.current) {
+      tourRegionGeomCache.current[region] = geometry;
+    }
+    return geometry;
+  }, [findLiftedBiomedGroup]);
 
   const fetchTourStats = useCallback(async (region: string) => {
     if (region in tourStatsCache.current) {
@@ -2263,6 +2300,7 @@ export default function BiomedOpsWorkbenchPage({
   const closeTour = useCallback(() => {
     setTourActive(false);
     setTourRegion(null);
+    tourRegionLiveRef.current = null;
     setTourStats(null);
     clearSiteHighlight();
     setLeftOpen(true);
@@ -2279,6 +2317,9 @@ export default function BiomedOpsWorkbenchPage({
         sub.visible = false;
         try {
           (sub as FeatureLayer).definitionExpression = "";
+          const layerView = (view as MapView & { allLayerViews?: { find?: (cb: (lv: { layer?: Layer }) => boolean) => unknown } })
+            ?.allLayerViews?.find?.((candidate) => candidate.layer === sub) as { filter?: unknown } | undefined;
+          if (layerView && "filter" in layerView) layerView.filter = null;
         } catch { /* ignore */ }
       });
     }
@@ -2288,6 +2329,7 @@ export default function BiomedOpsWorkbenchPage({
   const flyToRegion = useCallback(
     async (name: string) => {
       setTourRegion(name);
+      tourRegionLiveRef.current = name;
       clearSiteHighlight();
       void fetchTourStats(name);
       const map = getMapElementMap(mapRef.current);
@@ -2512,6 +2554,11 @@ export default function BiomedOpsWorkbenchPage({
       group.visible = wanted.size > 0;
 
       const region = tourRegion;
+      const view = mapRef.current?.view as MapView | undefined;
+      // Make sure the ARC service name is resolved before building filters, so
+      // the first slide visit filters correctly instead of falling back national.
+      if (region && !(region in tourServiceRegionRef.current)) await fetchTourStats(region);
+      const stale = () => tourRegionLiveRef.current !== region;
       for (const sub of group.layers?.toArray?.() ?? []) {
         const on = wanted.has((sub.title ?? "").trim());
         sub.visible = on;
@@ -2519,27 +2566,50 @@ export default function BiomedOpsWorkbenchPage({
         const fl = sub as FeatureLayer;
         try {
           await fl.load?.();
+          if (stale()) return;
           const regionField = (fl.fields ?? []).find((field) => field.name === "Region");
-          if (!regionField) continue;
-          const serviceName = tourServiceRegionRef.current[region] ?? region;
-          const where = `Region = '${serviceName.replace(/'/g, "''")}'`;
-          const cacheKey = `${fl.id}::${serviceName}`;
-          if (!(cacheKey in tourRegionFilterCache.current)) {
-            const countQuery = fl.createQuery();
-            countQuery.where = where;
-            countQuery.returnGeometry = false;
-            const count = (await fl.queryFeatureCount?.(countQuery)) ?? 0;
-            tourRegionFilterCache.current[cacheKey] = count > 0;
+          if (regionField) {
+            const serviceName = tourServiceRegionRef.current[region] ?? region;
+            const where = `Region = '${serviceName.replace(/'/g, "''")}'`;
+            const cacheKey = `${fl.id}::${serviceName}`;
+            if (!(cacheKey in tourRegionFilterCache.current)) {
+              const countQuery = fl.createQuery();
+              countQuery.where = where;
+              countQuery.returnGeometry = false;
+              const count = (await fl.queryFeatureCount?.(countQuery)) ?? 0;
+              tourRegionFilterCache.current[cacheKey] = count > 0;
+            }
+            // Region names that don't match this service fall back to the national
+            // layer — the region zoom still frames the local picture.
+            if (stale()) return;
+            fl.definitionExpression = tourRegionFilterCache.current[cacheKey] ? where : "";
+          } else if (view) {
+            // No Region field (the drive-point dot layers): clip to the region
+            // boundary polygon with a layer-view spatial filter instead.
+            const geometry = await getTourRegionGeometry(region);
+            // Cap the wait so a layer view that never materializes can't hang
+            // the loop (and later slide changes) behind an unresolved promise.
+            const layerView = (await Promise.race([
+              view.whenLayerView(fl).catch(() => null),
+              new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 4000)),
+            ])) as { filter?: unknown } | null;
+            if (stale()) return;
+            if (layerView && "filter" in layerView) {
+              if (geometry) {
+                const { default: FeatureFilter } = await import("@arcgis/core/layers/support/FeatureFilter");
+                if (stale()) return;
+                layerView.filter = new FeatureFilter({ geometry, spatialRelationship: "intersects" });
+              } else {
+                layerView.filter = null;
+              }
+            }
           }
-          // Region names that don't match this service fall back to the national
-          // layer — the region zoom still frames the local picture.
-          fl.definitionExpression = tourRegionFilterCache.current[cacheKey] ? where : "";
         } catch {
           // leave the layer unfiltered
         }
       }
     },
-    [tourRegion],
+    [tourRegion, getTourRegionGeometry, fetchTourStats],
   );
 
   const authLabel =
