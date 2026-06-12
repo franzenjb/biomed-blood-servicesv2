@@ -41,9 +41,10 @@ export default function HomePage() {
           muted
           loop
           playsInline
+          poster="/video/hero-poster.jpg"
           aria-hidden="true"
         >
-          <source src="/video/hero-sharp-plus.mp4" type="video/mp4" />
+          <source src="/video/hero-optimized.mp4" type="video/mp4" />
         </video>
         <div className="home-hero__scrim" aria-hidden="true" />
 
