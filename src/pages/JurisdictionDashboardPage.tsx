@@ -10,6 +10,7 @@ import type Layer from "@arcgis/core/layers/Layer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
 import {
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   HelpCircle,
@@ -252,6 +253,15 @@ function levelLabel(level: LevelId) {
 // Quick View presets — logical layer combinations. The matcher decides which
 // layers are ON for each preset; "minimal" is the default starting view.
 type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "infrastructure" | "all" | "clean";
+
+// Layers tab accordions — every snapshot category maps to exactly one group.
+const LAYER_TYPE_GROUPS: Array<{ id: string; label: string; categories: string[] }> = [
+  { id: "sites", label: "Sites & Facilities", categories: ["sites", "manufacturing"] },
+  { id: "geography", label: "Boundaries & Geography", categories: ["geography"] },
+  { id: "operations", label: "Operations & Collections Data", categories: ["operations"] },
+  { id: "hospitals", label: "Hospitals", categories: ["hospitals"] },
+  { id: "reference", label: "Reference", categories: ["reference"] },
+];
 
 const PRESETS: Array<{ id: PresetId; label: string }> = [
   { id: "minimal", label: "Minimal (Boundaries + Fixed Sites)" },
@@ -840,6 +850,7 @@ export default function JurisdictionDashboardPage({
   const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
   const [preset, setPreset] = useState<PresetId>("minimal");
   const [layerSnaps, setLayerSnaps] = useState<BioMedLayerSnapshot[]>([]);
+  const [layerGroupsOpen, setLayerGroupsOpen] = useState<Record<string, boolean>>({});
   const [aboutOpen, setAboutOpen] = useState(false);
 
   // Resolved live layers (refs so effects can read without re-subscribing).
@@ -1687,22 +1698,43 @@ export default function JurisdictionDashboardPage({
                 ) : layerSnaps.length === 0 ? (
                   <p className="jd__empty">No layers loaded yet.</p>
                 ) : (
-                  layerSnaps.map((snap) => (
-                    <button
-                      key={snap.id}
-                      type="button"
-                      className="jd__layer"
-                      aria-pressed={snap.visible}
-                      onClick={() => toggleMapLayer(snap.id)}
-                    >
-                      <span className={`jd__layer-dot jd__layer-dot--${snap.category}`} aria-hidden="true" />
-                      <span className="jd__layer-name">
-                        <strong>{snap.title}</strong>
-                        <small>{snap.summary}</small>
-                      </span>
-                      <em className="jd__layer-state">{snap.visible ? "On" : "Off"}</em>
-                    </button>
-                  ))
+                  LAYER_TYPE_GROUPS.map((groupDef) => {
+                    const groupSnaps = layerSnaps.filter((snap) => groupDef.categories.includes(snap.category));
+                    if (groupSnaps.length === 0) return null;
+                    const onCount = groupSnaps.filter((snap) => snap.visible).length;
+                    const expanded = layerGroupsOpen[groupDef.id] ?? true;
+                    return (
+                      <section key={groupDef.id} className="jd__layer-group" data-expanded={expanded ? "true" : "false"}>
+                        <button
+                          type="button"
+                          className="jd__layer-group-head"
+                          aria-expanded={expanded}
+                          onClick={() => setLayerGroupsOpen((current) => ({ ...current, [groupDef.id]: !expanded }))}
+                        >
+                          <strong>{groupDef.label}</strong>
+                          <b>{onCount}/{groupSnaps.length}</b>
+                          <ChevronDown aria-hidden="true" size={16} className="jd__layer-group-chevron" />
+                        </button>
+                        {expanded &&
+                          groupSnaps.map((snap) => (
+                            <button
+                              key={snap.id}
+                              type="button"
+                              className="jd__layer"
+                              aria-pressed={snap.visible}
+                              onClick={() => toggleMapLayer(snap.id)}
+                            >
+                              <span className={`jd__layer-dot jd__layer-dot--${snap.category}`} aria-hidden="true" />
+                              <span className="jd__layer-name">
+                                <strong>{snap.title}</strong>
+                                <small>{snap.summary}</small>
+                              </span>
+                              <em className="jd__layer-state">{snap.visible ? "On" : "Off"}</em>
+                            </button>
+                          ))}
+                      </section>
+                    );
+                  })
                 )}
               </div>
             ) : (

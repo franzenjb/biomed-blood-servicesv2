@@ -594,6 +594,47 @@
   gap: 6px;
 }
 
+.jd__layer-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jd__layer-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d5dbe2;
+  border-radius: 8px;
+  background: #f6f8fa;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.jd__layer-group-head strong {
+  flex: 1;
+  font-size: 13px;
+  color: #16212c;
+}
+
+.jd__layer-group-head b {
+  font-size: 12px;
+  color: #5b6976;
+  font-weight: 600;
+}
+
+.jd__layer-group-chevron {
+  color: #5b6976;
+  transition: transform 0.15s ease;
+}
+
+.jd__layer-group[data-expanded="false"] .jd__layer-group-chevron {
+  transform: rotate(-90deg);
+}
+
 .jd__layer {
   display: flex;
   align-items: center;

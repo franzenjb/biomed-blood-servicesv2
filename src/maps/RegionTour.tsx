@@ -51,19 +51,22 @@ function Kpi({ value, label, accent, decimals, suffix, run }: {
 function BarChart({ data, labels }: { data: number[]; labels: string[] }) {
   const max = Math.max(1, ...data);
   return (
-    <svg className="rt-chart" viewBox="0 0 320 150" preserveAspectRatio="none" role="img">
-      {data.map((v, i) => {
-        const bw = 320 / data.length;
-        const h = (v / max) * 120;
-        return <rect key={i} x={i * bw + 3} y={130 - h} width={bw - 6} height={h} rx={2} fill="#ed1b2e" />;
-      })}
-      {labels.map((l, i) => {
-        const bw = 320 / labels.length;
-        // Few bars (e.g. years) get the full label; dense monthly axes get initials.
-        const text = labels.length <= 6 ? l : l[0];
-        return <text key={i} x={i * bw + bw / 2} y={146} textAnchor="middle" className="rt-chart__lbl">{text}</text>;
-      })}
-    </svg>
+    <div className="rt-chartwrap">
+      {/* Axis labels live OUTSIDE the svg: preserveAspectRatio="none" stretches
+          svg text into illegibility, HTML text stays crisp. */}
+      <svg className="rt-chart" viewBox="0 0 320 132" preserveAspectRatio="none" role="img">
+        {data.map((v, i) => {
+          const bw = 320 / data.length;
+          const h = (v / max) * 120;
+          return <rect key={i} x={i * bw + 3} y={128 - h} width={bw - 6} height={h} rx={2} fill="#ed1b2e" />;
+        })}
+      </svg>
+      <div className="rt-chart__axis" aria-hidden="true">
+        {labels.map((l, i) => (
+          <span key={i}>{labels.length <= 6 ? l : l[0]}</span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -126,11 +129,11 @@ function Slide({ r, index, run, onOpenStory, stats }: {
           </div>
         )}
         {years && years.length > 0 ? (
-          <div className="rt-chartbox"><h4>Blood drives by year</h4>
+          <div className="rt-chartbox"><h4>Blood Drives by Year</h4>
             <BarChart data={years.map((y) => y.drives)} labels={years.map((y) => y.year)} />
           </div>
         ) : null}
-        <div className="rt-chartbox"><h4>Donors by top donation center</h4><HBarChart items={r.topSites.slice(0, years ? 5 : 7)} /></div>
+        <div className="rt-chartbox"><h4>Donors by Top Donation Center</h4><HBarChart items={r.topSites.slice(0, years ? 5 : 7)} /></div>
         <p className="rt-note">
           {years ? "Drive, unit & donor values are live from the monthly BioMed services." : "Per-site bars use live CY24 donor counts; sign in for live drive & unit trends."}
         </p>
@@ -141,12 +144,12 @@ function Slide({ r, index, run, onOpenStory, stats }: {
     <div className="rt-slide">
       <div className="rt-slabel">Slide 3 · Drive mix &amp; districts</div>
       {stats?.drivesByType?.length ? (
-        <div className="rt-chartbox"><h4>CY24 blood drives by sponsor type</h4>
+        <div className="rt-chartbox"><h4>CY24 Blood Drives by Sponsor Type</h4>
           <HBarChart items={stats.drivesByType.slice(0, 5)} highlight={stats.drivesByType[0]?.name} />
         </div>
       ) : null}
       {stats?.topDistricts?.length ? (
-        <div className="rt-chartbox"><h4>Top Biomedical Districts — CY24 drives</h4>
+        <div className="rt-chartbox"><h4>Top Biomedical Districts — CY24 Drives</h4>
           <HBarChart items={stats.topDistricts.slice(0, 4)} />
         </div>
       ) : null}
@@ -206,11 +209,11 @@ function MobileStorySlide({ r, index, run, stats }: {
     <div className="rt-slide">
       <div className="rt-slabel rt-slabel--story"><Truck size={13} /> Mobile Story · 2 of 2</div>
       {stats?.drivesByType?.length ? (
-        <div className="rt-chartbox"><h4>CY24 blood drives by sponsor type</h4>
+        <div className="rt-chartbox"><h4>CY24 Blood Drives by Sponsor Type</h4>
           <HBarChart items={stats.drivesByType} highlight={stats.drivesByType[0]?.name} />
         </div>
       ) : (
-        <div className="rt-chartbox"><h4>Mobile drives vs fixed sites — CY24 donors</h4>
+        <div className="rt-chartbox"><h4>Mobile Drives vs Fixed Sites — CY24 Donors</h4>
           <HBarChart items={[
             { name: "Mobile blood drives", donors: r.mobileDonors },
             { name: "Fixed donation centers", donors: r.totalDonors },
@@ -242,7 +245,7 @@ function FixedStorySlide({ r, index, run, onOpenSite }: {
           center{r.siteCount === 1 ? "" : "s"} welcomed {fmt(r.totalDonors)} donors in CY24. Select a center to fly the
           map to it and open its site story.</p>
         <div className="rt-chartbox rt-chartbox--sites">
-          <h4>Donation centers — select one for its site story</h4>
+          <h4>Donation Centers — Select One for Its Site Story</h4>
           <div className="rt-sites">
             {r.topSites.map((s) => (
               <button type="button" className="rt-sitebtn" key={s.name} onClick={() => onOpenSite(s.name)}>

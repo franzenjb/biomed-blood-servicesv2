@@ -2013,7 +2013,18 @@ export default function BiomedOpsWorkbenchPage({
     const layer = collectArcJurisdictionLayers(map).find((candidate) => candidate.id === layerId);
     if (!layer) return;
     layer.visible = !layer.visible;
+    if (layer.visible) revealParentGroups(layer);
     refreshLayers();
+  }
+
+  // A child of a hidden GroupLayer renders nothing — turning a layer on must
+  // also reveal its ancestors (the lifted BIOMED group ships hidden).
+  function revealParentGroups(layer: Layer) {
+    let parent = (layer as Layer & { parent?: unknown }).parent as (Layer & { parent?: unknown }) | undefined;
+    while (parent && typeof parent === "object" && "visible" in parent && (parent as { type?: string }).type === "group") {
+      (parent as Layer).visible = true;
+      parent = parent.parent as (Layer & { parent?: unknown }) | undefined;
+    }
   }
 
   function setLayersVisible(targetIds: Set<string>, visible: boolean) {
@@ -2030,7 +2041,10 @@ export default function BiomedOpsWorkbenchPage({
         return;
       }
       const layer = all.find((candidate) => candidate.id === id);
-      if (layer) layer.visible = visible;
+      if (layer) {
+        layer.visible = visible;
+        if (visible) revealParentGroups(layer);
+      }
     });
     refreshLayers();
   }
