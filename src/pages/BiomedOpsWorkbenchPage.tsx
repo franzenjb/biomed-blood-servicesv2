@@ -2290,12 +2290,59 @@ export default function BiomedOpsWorkbenchPage({
       const stats: TourMobileStats | null = best
         ? { serviceRegion: best.name, drives2024: num(best.attrs.F2024), units2024: num(best.attrs.U2024) }
         : null;
+
+      // Enrich with live CY24 drive-type + sponsor stats from the drive-point
+      // layer, scoped to the region polygon server-side. Best-effort: the slide
+      // renders fine without them.
+      if (stats) {
+        try {
+          const dots = (group?.layers?.toArray?.() ?? []).find(
+            (layer) => (layer.title ?? "").trim().toLowerCase() === "blood drives by type",
+          ) as FeatureLayer | undefined;
+          const geometry = await getTourRegionGeometry(region);
+          if (dots && geometry) {
+            await dots.load?.();
+            const typeQuery = dots.createQuery();
+            typeQuery.where = "Year = 2024";
+            typeQuery.geometry = geometry;
+            typeQuery.spatialRelationship = "intersects";
+            typeQuery.returnGeometry = false;
+            typeQuery.groupByFieldsForStatistics = ["Account_Type"];
+            typeQuery.outStatistics = [
+              { statisticType: "sum", onStatisticField: "Drives", outStatisticFieldName: "drive_sum" },
+            ] as unknown as typeof typeQuery.outStatistics;
+            const typeResult = await dots.queryFeatures(typeQuery);
+            const byType = typeResult.features
+              .map((feature) => ({
+                name: String(feature.attributes?.Account_Type || "Other"),
+                donors: Number(feature.attributes?.drive_sum) || 0,
+              }))
+              .filter((entry) => entry.donors > 0)
+              .sort((a, b) => b.donors - a.donors)
+              .slice(0, 6);
+            if (byType.length > 0) stats.drivesByType = byType;
+
+            const sponsorQuery = dots.createQuery();
+            sponsorQuery.where = "Year = 2024";
+            sponsorQuery.geometry = geometry;
+            sponsorQuery.spatialRelationship = "intersects";
+            sponsorQuery.returnGeometry = false;
+            sponsorQuery.returnDistinctValues = true;
+            sponsorQuery.outFields = ["Sponsor_Ext_ID"];
+            const sponsorCount = await dots.queryFeatureCount(sponsorQuery);
+            if (Number.isFinite(sponsorCount) && sponsorCount > 0) stats.sponsors2024 = sponsorCount;
+          }
+        } catch {
+          // type/sponsor stats are optional garnish
+        }
+      }
+
       tourStatsCache.current[region] = stats;
       setTourStats(stats);
     } catch {
       tourStatsCache.current[region] = null;
     }
-  }, [findLiftedBiomedGroup]);
+  }, [findLiftedBiomedGroup, getTourRegionGeometry]);
 
   const closeTour = useCallback(() => {
     setTourActive(false);

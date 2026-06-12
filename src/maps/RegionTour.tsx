@@ -176,6 +176,8 @@ export type TourMobileStats = {
   serviceRegion: string;
   drives2024: number | null;
   units2024: number | null;
+  sponsors2024?: number | null;
+  drivesByType?: Array<{ name: string; donors: number }> | null;
 };
 
 function MobileStorySlide({ r, index, run, stats }: {
@@ -192,24 +194,31 @@ function MobileStorySlide({ r, index, run, stats }: {
         <div className="rt-kpigrid">
           {stats?.drives2024 != null && <Kpi value={stats.drives2024} label="CY24 blood drives" accent run={run} />}
           {stats?.units2024 != null && <Kpi value={stats.units2024} label="CY24 units collected" run={run} />}
+          {stats?.sponsors2024 != null && <Kpi value={stats.sponsors2024} label="CY24 drive sponsors" run={run} />}
           <Kpi value={r.mobileDonors} label="CY24 mobile-drive donors" accent={stats?.drives2024 == null} run={run} />
-          <Kpi value={mobileShare} label="of all regional donors" suffix="%" run={run} />
+          {stats?.sponsors2024 == null && <Kpi value={mobileShare} label="of all regional donors" suffix="%" run={run} />}
           {stats?.drives2024 == null && <Kpi value={r.districtCount} label="Districts" run={run} />}
           {stats?.units2024 == null && <Kpi value={r.population} label="Trade-area population" run={run} />}
         </div>
-        <p className="rt-note">Map shows CY24 blood-drive locations, colored by drive type. Drive, unit &amp; donor counts are live monthly values.</p>
+        <p className="rt-note">Map shows CY24 blood-drive locations, colored by drive type. Drive, unit, sponsor &amp; donor counts are live monthly values.</p>
       </div>
     );
   }
   return (
     <div className="rt-slide">
       <div className="rt-slabel rt-slabel--story"><Truck size={13} /> Mobile Story · 2 of 2</div>
-      <div className="rt-chartbox"><h4>Mobile drives vs fixed sites — CY24 donors</h4>
-        <HBarChart items={[
-          { name: "Mobile blood drives", donors: r.mobileDonors },
-          { name: "Fixed donation centers", donors: r.totalDonors },
-        ]} highlight="Mobile blood drives" />
-      </div>
+      {stats?.drivesByType?.length ? (
+        <div className="rt-chartbox"><h4>CY24 blood drives by sponsor type</h4>
+          <HBarChart items={stats.drivesByType} highlight={stats.drivesByType[0]?.name} />
+        </div>
+      ) : (
+        <div className="rt-chartbox"><h4>Mobile drives vs fixed sites — CY24 donors</h4>
+          <HBarChart items={[
+            { name: "Mobile blood drives", donors: r.mobileDonors },
+            { name: "Fixed donation centers", donors: r.totalDonors },
+          ]} highlight="Mobile blood drives" />
+        </div>
+      )}
       <div className="rt-impact">
         <div className="rt-impact__big">
           <div className="rt-impact__v">{mobileShare}%</div>
