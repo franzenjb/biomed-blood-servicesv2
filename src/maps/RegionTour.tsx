@@ -158,7 +158,7 @@ function Slide({ r, index, run, onOpenStory, stats }: {
           type and its top Biomedical Districts — all live from the monthly BioMed services.</p>
       )}
       <div className="rt-cta"><h4>Every donation moves the mission.</h4>
-        <p>Swap this panel for the region&apos;s real call-to-action, leadership note, or campaign metrics.</p></div>
+        <p>This space is reserved for the region&apos;s leadership message, call-to-action, or campaign priorities.</p></div>
       <p className="rt-note">Drive mix &amp; district counts are live monthly values.</p>
     </div>
   );
@@ -227,8 +227,8 @@ function MobileStorySlide({ r, index, run, stats }: {
         </div>
       </div>
       <div className="rt-cta"><h4>Mobile drives carry the region&apos;s reach.</h4>
-        <p>Draft panel — swap in the region&apos;s mobile-program narrative: sponsor highlights, school &amp; employer drives, rural coverage.</p></div>
-      <p className="rt-note">Map shades counties by drive activity — darker means more drives. Donor counts are live; story framing is a draft pending client content.</p>
+        <p>Narrative forthcoming from regional leadership: sponsor highlights, school &amp; employer drives, rural coverage.</p></div>
+      <p className="rt-note">Map shades counties by drive activity — darker means more drives. Donor counts are live; narrative finalizes with regional leadership input.</p>
     </div>
   );
 }
@@ -272,7 +272,7 @@ function FixedStorySlide({ r, index, run, onOpenSite }: {
         <Kpi value={r.rbcDonors} label="RBC donors" run={run} />
         <Kpi value={r.avgDrive} label="Avg. donor drive distance" decimals={1} suffix=" mi" run={run} />
       </div>
-      <p className="rt-note">All values on this slide are live from the trade-area layer; narrative is a draft pending client story content.</p>
+      <p className="rt-note">All values on this slide are live from the trade-area layer; narrative finalizes with regional leadership input.</p>
     </div>
   );
 }
@@ -300,7 +300,7 @@ function SiteStory({ r, site, run }: { r: RegionSummary; site: RegionSite; run: 
             : [...r.topSites.slice(0, 4), site]}
           highlight={site.name} />
       </div>
-      <p className="rt-note">Donor &amp; RBC counts are live CY24 values; site narrative is a draft pending client story content.</p>
+      <p className="rt-note">Donor &amp; RBC counts are live CY24 values; site narrative finalizes with regional leadership input.</p>
     </div>
   );
 }
