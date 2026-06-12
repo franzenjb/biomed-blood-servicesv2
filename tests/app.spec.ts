@@ -212,6 +212,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer Controls" })).toBeVisible();
+    await page.getByRole("tab", { name: "Filter" }).click();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.locator(".opsv2__layer-group").first()).toContainText("Hospitals & Patient Care");
@@ -237,11 +238,15 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
+    // Layer toggles live in the Filter tab (Geography, with search on top, is the default).
+    await page.getByRole("tab", { name: "Filter" }).click();
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
-    await page.getByRole("tab", { name: "Search" }).click();
+    // Search now lives at the top of the Geography tab (no separate Search tab).
+    await expect(page.getByRole("tab", { name: "Search" })).toHaveCount(0);
+    await page.getByRole("tab", { name: "Geography" }).click();
     await page.getByPlaceholder("Search counties, regions, sites").fill("Dallas");
     await expect(page.getByTestId("ops-search-results")).toBeVisible();
     await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "true");
@@ -290,6 +295,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
+    await page.getByRole("tab", { name: "Filter" }).click();
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
     await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",

@@ -77,7 +77,7 @@ import "./BiomedOpsWorkbenchPage.css";
 type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
 type RightTab = "current" | "detail" | "list";
-type LeftTab = "search" | "filter" | "geography";
+type LeftTab = "filter" | "geography";
 type ArcgisSearchElement = HTMLElement & {
   popupDisabled?: boolean;
   popupTemplate?: unknown;
@@ -1517,7 +1517,8 @@ export default function BiomedOpsWorkbenchPage({
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
-  const [leftTab, setLeftTab] = useState<LeftTab>("filter");
+  // Geography first: it now carries the search box (top) + the drill-down.
+  const [leftTab, setLeftTab] = useState<LeftTab>("geography");
   const [mapReady, setMapReady] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tourActive, setTourActive] = useState(false);
@@ -2803,13 +2804,14 @@ export default function BiomedOpsWorkbenchPage({
           <div className="opsv2__left-tabs" role="tablist" aria-label="Layer panel views">
             <button
               type="button"
-              className={leftTab === "search" ? "is-active" : ""}
-              onClick={() => setLeftTab("search")}
+              className={leftTab === "geography" ? "is-active" : ""}
+              onClick={() => setLeftTab("geography")}
               role="tab"
-              aria-selected={leftTab === "search"}
+              aria-selected={leftTab === "geography"}
+              data-testid="ops-tab-geography"
             >
-              <Search aria-hidden="true" size={17} />
-              Search
+              <MapPin aria-hidden="true" size={17} />
+              Geography
             </button>
             <button
               type="button"
@@ -2821,53 +2823,7 @@ export default function BiomedOpsWorkbenchPage({
               <Filter aria-hidden="true" size={17} />
               Filter
             </button>
-            <button
-              type="button"
-              className={leftTab === "geography" ? "is-active" : ""}
-              onClick={() => setLeftTab("geography")}
-              role="tab"
-              aria-selected={leftTab === "geography"}
-              data-testid="ops-tab-geography"
-            >
-              <MapPin aria-hidden="true" size={17} />
-              Geography
-            </button>
           </div>
-          {leftTab === "search" && (
-          <>
-          <label className="opsv2__search">
-            <Search aria-hidden="true" size={16} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
-          </label>
-          {query.trim().length > 0 ? (
-            <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
-              {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
-              {searchStatus === "blocked" && <p>Sign in to search live map features.</p>}
-              {searchStatus === "searching" && <p>Searching BioMed layers...</p>}
-              {searchStatus === "empty" && <p>No matching features found.</p>}
-              {searchStatus === "error" && <p>Search failed. Try a more specific term.</p>}
-              {searchStatus === "ready" && (
-                <>
-                  <div className="opsv2__results-head">
-                    <strong>{searchResults.length} results</strong>
-                    <span>Click to zoom</span>
-                  </div>
-                  <div className="opsv2__results-list">
-                    {searchResults.map((result) => (
-                      <button key={result.id} type="button" className="opsv2__result" onClick={() => void selectSearchResult(result)}>
-                        <strong>{result.title}</strong>
-                        <span>{result.layerTitle}</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </section>
-          ) : (
-            <p className="opsv2__search-hint">Search counties, regions, sites, and hospitals across every BioMed layer.</p>
-          )}
-          </>
-          )}
           {leftTab === "filter" && (
           <>
           <div className="opsv2__layer-actions">
@@ -2975,6 +2931,35 @@ export default function BiomedOpsWorkbenchPage({
           )}
           {leftTab === "geography" && (
           <>
+          <label className="opsv2__search">
+            <Search aria-hidden="true" size={16} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
+          </label>
+          {query.trim().length > 0 ? (
+            <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
+              {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
+              {searchStatus === "blocked" && <p>Sign in to search live map features.</p>}
+              {searchStatus === "searching" && <p>Searching BioMed layers...</p>}
+              {searchStatus === "empty" && <p>No matching features found.</p>}
+              {searchStatus === "error" && <p>Search failed. Try a more specific term.</p>}
+              {searchStatus === "ready" && (
+                <>
+                  <div className="opsv2__results-head">
+                    <strong>{searchResults.length} results</strong>
+                    <span>Click to zoom</span>
+                  </div>
+                  <div className="opsv2__results-list">
+                    {searchResults.map((result) => (
+                      <button key={result.id} type="button" className="opsv2__result" onClick={() => void selectSearchResult(result)}>
+                        <strong>{result.title}</strong>
+                        <span>{result.layerTitle}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+          ) : (
           <div className="opsv2__geo">
             <p className="opsv2__geo-intro">Drill from division to district. Filters the map and zooms to the selection.</p>
             {LEVELS.map((level) => {
@@ -3015,6 +3000,7 @@ export default function BiomedOpsWorkbenchPage({
             )}
             {!isAuthenticated && <p className="opsv2__search-hint">Sign in to filter by geography.</p>}
           </div>
+          )}
           </>
           )}
         </>
