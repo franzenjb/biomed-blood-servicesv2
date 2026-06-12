@@ -259,6 +259,7 @@ const PRESETS: Array<{ id: PresetId; label: string }> = [
   { id: "fixed", label: "Fixed Sites" },
   { id: "mobile-fixed", label: "Mobile + Fixed Sites" },
   { id: "collections", label: "FY25 Collections Data" },
+  { id: "infrastructure", label: "Infrastructure (All Site Types)" },
   { id: "all", label: "All BioMed Layers" },
   { id: "clean", label: "Clean Map (No Overlays)" },
 ];
@@ -867,8 +868,23 @@ export default function JurisdictionDashboardPage({
     [selection],
   );
 
+  // The lifted chapter-view BIOMED group exists for popups/data, not the toggle
+  // list — its 14 choropleth/dot layers would drown the dashboard's own layers.
+  const isLiftedBiomedTitle = (title: string) => {
+    const t = title.trim().toLowerCase();
+    return (
+      t === "biomed" ||
+      /^(rbc collections|drives) by (county|chapter|region|division|biomedical district)$/.test(t) ||
+      ["blood drives by type", "blood drives planned or completed", "latino blood drives", "total collections (rbc)"].includes(t)
+    );
+  };
+
   const refreshLayerSnaps = useCallback(() => {
-    setLayerSnaps(buildLayerSnapshots(getMapElementMap(mapRef.current)).filter((snap) => !isHsTitle(snap.title)));
+    setLayerSnaps(
+      buildLayerSnapshots(getMapElementMap(mapRef.current)).filter(
+        (snap) => !isHsTitle(snap.title) && !isLiftedBiomedTitle(snap.title),
+      ),
+    );
   }, []);
 
   const applyPreset = useCallback(
@@ -999,12 +1015,11 @@ export default function JurisdictionDashboardPage({
             return;
           }
           try {
-            // Scope by geography when the site layer carries level fields; else
-            // national count (answers "what assets do we have?").
-            const where = layerHasAnyLevelField(target)
-              ? buildWhereForLayer(target, sel, chosenFieldRef.current)
-              : "1=1";
-            next[def.key] = await target.queryFeatureCount({ where } as never);
+            // Network totals ("what assets do we have?"). The site layers don't
+            // carry reliable BioMed jurisdiction values, so geography-scoped
+            // counts silently return 0 — count nationally; the map + site list
+            // still scope to the selection.
+            next[def.key] = await target.queryFeatureCount({ where: "1=1" } as never);
           } catch {
             next[def.key] = null;
           }
@@ -1157,11 +1172,57 @@ export default function JurisdictionDashboardPage({
     }
   }, []);
 
+  // Red outline around the selected division/region/district boundary.
+  const selectionOutlineRef = useRef<Graphic | null>(null);
+
   // ---- Apply selection to the map (definitionExpression + zoom) ---------
   const applySelectionToMap = useCallback(async (sel: Selection) => {
     const map = getMapElementMap(mapRef.current);
     const view = mapRef.current?.view as MapView | undefined;
     if (!map) return;
+
+    // Outline the selected geography so the chosen boundary reads at a glance.
+    if (view) {
+      if (selectionOutlineRef.current) {
+        view.graphics.remove(selectionOutlineRef.current);
+        selectionOutlineRef.current = null;
+      }
+      const level = sel.district ? "district" : sel.region ? "region" : sel.division ? "division" : null;
+      if (level) {
+        try {
+          const boundary = collectArcJurisdictionLayers(map)
+            .filter(isQueryableFeatureLayer)
+            .find((candidate) => safeLayerTitle(candidate).toLowerCase().includes(`biomed ${level}`));
+          if (boundary) {
+            await boundary.load?.();
+            const outlineQuery = boundary.createQuery();
+            outlineQuery.where = buildWhereForLayer(boundary, sel, chosenFieldRef.current);
+            outlineQuery.returnGeometry = true;
+            outlineQuery.outFields = [];
+            outlineQuery.num = 1;
+            const outlineResult = await boundary.queryFeatures(outlineQuery);
+            const geometry = outlineResult.features[0]?.geometry;
+            if (geometry) {
+              const [{ default: GraphicCtor }, { default: SimpleFillSymbol }] = await Promise.all([
+                import("@arcgis/core/Graphic"),
+                import("@arcgis/core/symbols/SimpleFillSymbol"),
+              ]);
+              const outline = new GraphicCtor({
+                geometry,
+                symbol: new SimpleFillSymbol({
+                  style: "none",
+                  outline: { color: [237, 27, 46, 0.95], width: 2.5 },
+                }),
+              });
+              view.graphics.add(outline);
+              selectionOutlineRef.current = outline;
+            }
+          }
+        } catch {
+          // outline is decorative; selection filtering still applies
+        }
+      }
+    }
 
     // Filter only data layers (sites, ZIP, collection operations) so boundary
     // polygons stay visible for context. Boundary layers are filtered only when
@@ -1355,6 +1416,9 @@ export default function JurisdictionDashboardPage({
           collectArcJurisdictionLayers(map).forEach((layer) => {
             if ("popupEnabled" in layer) (layer as Layer & { popupEnabled?: boolean }).popupEnabled = false;
             if ("popupTemplate" in layer) (layer as Layer & { popupTemplate?: unknown }).popupTemplate = null;
+            // Lifted layers stay hidden on the dashboards — present for data
+            // queries/popups, never as visible overlays here.
+            if (isLiftedBiomedTitle(safeLayerTitle(layer))) layer.visible = false;
           });
           discoverLayers(map);
           refreshLayerSnaps();
