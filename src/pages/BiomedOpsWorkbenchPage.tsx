@@ -2706,9 +2706,13 @@ export default function BiomedOpsWorkbenchPage({
             // layer — the region zoom still frames the local picture.
             if (stale()) return;
             fl.definitionExpression = tourRegionFilterCache.current[cacheKey] ? where : "";
-          } else if (view) {
-            // No Region field (the drive-point dot layers): clip to the region
-            // boundary polygon with a layer-view spatial filter instead.
+          }
+          if (view) {
+            // Spatially clip EVERY story layer to the BIOMED region boundary.
+            // The attribute filter alone isn't enough for the choropleths: their
+            // Region field is HS geography (e.g. "Minnesota and Dakotas Region"
+            // spans both states), while the drawn boundary is the smaller BIOMED
+            // region — without the clip, out-of-region counties render anyway.
             const geometry = await getTourRegionGeometry(region);
             // Cap the wait so a layer view that never materializes can't hang
             // the loop (and later slide changes) behind an unresolved promise.
