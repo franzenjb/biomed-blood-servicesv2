@@ -2594,6 +2594,7 @@ export default function BiomedOpsWorkbenchPage({
               : "site";
       const PLAN: Record<string, string[]> = {
         "deck-1": ["RBC Collections by County"],
+        "deck-2": ["Drives by District"],
         "story-mobile-0": ["Blood Drives by Type"],
         "story-mobile-1": ["Drives by County"],
       };
@@ -2614,10 +2615,16 @@ export default function BiomedOpsWorkbenchPage({
         try {
           await fl.load?.();
           if (stale()) return;
-          const regionField = (fl.fields ?? []).find((field) => field.name === "Region");
+          const regionField =
+            (fl.fields ?? []).find((field) => field.name === "Region") ??
+            (fl.fields ?? []).find((field) => field.name === "Biomed_Region");
           if (regionField) {
-            const serviceName = tourServiceRegionRef.current[region] ?? region;
-            const where = `Region = '${serviceName.replace(/'/g, "''")}'`;
+            // ARC-style services use the resolved ARC name; biomed-hierarchy
+            // services (Biomed_Region) use the tour name directly. The count
+            // query below falls back to national when either doesn't match.
+            const serviceName =
+              regionField.name === "Region" ? tourServiceRegionRef.current[region] ?? region : region;
+            const where = `${regionField.name} = '${serviceName.replace(/'/g, "''")}'`;
             const cacheKey = `${fl.id}::${serviceName}`;
             if (!(cacheKey in tourRegionFilterCache.current)) {
               const countQuery = fl.createQuery();
