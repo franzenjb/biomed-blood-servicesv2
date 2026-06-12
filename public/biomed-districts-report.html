@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From One Spreadsheet to a Living Blood-Services Map — American Red Cross BioMed</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+Pro:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --arc-red: #ED1B2E; --arc-black: #1a1a1a; --arc-cream: #f7f5f2;
+    --arc-gray-900: #2d2d2d; --arc-gray-700: #4a4a4a; --arc-gray-500: #737373;
+    --arc-gray-300: #a3a3a3; --arc-gray-100: #e5e5e5; --arc-white: #fff;
+    --arc-info: #1e4a6d; --arc-success: #2d5a27; --arc-caution: #b8860b;
+    --font-headline: 'Libre Baskerville', Georgia, serif;
+    --font-body: 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+    --font-data: 'IBM Plex Mono', Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: var(--font-body); background: var(--arc-cream); color: var(--arc-gray-900); line-height: 1.6; }
+  .container { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  header { background: var(--arc-white); border-bottom: 3px solid var(--arc-black); padding: 36px 0 28px; }
+  footer { border-top: 3px solid var(--arc-black); padding: 32px 0; margin-top: 64px; background: var(--arc-white); }
+  h1 { font-family: var(--font-headline); font-size: 34px; font-weight: 700; color: var(--arc-black); line-height: 1.25; }
+  h2 { font-family: var(--font-headline); font-size: 24px; font-weight: 700; color: var(--arc-black); }
+  h3 { font-family: var(--font-headline); font-size: 18px; font-weight: 700; color: var(--arc-black); }
+  p { font-size: 16px; color: var(--arc-gray-700); margin-bottom: 14px; }
+  section { margin-top: 56px; }
+  .rule { width: 40px; height: 3px; background: var(--arc-red); margin: 12px 0 20px; }
+  .secnum { font-family: var(--font-data); font-size: 14px; color: var(--arc-red); display: block; margin-bottom: 4px; }
+  .statbar { display: flex; flex-wrap: wrap; gap: 40px; padding: 28px 0 8px; }
+  .stat .v { font-family: var(--font-data); font-size: 32px; font-weight: 500; color: var(--arc-black); }
+  .stat .v.red { color: var(--arc-red); }
+  .stat .l { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--arc-gray-500); margin-top: 2px; }
+  .card { background: var(--arc-white); border: 1px solid var(--arc-gray-100); padding: 24px; margin-bottom: 16px; }
+  .card.hl { border-left: 3px solid var(--arc-red); }
+  table { width: 100%; border-collapse: collapse; background: var(--arc-white); border: 1px solid var(--arc-gray-100); font-size: 14px; }
+  th { border-top: 2px solid var(--arc-black); border-bottom: 1px solid var(--arc-gray-100); text-align: left; padding: 10px 14px; font-weight: 700; }
+  td { border-bottom: 1px solid var(--arc-gray-100); padding: 10px 14px; vertical-align: top; color: var(--arc-gray-700); }
+  td.mono, .mono { font-family: var(--font-data); }
+  .flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; margin: 8px 0 16px; }
+  .flow .step { flex: 1 1 150px; background: var(--arc-white); border: 1px solid var(--arc-gray-100); padding: 16px; }
+  .flow .step b { font-family: var(--font-headline); font-size: 15px; display: block; margin-bottom: 6px; }
+  .flow .step span { font-size: 13px; color: var(--arc-gray-500); }
+  .flow .arrow { display: flex; align-items: center; padding: 0 10px; color: var(--arc-gray-300); font-size: 20px; }
+  .tag { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--arc-gray-500); }
+  a { color: var(--arc-info); }
+  blockquote { border-left: 3px solid var(--arc-gray-300); padding: 4px 0 4px 18px; margin: 20px 0; font-family: var(--font-headline); font-style: italic; font-size: 17px; color: var(--arc-gray-700); }
+  .check { color: var(--arc-success); font-weight: 700; }
+  @media (max-width: 640px) { h1 { font-size: 27px; } .statbar { gap: 24px; } .flow .arrow { display: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px;">
+      <svg viewBox="0 0 32 32" width="30" height="30"><rect x="12" y="4" width="8" height="24" fill="#ED1B2E"/><rect x="4" y="12" width="24" height="8" fill="#ED1B2E"/></svg>
+      <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#ED1B2E;">American Red Cross · Biomedical Services</span>
+    </div>
+    <h1>From One Spreadsheet to a Living Blood-Services Map</h1>
+    <div style="font-size:18px;color:var(--arc-gray-500);font-weight:300;margin-top:6px;">
+      How the monthly sponsor file now powers fourteen self-updating map layers,
+      a district-level view BioMed never had, and an executive story explorer.
+    </div>
+    <div style="margin-top:14px;" class="tag">Prepared by Jeff Franzen · June 2026</div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="statbar">
+    <div class="stat"><div class="v">232,848</div><div class="l">Drive rows in one file</div></div>
+    <div class="stat"><div class="v red">14</div><div class="l">Self-updating map layers</div></div>
+    <div class="stat"><div class="v">80</div><div class="l">BioMed districts mapped</div></div>
+    <div class="stat"><div class="v">17.2M</div><div class="l">RBC units visualized</div></div>
+    <div class="stat"><div class="v">2</div><div class="l">Clicks per month</div></div>
+  </div>
+
+  <section>
+    <span class="secnum">01</span>
+    <h2>It starts with the file you already send</h2>
+    <div class="rule"></div>
+    <p>Every month, BioMed produces one sponsor spreadsheet — the HSSponsorFile. It is a flat
+    list of every blood drive from 2022 through today: sponsor name and type, address,
+    latitude/longitude, drives held, RBC units projected and collected. About 233,000 rows.</p>
+    <p>Most organizations would open that file, build one chart, and file it away.
+    We treat it as the <em>single source</em> that feeds an entire mapping ecosystem.
+    Nothing else has to be collected. Nobody re-keys anything.</p>
+  </section>
+
+  <section>
+    <span class="secnum">02</span>
+    <h2>One file in, a map library out</h2>
+    <div class="rule"></div>
+    <div class="flow">
+      <div class="step"><b>Drop the file</b><span>Save the month's HSSponsorFile into one folder</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Two clicks</b><span>Two reload commands; sign-in is the only manual step</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Self-verify</b><span>Every layer is checked against the source file — PASS or FAIL, printed</span></div>
+      <div class="arrow">→</div>
+      <div class="step"><b>Live everywhere</b><span>Every map and dashboard reading these layers updates instantly</span></div>
+    </div>
+    <p>The reload rebuilds <strong>fourteen hosted map layers</strong>: choropleths of drives and
+    RBC collections by county, chapter, region, division — and now district — plus four
+    drive-point dot maps (drives by type, planned vs. completed, Latino blood drives, total
+    collections). Each run cross-checks totals per year against the spreadsheet before it
+    declares success. If a number can't be verified, the process says so out loud.</p>
+    <div class="card hl">
+      <h3>Verified this cycle</h3>
+      <p style="margin:8px 0 0;">May 2026 file → <span class="mono">671,012</span> drives and
+      <span class="mono">17,172,266</span> RBC units across all years, landing at
+      <span class="mono">25.6</span> units per drive — exactly the ratio the data should show.
+      Two independent pipelines (area rollups and the dot map) agree on every count. <span class="check">✓ PASS</span></p>
+    </div>
+  </section>
+
+  <section>
+    <span class="secnum">03</span>
+    <h2>The discovery: BioMed has its own geography</h2>
+    <div class="rule"></div>
+    <p>Red Cross mapping is usually built on Humanitarian Services geography — divisions,
+    regions, and the ~200 chapters. But BioMed doesn't operate on chapters. It runs its own
+    three-tier system: <strong>6 BioMed divisions → 34 BioMed regions → 80 BioMed districts</strong>,
+    with boundaries and names ("MA East", "AR South MO") that match how collections teams
+    actually work.</p>
+    <p>Until now, the monthly maps could answer "how many drives in this <em>chapter</em>?" but not
+    "how many drives in this <em>district</em>?" — the question BioMed leadership actually asks.
+    We located the authoritative district boundary polygons, cached them, and built the
+    machinery to use both systems side by side without ever confusing them.</p>
+    <table>
+      <tr><th></th><th>Humanitarian Services</th><th>BioMed</th></tr>
+      <tr><td class="tag">Hierarchy</td><td>Division → Region → Chapter → County</td><td>BioMed Division → BioMed Region → BioMed District</td></tr>
+      <tr><td class="tag">Units</td><td class="mono">~200 chapters</td><td class="mono">80 districts</td></tr>
+      <tr><td class="tag">Best for</td><td>Community presence, volunteer footprint</td><td>Collections operations, drive planning</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <span class="secnum">04</span>
+    <h2>Enrichment that's exact, not approximate</h2>
+    <div class="rule"></div>
+    <p>Because every drive row carries its own latitude/longitude, each of the 233,000 drives is
+    placed in its BioMed district by <strong>exact point-in-polygon</strong> against the official
+    boundaries — not by ZIP code approximation. A drive on the right side of a district line
+    counts on the right side of the line.</p>
+    <p>For datasets that only have ZIP codes, we built a companion crosswalk: all
+    <span class="mono">13,767</span> ZIP codes that have ever appeared in BioMed drive data,
+    each mapped to its BioMed district, region, and division — with
+    <strong>zero unmatched</strong>. Both systems now live in our standard data-enrichment
+    toolkit, so any future spreadsheet — yours, mine, anyone's — can be stamped with the
+    correct BioMed geography in seconds.</p>
+  </section>
+
+  <section>
+    <span class="secnum">05</span>
+    <h2>What's new on the map this month</h2>
+    <div class="rule"></div>
+    <div class="card hl">
+      <h3>Drives by District &amp; RBC Collections by District</h3>
+      <p style="margin:8px 0 0;">Two new choropleth layers join the library — the first time
+      drive activity and unit collections have been viewable at the BioMed-district level.
+      Five-class color ramps, clean name-first popups with per-year history, refreshed
+      automatically every month with everything else.</p>
+    </div>
+    <div class="card">
+      <h3>Every dot knows where it is</h3>
+      <p style="margin:8px 0 0;">All 231,570 drive points are being enriched with their
+      chapter, region, division, county, and FIPS — so the dot maps can be filtered, counted,
+      and analyzed by any geography on demand, in any tool that reads the layer.</p>
+    </div>
+    <p>Browse the full library on the live map:
+    <a href="https://maps.jbf.com/chapter-view">maps.jbf.com/chapter-view</a> — open the BIOMED
+    group in the layer panel.</p>
+  </section>
+
+  <section>
+    <span class="secnum">06</span>
+    <h2>Where it becomes a story: the Regional Explorer</h2>
+    <div class="rule"></div>
+    <p>The same monthly data drives an executive-facing experience at
+    <a href="https://biomed.jbf.com">biomed.jbf.com</a>. Leadership picks a region and walks
+    through a guided story — overall summary, Mobile Story, Fixed Site Story — and
+    <strong>the map changes with every page</strong>:</p>
+    <ul style="margin:0 0 14px 22px;color:var(--arc-gray-700);font-size:16px;">
+      <li>The Mobile Story shows every actual drive location, colored by drive type, clipped to the selected region.</li>
+      <li>The heat view shades counties by drive activity — where the work concentrates.</li>
+      <li>KPIs are live from the monthly data: pick Indiana and see <span class="mono">4,863</span> CY24 drives and <span class="mono">135,061</span> units collected — numbers that update themselves when next month's file lands.</li>
+      <li>Click a donation center and the map flies to it, with its own site story.</li>
+    </ul>
+    <p>No GIS knowledge needed. If you can click "Next," you can brief from it.</p>
+  </section>
+
+  <section>
+    <span class="secnum">07</span>
+    <h2>Why this matters</h2>
+    <div class="rule"></div>
+    <blockquote>One spreadsheet a month, two clicks, and every map, dashboard, and
+    story in the ecosystem is current, verified, and speaks BioMed's own language.</blockquote>
+    <p>The pattern is the point. Each new question — "show me sponsor performance,"
+    "compare districts year over year," "where should the next fixed site go?" — doesn't
+    require a new data project. The geography, the enrichment, the monthly rhythm, and the
+    verification are already in place; new views are assembled from data that's already
+    flowing. The district layers took one working session to add <em>because</em> the
+    foundation was built this way.</p>
+    <p>Next candidates on the same foundation: sponsor analytics, first-time donor
+    views, and the hospital distribution story.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p style="font-size:13px;color:var(--arc-gray-500);">
+      American Red Cross Biomedical Services · Data: monthly HSSponsorFile (2022–2026) ·
+      Maps: <a href="https://maps.jbf.com/chapter-view">maps.jbf.com/chapter-view</a> ·
+      Explorer: <a href="https://biomed.jbf.com">biomed.jbf.com</a> ·
+      Prepared by Jeff Franzen, June 2026
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
