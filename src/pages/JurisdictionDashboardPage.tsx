@@ -30,6 +30,7 @@ import {
   type ArcJurisdictionSupplementalLayerSource,
 } from "../config/arcgisLayers";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
+import { drawSelectionOutline } from "../utils/biomedGeographyFilter";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
@@ -1200,47 +1201,15 @@ export default function JurisdictionDashboardPage({
     const view = mapRef.current?.view as MapView | undefined;
     if (!map) return;
 
-    // Outline the selected geography so the chosen boundary reads at a glance.
+    // Outline the selected geography — shared implementation across all maps.
     if (view) {
-      if (selectionOutlineRef.current) {
-        view.graphics.remove(selectionOutlineRef.current);
-        selectionOutlineRef.current = null;
-      }
-      const level = sel.district ? "district" : sel.region ? "region" : sel.division ? "division" : null;
-      if (level) {
-        try {
-          const boundary = collectArcJurisdictionLayers(map)
-            .filter(isQueryableFeatureLayer)
-            .find((candidate) => safeLayerTitle(candidate).toLowerCase().includes(`biomed ${level}`));
-          if (boundary) {
-            await boundary.load?.();
-            const outlineQuery = boundary.createQuery();
-            outlineQuery.where = buildWhereForLayer(boundary, sel, chosenFieldRef.current);
-            outlineQuery.returnGeometry = true;
-            outlineQuery.outFields = [];
-            outlineQuery.num = 1;
-            const outlineResult = await boundary.queryFeatures(outlineQuery);
-            const geometry = outlineResult.features[0]?.geometry;
-            if (geometry) {
-              const [{ default: GraphicCtor }, { default: SimpleFillSymbol }] = await Promise.all([
-                import("@arcgis/core/Graphic"),
-                import("@arcgis/core/symbols/SimpleFillSymbol"),
-              ]);
-              const outline = new GraphicCtor({
-                geometry,
-                symbol: new SimpleFillSymbol({
-                  style: "none",
-                  outline: { color: [237, 27, 46, 0.95], width: 2.5 },
-                }),
-              });
-              view.graphics.add(outline);
-              selectionOutlineRef.current = outline;
-            }
-          }
-        } catch {
-          // outline is decorative; selection filtering still applies
-        }
-      }
+      selectionOutlineRef.current = (await drawSelectionOutline(
+        map,
+        view,
+        sel,
+        chosenFieldRef.current,
+        selectionOutlineRef.current,
+      )) as Graphic | null;
     }
 
     // Filter only data layers (sites, ZIP, collection operations) so boundary

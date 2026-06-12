@@ -49,6 +49,7 @@ import {
   type LevelId,
   type Selection as GeoSelection,
   buildWhereForLayer,
+  drawSelectionOutline,
   layerHasAnyLevelField,
   loadLevelOptions,
   computeLiveIconExtent,
@@ -2154,6 +2155,8 @@ export default function BiomedOpsWorkbenchPage({
 
   // Apply the selection to the live map: filter queryable layers by their own
   // jurisdiction fields, then zoom to the selected geography's live point icons.
+  const geoOutlineRef = useRef<Graphic | null>(null);
+
   const applyGeographyToMap = useCallback(async (sel: GeoSelection) => {
     const map = getMapElementMap(mapRef.current);
     const view = mapRef.current?.view as MapView | undefined;
@@ -2171,6 +2174,17 @@ export default function BiomedOpsWorkbenchPage({
           // some sublayers reject definitionExpression; ignore
         }
       });
+
+    // Same red selection outline as the dashboards (shared implementation).
+    if (view) {
+      geoOutlineRef.current = (await drawSelectionOutline(
+        map,
+        view,
+        sel,
+        geoChosenFieldRef.current,
+        geoOutlineRef.current,
+      )) as Graphic | null;
+    }
 
     const hasSelection = LEVELS.some((level) => sel[level]);
     if (!view) return;
@@ -2210,6 +2224,7 @@ export default function BiomedOpsWorkbenchPage({
   }, [refreshGeoOptions, applyGeographyToMap]);
 
   const siteHighlightRef = useRef<Graphic | null>(null);
+  const tourOutlineRef = useRef<Graphic | null>(null);
   const clearSiteHighlight = useCallback(() => {
     const view = mapRef.current?.view as MapView | undefined;
     if (view && siteHighlightRef.current) view.graphics.remove(siteHighlightRef.current);
@@ -2482,6 +2497,15 @@ export default function BiomedOpsWorkbenchPage({
           };
           await view.goTo(union.expand(1.12), { duration: 950 });
         }
+
+        // Same red selection outline as the dashboards (shared implementation).
+        tourOutlineRef.current = (await drawSelectionOutline(
+          map,
+          view,
+          { division: "", region: name, district: "" },
+          {},
+          tourOutlineRef.current,
+        )) as Graphic | null;
       } catch {
         // navigation can be interrupted; the slide panel still shows
       } finally {
