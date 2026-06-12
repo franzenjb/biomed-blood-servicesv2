@@ -76,7 +76,7 @@ export const datasets: Dataset[] = [
     name: "Master ARC Geography 2026",
     description:
       "Authoritative Red Cross operational geography — 3,162 counties and 226 chapters with division, region, district, and chapter relationships.",
-    usedIn: "Jurisdiction Dashboard · Operations Workbench · Explore Regions",
+    usedIn: "Jurisdiction Dashboard · BioMed Atlas · Regional Story Explorer",
     sourceSystem: "Red Cross ArcGIS Online",
     owner: "GIS (Jeff Franzen)",
     refresh: "Maintained for FY2026.",

@@ -15,9 +15,9 @@ export const hubSectionIndex: HubSectionInfo[] = [
   { index: "04", title: "Future Demand", blurb: "Demographic and supply pressures shaping the future blood supply." },
   { index: "05", title: "BioMed Collections", blurb: "How the Red Cross collects blood across the country, fixed and mobile." },
   { index: "06", title: "Jurisdiction Dashboard", blurb: "BioMed boundaries, FY25 counts, and clickable sites — filter by division, region, and district." },
-  { index: "07", title: "BioMed Ops Workbench", blurb: "Internal layer controls and selected-feature review on the live BioMed map." },
+  { index: "07", title: "BioMed Atlas", blurb: "Internal layer controls and selected-feature review on the live BioMed map." },
   { index: "08", title: "Hospital Network", blurb: "Hospital tiers, distribution sites, portfolio footprint, and coverage." },
-  { index: "09", title: "Explore Regions", blurb: "The full BioMed layer atlas with live map controls." },
+  { index: "09", title: "Regional Story Explorer", blurb: "Guided regional tour — pick a region and step through its live donor story." },
 ];
 
 // Development status for Jennifer & Troy — shown in the Hub "About" modal so the
@@ -41,7 +41,7 @@ export const hubDevNotes: HubDevNoteGroup[] = [
     group: "Summary",
     tone: "summary",
     items: [
-      "The core experience tested well and we are refining, not rebuilding. The structural changes and the biggest new feature (Explore Regions) are in and working on real Red Cross data. The remaining work is mostly content depth in Collections, a few enhancements to the Operations Workbench, and items that depend on data or sign-off from Troy and Marketing & Communications.",
+      "The core experience tested well and we are refining, not rebuilding. The structural changes and the biggest new feature (Explore Regions) are in and working on real Red Cross data. The remaining work is mostly content depth in Collections, a few enhancements to the BioMed Atlas, and items that depend on data or sign-off from Troy and Marketing & Communications.",
     ],
   },
   {

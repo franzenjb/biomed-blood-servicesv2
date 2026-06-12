@@ -405,7 +405,7 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
   return (
     <div className="rt-root">
       <div className="rt-topbar">
-        <span className="rt-topbar__title"><MapPin size={15} /> Explore Regions — Guided Tour</span>
+        <span className="rt-topbar__title"><MapPin size={15} /> Regional Story Explorer — Guided Tour</span>
         <button className="rt-topbar__close" onClick={onClose} aria-label="Exit tour"><X size={16} /> Exit tour</button>
       </div>
 

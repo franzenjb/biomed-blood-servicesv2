@@ -25,7 +25,7 @@ test.describe("Hub", () => {
     }
     await expect(page.getByTestId("hub-card-infrastructure-dashboard").locator(".hub__index")).toHaveText("10");
     await expect(page.getByTestId("hub-card-infrastructure-dashboard")).toHaveAttribute("href", "/infrastructure-dashboard");
-    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Regional Story Explorer");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Guided tour — pick a region, fly there on the live map, and step through its donor story.");
     await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");
     await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
@@ -198,7 +198,7 @@ test.describe("Maps (shared shell)", () => {
     await page.goto("/biomed-ops-workbench");
     await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
     await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
-    await expect(page.locator(".rcbar__titles h1")).toHaveText("BioMed Ops Workbench");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("BioMed Atlas");
     await expect(page.getByText("Quick View")).toBeVisible();
     const opsWidgetOrder = await page.getByTestId("biomed-ops-arcgis").evaluate((element) =>
       Array.from(element.children)

@@ -38,7 +38,7 @@ function HubHelpModal({ onClose }: { onClose: () => void }) {
 
           <p>
             <b>01–05</b> are chapters on blood donation and supply. <b>06–09</b> are live maps — Jurisdiction
-            Dashboard, Ops Workbench, Hospital Network, and Explore Regions.
+            Dashboard, BioMed Atlas, Hospital Network, and the Regional Story Explorer.
           </p>
 
           <div className="jd__modal-callout jd__modal-callout--alert">
@@ -182,7 +182,7 @@ export default function HubPage() {
           <span className="hub__scrim" />
           <span className="hub__index mono">07</span>
           <span className="hub__body">
-            <span className="hub__title">BioMed Ops Workbench</span>
+            <span className="hub__title">BioMed Atlas</span>
             <span className="hub__q">Internal BioMed layer controls and selected feature review.</span>
           </span>
         </Link>
@@ -210,7 +210,7 @@ export default function HubPage() {
           <span className="hub__scrim" />
           <span className="hub__index mono">09</span>
           <span className="hub__body">
-            <span className="hub__title">Explore Regions</span>
+            <span className="hub__title">Regional Story Explorer</span>
             <span className="hub__q">Guided tour — pick a region, fly there on the live map, and step through its donor story.</span>
           </span>
         </Link>

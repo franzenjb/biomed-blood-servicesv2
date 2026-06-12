@@ -1452,7 +1452,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
 }
 
 export default function BiomedOpsWorkbenchPage({
-  title = "BioMed Ops Workbench",
+  title = "BioMed Atlas",
   resultLabel = "Workbench",
   supplementalLayers = biomedWorkbenchSupplementalLayers,
   signInHeading = "Sign in to inspect live workbench layers",
@@ -2757,7 +2757,7 @@ export default function BiomedOpsWorkbenchPage({
       data-testid={testId}
       aria-label={title}
     >
-      <RcAppBar title={title}>
+      <RcAppBar title={tourActive ? "Regional Story Explorer" : title}>
         <label className="rcbar__field">
           Quick View
           <select value={preset} onChange={(event) => applyPreset(event.target.value as WorkbenchPreset)}>
