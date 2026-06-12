@@ -221,6 +221,7 @@ export async function computeLiveIconExtent(
   selection: Selection,
   chosen: Partial<Record<LevelId, string>>,
 ) {
+  const hasSelection = LEVELS.some((level) => selection[level]);
   const pointLayers = collectArcJurisdictionLayers(map)
     .filter(isQueryableFeatureLayer)
     .filter((layer) => layer.geometryType === "point" && layer.visible);
@@ -230,6 +231,10 @@ export async function computeLiveIconExtent(
     try {
       const query = layer.createQuery();
       query.where = buildWhereForLayer(layer, selection, chosen);
+      // A layer with no usable jurisdiction fields can't be scoped — including
+      // its NATIONAL points would balloon the extent to the whole country and
+      // make the zoom a no-op. Skip it; scopable layers define the frame.
+      if (hasSelection && query.where === "1=1") continue;
       query.returnGeometry = true;
       query.outFields = [];
       (query as { outSpatialReference?: unknown }).outSpatialReference = { wkid: 4326 };
@@ -260,4 +265,28 @@ export async function computeLiveIconExtent(
     ymax: box.ymax + padY,
     spatialReference: { wkid: 4326 },
   });
+}
+
+// Extent of the selected geography's BOUNDARY polygon — the zoom fallback when
+// no scopable point layer is visible (e.g. boundaries-only presets).
+export async function queryBoundaryExtent(
+  map: ArcGISMap,
+  selection: Selection,
+  chosen: Partial<Record<LevelId, string>>,
+): Promise<Extent | null> {
+  const level = selection.district ? "district" : selection.region ? "region" : selection.division ? "division" : null;
+  if (!level) return null;
+  try {
+    const boundary = collectArcJurisdictionLayers(map)
+      .filter(isQueryableFeatureLayer)
+      .find((candidate) => (candidate.title ?? "").toLowerCase().includes(`biomed ${level}`));
+    if (!boundary) return null;
+    await boundary.load?.();
+    const result = await (boundary as FeatureLayer & {
+      queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
+    }).queryExtent?.({ where: buildWhereForLayer(boundary, selection, chosen) });
+    return result?.extent ? result.extent.clone().expand(1.15) : null;
+  } catch {
+    return null;
+  }
 }
