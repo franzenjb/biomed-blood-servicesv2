@@ -252,7 +252,7 @@ function levelLabel(level: LevelId) {
 
 // Quick View presets — logical layer combinations. The matcher decides which
 // layers are ON for each preset; "minimal" is the default starting view.
-type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "infrastructure" | "all" | "clean";
+type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "infrastructure" | "hospital" | "all" | "clean";
 
 // Layers tab accordions — every snapshot category maps to exactly one group.
 const LAYER_TYPE_GROUPS: Array<{ id: string; label: string; categories: string[] }> = [
@@ -270,6 +270,7 @@ const PRESETS: Array<{ id: PresetId; label: string }> = [
   { id: "mobile-fixed", label: "Mobile + Fixed Sites" },
   { id: "collections", label: "FY25 Collections Data" },
   { id: "infrastructure", label: "Infrastructure (All Site Types)" },
+  { id: "hospital", label: "Hospital Network" },
   { id: "all", label: "All BioMed Layers" },
   { id: "clean", label: "Clean Map (No Overlays)" },
 ];
@@ -295,6 +296,13 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   if (preset === "fixed") return isFixed || t.includes("biomed region");
   if (preset === "mobile-fixed") return isMobile || isFixed || t.includes("biomed region");
   if (preset === "collections") return isCollections || t.includes("biomed region");
+  if (preset === "hospital") {
+    // Patient-care picture: hospitals, portfolio visuals, distribution, IRL.
+    const isHospital =
+      t.includes("hospital") || t.includes("portfolio") || t.includes("final best") ||
+      t.includes("distribution") || t.includes("irl");
+    return isHospital || t.includes("biomed region");
+  }
   if (preset === "infrastructure") {
     // Logistics + collection-site footprint: every site type + region context.
     const isSite =

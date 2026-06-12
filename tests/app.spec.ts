@@ -352,12 +352,18 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator(".jd__panel-home")).toHaveAttribute("href", "/hub");
   });
 
-  test("/hospital-network renders the hospital portfolio map shell", async ({ page }) => {
+  test("/hospital-network renders the hospital dashboard on the jurisdiction engine", async ({ page }) => {
     await page.goto("/hospital-network");
-    await expect(page.getByTestId("map-shell")).toBeVisible();
-    await expect(page.getByTestId("map-gate")).toBeVisible({ timeout: 20_000 });
-    await expect(page.locator(".map-shell__panel--left").getByRole("heading", { name: "Layers" })).toBeVisible();
-    await expect(page.locator(".map-shell__panel--right").getByRole("heading", { name: "Details" })).toBeVisible();
+    await expect(page.getByTestId("hospital-network-dashboard")).toBeVisible();
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Hospital Network");
+    await expect(page.getByText("Sign in to load the Hospital Network")).toBeVisible();
+    // Count-KPI band: hospital-network KPIs, not the FY25 collection sums.
+    const kpis = page.getByTestId("jd-kpis");
+    await expect(kpis.getByText("Hospitals Served")).toBeVisible();
+    await expect(kpis.getByText("IRL Labs")).toBeVisible();
+    await expect(kpis.getByText("Portfolio Footprints")).toBeVisible();
+    await expect(kpis.getByText("FY25 Red Cell Drives")).toHaveCount(0);
+    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
   });
 
   // Retired routes fall through to the home redirect.

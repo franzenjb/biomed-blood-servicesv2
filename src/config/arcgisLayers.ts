@@ -295,6 +295,30 @@ export const chapterViewBiomedSource = {
   ],
 };
 
+// Lifted from Troy's Hospital Portfolio web map (1824471e) so the Hospital
+// Network dashboard keeps the portfolio visuals on the jurisdiction engine.
+export const hospitalPortfolioFootprintLayerSource = {
+  title: "Hospital Portfolio Footprint",
+  itemId: "0d3534699687410283f7f377a040a744",
+  category: "hospitals",
+  role: "Shaded hospital-portfolio footprints (tiered service areas).",
+  defaultVisible: true,
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=0d3534699687410283f7f377a040a744",
+  mapViewerUrl:
+    "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=0d3534699687410283f7f377a040a744"
+} satisfies ArcJurisdictionSupplementalLayerSource;
+
+export const hospitalOpportunityLayerSource = {
+  title: "Final Best Location",
+  itemId: "0a3c0d69e55740e0bb4ec1cc46eedcd2",
+  category: "hospitals",
+  role: "Site-opportunity analysis — candidate best locations.",
+  defaultVisible: false,
+  itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=0a3c0d69e55740e0bb4ec1cc46eedcd2",
+  mapViewerUrl:
+    "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=0a3c0d69e55740e0bb4ec1cc46eedcd2"
+} satisfies ArcJurisdictionSupplementalLayerSource;
+
 export const hospitalLocationsLayerSource = {
   title: "Hospital Locations",
   itemId: "87e9189c3b284ecb900749eecfb64a05",
@@ -326,6 +350,15 @@ export const mobileCollectionsLayerSource = {
 
 export const jurisdictionDashboardSupplementalLayers = [
   mobileCollectionsLayerSource
+] satisfies ArcJurisdictionSupplementalLayerSource[];
+
+// Hospital Network dashboard: hospitals + the portfolio visuals lifted from
+// Troy's Hospital Portfolio web map (distribution/IRL sites already live in
+// the base jurisdiction web map).
+export const hospitalNetworkSupplementalLayers = [
+  hospitalLocationsLayerSource,
+  hospitalPortfolioFootprintLayerSource,
+  hospitalOpportunityLayerSource
 ] satisfies ArcJurisdictionSupplementalLayerSource[];
 
 export const biomedLayerAtlasSource = {
