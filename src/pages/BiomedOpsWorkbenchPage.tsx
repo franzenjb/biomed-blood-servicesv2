@@ -2271,9 +2271,10 @@ export default function BiomedOpsWorkbenchPage({
       const normTokens = (s: string) =>
         s.toLowerCase().replace(/\bregion\b/g, " ").replace(/\band\b/g, " ").replace(/[^a-z]+/g, " ").trim().split(/\s+/).filter(Boolean);
       const want = normTokens(region);
+      const YEAR_FIELDS = ["2022", "2023", "2024", "2025", "2026"];
       const query = sub.createQuery();
       query.where = "1=1";
-      query.outFields = ["Region", "F2024", "U2024"];
+      query.outFields = ["Region", ...YEAR_FIELDS.flatMap((y) => [`F${y}`, `U${y}`])];
       query.returnGeometry = false;
       query.num = 100;
       const result = await sub.queryFeatures(query);
@@ -2288,9 +2289,28 @@ export default function BiomedOpsWorkbenchPage({
       }
       tourServiceRegionRef.current[region] = best?.name ?? null;
       const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
-      const stats: TourMobileStats | null = best
-        ? { serviceRegion: best.name, drives2024: num(best.attrs.F2024), units2024: num(best.attrs.U2024) }
-        : null;
+      let stats: TourMobileStats | null = null;
+      if (best) {
+        const attrs = best.attrs;
+        const years = YEAR_FIELDS.map((y) => ({
+          year: y,
+          drives: num(attrs[`F${y}`]) ?? 0,
+          units: num(attrs[`U${y}`]) ?? 0,
+        })).filter((entry) => entry.drives > 0 || entry.units > 0);
+        // YoY from the latest two COMPLETE years (2026 is in-flight).
+        const d23 = num(attrs.F2023);
+        const d24 = num(attrs.F2024);
+        const u23 = num(attrs.U2023);
+        const u24 = num(attrs.U2024);
+        stats = {
+          serviceRegion: best.name,
+          drives2024: d24,
+          units2024: u24,
+          years: years.length > 0 ? years : null,
+          drivesYoyPct: d23 && d24 ? ((d24 - d23) / d23) * 100 : null,
+          unitsYoyPct: u23 && u24 ? ((u24 - u23) / u23) * 100 : null,
+        };
+      }
 
       // Enrich with live CY24 drive-type + sponsor stats from the drive-point
       // layer, scoped to the region polygon server-side. Best-effort: the slide
@@ -2335,6 +2355,40 @@ export default function BiomedOpsWorkbenchPage({
           }
         } catch {
           // type/sponsor stats are optional garnish
+        }
+
+        // Top Biomedical Districts by CY24 drives (live district service; biomed
+        // hierarchy region names ≈ tour names — token-subset matched).
+        try {
+          const districts = (group?.layers?.toArray?.() ?? []).find((layer) =>
+            /drives by biomedical district/i.test(layer.title ?? ""),
+          ) as FeatureLayer | undefined;
+          if (districts) {
+            await districts.load?.();
+            const districtQuery = districts.createQuery();
+            districtQuery.where = "1=1";
+            districtQuery.outFields = ["Biomed_District", "Biomed_Region", "F2024"];
+            districtQuery.returnGeometry = false;
+            districtQuery.num = 200;
+            const districtResult = await districts.queryFeatures(districtQuery);
+            const top = districtResult.features
+              .filter((feature) => {
+                const dr = feature.attributes?.Biomed_Region;
+                if (typeof dr !== "string") return false;
+                const have = new Set(normTokens(dr));
+                return want.every((token) => have.has(token));
+              })
+              .map((feature) => ({
+                name: String(feature.attributes?.Biomed_District || ""),
+                donors: Number(feature.attributes?.F2024) || 0,
+              }))
+              .filter((entry) => entry.name && entry.donors > 0)
+              .sort((a, b) => b.donors - a.donors)
+              .slice(0, 5);
+            if (top.length > 0) stats.topDistricts = top;
+          }
+        } catch {
+          // district stats are optional garnish
         }
       }
 

@@ -59,7 +59,9 @@ function BarChart({ data, labels }: { data: number[]; labels: string[] }) {
       })}
       {labels.map((l, i) => {
         const bw = 320 / labels.length;
-        return <text key={i} x={i * bw + bw / 2} y={146} textAnchor="middle" className="rt-chart__lbl">{l[0]}</text>;
+        // Few bars (e.g. years) get the full label; dense monthly axes get initials.
+        const text = labels.length <= 6 ? l : l[0];
+        return <text key={i} x={i * bw + bw / 2} y={146} textAnchor="middle" className="rt-chart__lbl">{text}</text>;
       })}
     </svg>
   );
@@ -80,39 +82,10 @@ function HBarChart({ items, highlight }: { items: { name: string; donors: number
   );
 }
 
-function Donut({ mix }: { mix: { label: string; value: number }[] }) {
-  const palette = ["#ed1b2e", "#1a1a1a", "#d4a017", "#2f6fa3"];
-  const total = Math.max(1, mix.reduce((s, m) => s + m.value, 0));
-  const R = 52, C = 2 * Math.PI * R;
-  let offset = 0;
-  return (
-    <div className="rt-donut-wrap">
-      <svg className="rt-donut" viewBox="0 0 140 140" role="img">
-        <g transform="translate(70,70) rotate(-90)">
-          {mix.map((m, i) => {
-            const frac = m.value / total;
-            const dash = `${frac * C} ${C}`;
-            const seg = (
-              <circle key={i} r={R} fill="none" stroke={palette[i % palette.length]} strokeWidth={20}
-                strokeDasharray={dash} strokeDashoffset={-offset} />
-            );
-            offset += frac * C;
-            return seg;
-          })}
-        </g>
-      </svg>
-      <ul className="rt-legend">
-        {mix.map((m, i) => (
-          <li key={m.label}><span style={{ background: palette[i % palette.length] }} />{m.label} · {m.value}%</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 /* ------------------------- overview slides -------------------------- */
-function Slide({ r, index, run, onOpenStory }: {
+function Slide({ r, index, run, onOpenStory, stats }: {
   r: RegionSummary; index: number; run: boolean; onOpenStory: (s: StoryKind) => void;
+  stats?: TourMobileStats | null;
 }) {
   if (index === 0) {
     return (
@@ -138,35 +111,52 @@ function Slide({ r, index, run, onOpenStory }: {
     );
   }
   if (index === 1) {
+    const years = stats?.years ?? null;
     return (
       <div className="rt-slide">
         <div className="rt-slabel">Slide 2 · Collection performance</div>
-        <div className="rt-kpigrid">
-          <Kpi value={r.kpi.goalPct} label="of CY24 collection goal" accent suffix="%" run={run} />
-          <Kpi value={r.kpi.growth} label="New-donor growth YoY" decimals={1} suffix="%" run={run} />
-        </div>
-        <div className="rt-chartbox"><h4>Monthly donors — CY24</h4><BarChart data={r.monthly.data} labels={r.monthly.labels} /></div>
-        <div className="rt-chartbox"><h4>Donors by top donation center</h4><HBarChart items={r.topSites.slice(0, 7)} /></div>
-        <p className="rt-note">Monthly curve &amp; growth are placeholders; per-site bars use live CY24 donor counts.</p>
+        {(stats?.drivesYoyPct != null || stats?.unitsYoyPct != null) && (
+          <div className="rt-kpigrid">
+            {stats?.unitsYoyPct != null && (
+              <Kpi value={stats.unitsYoyPct} label="Units collected YoY (CY24 vs CY23)" accent decimals={1} suffix="%" run={run} />
+            )}
+            {stats?.drivesYoyPct != null && (
+              <Kpi value={stats.drivesYoyPct} label="Blood drives YoY (CY24 vs CY23)" decimals={1} suffix="%" run={run} />
+            )}
+          </div>
+        )}
+        {years && years.length > 0 ? (
+          <div className="rt-chartbox"><h4>Blood drives by year</h4>
+            <BarChart data={years.map((y) => y.drives)} labels={years.map((y) => y.year)} />
+          </div>
+        ) : null}
+        <div className="rt-chartbox"><h4>Donors by top donation center</h4><HBarChart items={r.topSites.slice(0, years ? 5 : 7)} /></div>
+        <p className="rt-note">
+          {years ? "Drive, unit & donor values are live from the monthly BioMed services." : "Per-site bars use live CY24 donor counts; sign in for live drive & unit trends."}
+        </p>
       </div>
     );
   }
   return (
     <div className="rt-slide">
-      <div className="rt-slabel">Slide 3 · Donor mix &amp; impact</div>
-      <div className="rt-chartbox"><h4>Donor mix</h4><Donut mix={r.donorMix} /></div>
-      <div className="rt-impact">
-        <div className="rt-impact__big">
-          <div className="rt-impact__v">{fmt(r.kpi.unitsToHospitals)}</div>
-          <div className="rt-impact__l">units delivered to hospitals (placeholder)</div>
+      <div className="rt-slabel">Slide 3 · Drive mix &amp; districts</div>
+      {stats?.drivesByType?.length ? (
+        <div className="rt-chartbox"><h4>CY24 blood drives by sponsor type</h4>
+          <HBarChart items={stats.drivesByType.slice(0, 5)} highlight={stats.drivesByType[0]?.name} />
         </div>
-        <div className="rt-impact__big rt-impact__big--dark">
-          <div className="rt-impact__v">{r.kpi.satisfaction}</div>
-          <div className="rt-impact__l">donor satisfaction score (placeholder)</div>
+      ) : null}
+      {stats?.topDistricts?.length ? (
+        <div className="rt-chartbox"><h4>Top Biomedical Districts — CY24 drives</h4>
+          <HBarChart items={stats.topDistricts.slice(0, 4)} />
         </div>
-      </div>
+      ) : null}
+      {!stats?.drivesByType?.length && !stats?.topDistricts?.length && (
+        <p className="rt-narr"><em>Live drive mix.</em> Sign in to load this region&apos;s CY24 drive mix by sponsor
+          type and its top Biomedical Districts — all live from the monthly BioMed services.</p>
+      )}
       <div className="rt-cta"><h4>Every donation moves the mission.</h4>
         <p>Swap this panel for the region&apos;s real call-to-action, leadership note, or campaign metrics.</p></div>
+      <p className="rt-note">Drive mix &amp; district counts are live monthly values.</p>
     </div>
   );
 }
@@ -178,6 +168,14 @@ export type TourMobileStats = {
   units2024: number | null;
   sponsors2024?: number | null;
   drivesByType?: Array<{ name: string; donors: number }> | null;
+  /** Live yearly series from the monthly-reloaded region service. */
+  years?: Array<{ year: string; drives: number; units: number }> | null;
+  /** Units YoY %, latest complete year vs prior (e.g. CY24 vs CY23). */
+  unitsYoyPct?: number | null;
+  /** Drives YoY %, latest complete year vs prior. */
+  drivesYoyPct?: number | null;
+  /** Region's top Biomedical Districts by CY24 drives (live). */
+  topDistricts?: Array<{ name: string; donors: number }> | null;
 };
 
 function MobileStorySlide({ r, index, run, stats }: {
@@ -450,7 +448,7 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
             )}
           </div>
           <div className="rt-panel__body">
-            {view.kind === "deck" && <Slide r={r} index={view.slide} run={!flying} onOpenStory={openStory} />}
+            {view.kind === "deck" && <Slide r={r} index={view.slide} run={!flying} onOpenStory={openStory} stats={mobileStats} />}
             {view.kind === "story" && view.story === "mobile" && <MobileStorySlide r={r} index={view.slide} run={!flying} stats={mobileStats} />}
             {view.kind === "story" && view.story === "fixed" && (
               <FixedStorySlide r={r} index={view.slide} run={!flying}
