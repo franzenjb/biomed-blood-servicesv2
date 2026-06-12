@@ -2413,34 +2413,6 @@ export default function BiomedOpsWorkbenchPage({
     }
   }, [findLiftedBiomedGroup, getTourRegionGeometry]);
 
-  const closeTour = useCallback(() => {
-    setTourActive(false);
-    setTourRegion(null);
-    tourRegionLiveRef.current = null;
-    setTourStats(null);
-    clearSiteHighlight();
-    setLeftOpen(true);
-    const view = mapRef.current?.view as MapView | undefined;
-    if (view) view.padding = { top: 0, right: 0, bottom: 0, left: 0 };
-    // Turn the story overlays back off so the workbench returns to its own state.
-    const map = getMapElementMap(mapRef.current);
-    const group = ((map?.layers?.toArray?.() ?? []) as Layer[]).find(
-      (layer) => layer.type === "group" && (layer.title ?? "").trim().toUpperCase() === "BIOMED",
-    ) as (Layer & { layers?: { toArray?: () => Layer[] } }) | undefined;
-    if (group) {
-      group.visible = false;
-      (group.layers?.toArray?.() ?? []).forEach((sub) => {
-        sub.visible = false;
-        try {
-          (sub as FeatureLayer).definitionExpression = "";
-          const layerView = (view as MapView & { allLayerViews?: { find?: (cb: (lv: { layer?: Layer }) => boolean) => unknown } })
-            ?.allLayerViews?.find?.((candidate) => candidate.layer === sub) as { filter?: unknown } | undefined;
-          if (layerView && "filter" in layerView) layerView.filter = null;
-        } catch { /* ignore */ }
-      });
-    }
-  }, [clearSiteHighlight]);
-
   // Fly the live map to a BioMed region by querying its boundary polygon extent.
   const flyToRegion = useCallback(
     async (name: string) => {
@@ -2841,7 +2813,6 @@ export default function BiomedOpsWorkbenchPage({
             onSelectRegion={(name) => void flyToRegion(name)}
             onSelectSite={(siteName) => void flyToSite(siteName)}
             onSlideChange={(ctx) => void applyTourStoryLayers(ctx)}
-            onClose={closeTour}
             mobileStats={tourStats}
           />
         )}

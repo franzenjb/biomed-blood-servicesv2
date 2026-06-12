@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, MapPin, List, Truck, Building2, ArrowLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, List, Truck, Building2, ArrowLeft } from "lucide-react";
 import { REGION_BY_NAME, type RegionSummary, type RegionSite } from "../data/regionSummaries";
 import "./RegionTour.css";
 
@@ -322,12 +322,11 @@ export interface RegionTourProps {
   onSelectRegion: (name: string) => void;
   onSelectSite?: (siteName: string | null) => void;
   onSlideChange?: (ctx: TourSlideContext) => void;
-  onClose: () => void;
   flying?: boolean;
   mobileStats?: TourMobileStats | null;
 }
 
-export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onSlideChange, onClose, flying, mobileStats }: RegionTourProps) {
+export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite, onSlideChange, flying, mobileStats }: RegionTourProps) {
   const [view, setView] = useState<TourView>({ kind: "deck", slide: 0 });
   const [pickerOpen, setPickerOpen] = useState(true);
   const lastRegion = useRef<string | null>(null);
@@ -406,7 +405,6 @@ export default function RegionTour({ activeRegion, onSelectRegion, onSelectSite,
     <div className="rt-root">
       <div className="rt-topbar">
         <span className="rt-topbar__title"><MapPin size={15} /> Regional Story Explorer — Guided Tour</span>
-        <button className="rt-topbar__close" onClick={onClose} aria-label="Exit tour"><X size={16} /> Exit tour</button>
       </div>
 
       {!pickerOpen && (

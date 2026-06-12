@@ -12,10 +12,11 @@ test.describe("Region Tour", () => {
     await expect(page.locator(".opsv2__panel--left")).toBeHidden();
     await expect(page.locator(".opsv2__panel--right")).toBeHidden();
 
-    await page.locator(".rt-topbar__close").click();
-    await expect(page.locator(".rt-picker")).toBeHidden();
-    await expect(page.locator(".opsv2__panel--left")).toBeVisible();
-    await expect(page.locator(".opsv2__panel--right")).toBeVisible();
+    // No Exit-tour button: the app-bar Home (→ /hub) is the only way out, and
+    // the app bar retitles to the story experience while the tour is active.
+    await expect(page.locator(".rt-topbar__close")).toHaveCount(0);
+    await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Regional Story Explorer");
   });
 
   test("region picker collapses to a pill and reopens", async ({ page }) => {
