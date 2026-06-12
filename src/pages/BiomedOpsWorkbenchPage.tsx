@@ -52,8 +52,7 @@ import {
   drawSelectionOutline,
   layerHasAnyLevelField,
   loadLevelOptions,
-  computeLiveIconExtent,
-  queryBoundaryExtent,
+  computeSelectionZoomExtent,
   levelLabel,
   levelAllLabel,
 } from "../utils/biomedGeographyFilter";
@@ -2196,9 +2195,7 @@ export default function BiomedOpsWorkbenchPage({
       return;
     }
     try {
-      const iconExtent =
-        (await computeLiveIconExtent(map, sel, geoChosenFieldRef.current)) ??
-        (await queryBoundaryExtent(map, sel, geoChosenFieldRef.current));
+      const iconExtent = await computeSelectionZoomExtent(map, sel, geoChosenFieldRef.current);
       if (iconExtent) await view.goTo(iconExtent, { duration: 650 });
     } catch {
       // navigation can be interrupted; the filter still applies

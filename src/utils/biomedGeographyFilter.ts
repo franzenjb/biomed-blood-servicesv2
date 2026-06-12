@@ -267,8 +267,8 @@ export async function computeLiveIconExtent(
   });
 }
 
-// Extent of the selected geography's BOUNDARY polygon — the zoom fallback when
-// no scopable point layer is visible (e.g. boundaries-only presets).
+// Extent of the selected geography's BOUNDARY polygon in lon/lat, clipped to
+// the continental US so Caribbean/AK/HI arms don't blow the frame out.
 export async function queryBoundaryExtent(
   map: ArcGISMap,
   selection: Selection,
@@ -284,9 +284,36 @@ export async function queryBoundaryExtent(
     await boundary.load?.();
     const result = await (boundary as FeatureLayer & {
       queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
-    }).queryExtent?.({ where: buildWhereForLayer(boundary, selection, chosen) });
-    return result?.extent ? result.extent.clone().expand(1.15) : null;
+    }).queryExtent?.({
+      where: buildWhereForLayer(boundary, selection, chosen),
+      outSpatialReference: { wkid: 4326 },
+    });
+    const raw = result?.extent;
+    if (!raw) return null;
+    const xmin = Math.max(raw.xmin, CONUS_BBOX.xmin);
+    const ymin = Math.max(raw.ymin, CONUS_BBOX.ymin);
+    const xmax = Math.min(raw.xmax, CONUS_BBOX.xmax);
+    const ymax = Math.min(raw.ymax, CONUS_BBOX.ymax);
+    if (xmin >= xmax || ymin >= ymax) return raw.clone().expand(1.1); // fully offshore (e.g. PR-only)
+    return new Extent({ xmin, ymin, xmax, ymax, spatialReference: { wkid: 4326 } }).expand(1.05);
   } catch {
     return null;
   }
+}
+
+// The zoom target for a geography selection: the union of the scoped live
+// site points AND the (CONUS-clipped) boundary polygon — sites alone can crop
+// the outline (e.g. a dense cluster pulls the frame off Florida); the boundary
+// alone can underweight where the assets actually are. Union shows both.
+export async function computeSelectionZoomExtent(
+  map: ArcGISMap,
+  selection: Selection,
+  chosen: Partial<Record<LevelId, string>>,
+): Promise<Extent | null> {
+  const [icons, boundary] = await Promise.all([
+    computeLiveIconExtent(map, selection, chosen),
+    queryBoundaryExtent(map, selection, chosen),
+  ]);
+  if (icons && boundary) return icons.clone().union(boundary);
+  return icons ?? boundary;
 }

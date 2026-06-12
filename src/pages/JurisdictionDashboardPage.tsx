@@ -30,7 +30,7 @@ import {
   type ArcJurisdictionSupplementalLayerSource,
 } from "../config/arcgisLayers";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
-import { computeLiveIconExtent, drawSelectionOutline, queryBoundaryExtent } from "../utils/biomedGeographyFilter";
+import { computeSelectionZoomExtent, drawSelectionOutline } from "../utils/biomedGeographyFilter";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
@@ -1181,9 +1181,7 @@ export default function JurisdictionDashboardPage({
     const hasSelection = LEVELS.some((level) => sel[level]);
     if (view && hasSelection) {
       try {
-        const iconExtent =
-          (await computeLiveIconExtent(map, sel, chosenFieldRef.current)) ??
-          (await queryBoundaryExtent(map, sel, chosenFieldRef.current));
+        const iconExtent = await computeSelectionZoomExtent(map, sel, chosenFieldRef.current);
         if (iconExtent) {
           await view.goTo(iconExtent, { duration: 650 });
         } else if (layer) {
