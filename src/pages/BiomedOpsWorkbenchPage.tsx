@@ -2594,7 +2594,7 @@ export default function BiomedOpsWorkbenchPage({
               : "site";
       const PLAN: Record<string, string[]> = {
         "deck-1": ["RBC Collections by County"],
-        "deck-2": ["Drives by District"],
+        "deck-2": ["Drives by Biomedical District"],
         "story-mobile-0": ["Blood Drives by Type"],
         "story-mobile-1": ["Drives by County"],
       };
