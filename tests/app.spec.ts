@@ -12,17 +12,19 @@ test.describe("Home (hero)", () => {
 });
 
 test.describe("Hub", () => {
-  test("is the grid of 5 chapters + 4 tool tiles, and navigates", async ({ page }) => {
+  test("is the grid of 5 chapters + 5 tool tiles, and navigates", async ({ page }) => {
     await page.goto("/hub");
     await expect(page.getByTestId("hub")).toBeVisible();
-    await expect(page.locator(".hub__grid .hub__card")).toHaveCount(9);
+    await expect(page.locator(".hub__grid .hub__card")).toHaveCount(10);
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // 4 tool tiles (#6-#9): dashboard, ops, hospital network, Explore Regions map
-    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "explore-regions"]) {
+    // 5 tool tiles (#6-#10): dashboard, ops, hospital network, Explore Regions, infrastructure
+    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "explore-regions", "infrastructure-dashboard"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
+    await expect(page.getByTestId("hub-card-infrastructure-dashboard").locator(".hub__index")).toHaveText("10");
+    await expect(page.getByTestId("hub-card-infrastructure-dashboard")).toHaveAttribute("href", "/infrastructure-dashboard");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Explore Regions");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Guided tour — pick a region, fly there on the live map, and step through its donor story.");
     await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");

@@ -251,7 +251,7 @@ function levelLabel(level: LevelId) {
 
 // Quick View presets — logical layer combinations. The matcher decides which
 // layers are ON for each preset; "minimal" is the default starting view.
-type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "all" | "clean";
+type PresetId = "minimal" | "boundaries" | "fixed" | "mobile-fixed" | "collections" | "infrastructure" | "all" | "clean";
 
 const PRESETS: Array<{ id: PresetId; label: string }> = [
   { id: "minimal", label: "Minimal (Boundaries + Fixed Sites)" },
@@ -284,6 +284,13 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   if (preset === "fixed") return isFixed || t.includes("biomed region");
   if (preset === "mobile-fixed") return isMobile || isFixed || t.includes("biomed region");
   if (preset === "collections") return isCollections || t.includes("biomed region");
+  if (preset === "infrastructure") {
+    // Logistics + collection-site footprint: every site type + region context.
+    const isSite =
+      t.includes("warehouse") || t.includes("staging") || t.includes("manufactur") ||
+      t.includes("kitting") || t.includes("irl") || t.includes("distribution") || isFixed;
+    return isSite || t.includes("biomed region");
+  }
   // minimal
   return t.includes("biomed division") || t.includes("biomed region") || isFixed;
 }
@@ -753,6 +760,19 @@ function JdMapLoader() {
  * Jurisdiction Dashboard; the Explore Regions tile reuses the same engine with
  * a different brand + community-impact content in its About modal.
  */
+// A count-of-features KPI: find the operational layer by title tokens, count its
+// features in the active geography. Used by the Infrastructure Dashboard instead
+// of the FY25 collection sums.
+export type InfraKpiDef = {
+  key: string;
+  label: string;
+  hint: string;
+  /** OR-of-AND title token groups to locate the layer to count. */
+  layerTokens: string[][];
+  /** Render as the accent (highlighted) KPI card. */
+  accent?: boolean;
+};
+
 export type JurisdictionBrand = {
   testId: string;
   appTitle: string;
@@ -766,6 +786,12 @@ export type JurisdictionBrand = {
   aboutExtra?: ReactNode;
   /** Portal layers to add on top of the web map (defaults to mobile collections). */
   supplementalLayers?: ArcJurisdictionSupplementalLayerSource[];
+  /** When set, the KPI band shows these count-of-site cards instead of FY25 sums. */
+  infraKpis?: InfraKpiDef[];
+  /** Preset applied on first load (defaults to "minimal"). */
+  initialPreset?: PresetId;
+  /** Heading shown above the filter panel (defaults to "Filter by Geography"). */
+  filterHeading?: string;
 };
 
 export const DEFAULT_JURISDICTION_BRAND: JurisdictionBrand = {
@@ -956,6 +982,39 @@ export default function JurisdictionDashboardPage({
 
   // ---- Compute KPIs + site list for the active selection ----------------
   const computeKpis = useCallback(async (sel: Selection) => {
+    // Infrastructure mode: count features in named site layers, not FY25 sums.
+    if (brand.infraKpis) {
+      setKpiLoading(true);
+      const map = getMapElementMap(mapRef.current);
+      const layers = collectArcJurisdictionLayers(map).filter(isQueryableFeatureLayer);
+      const next: Record<string, number | null> = {};
+      await Promise.all(
+        brand.infraKpis.map(async (def) => {
+          const target = layers.find((candidate) => {
+            const t = safeLayerTitle(candidate).toLowerCase();
+            return def.layerTokens.some((group) => group.every((token) => t.includes(token)));
+          });
+          if (!target) {
+            next[def.key] = null;
+            return;
+          }
+          try {
+            // Scope by geography when the site layer carries level fields; else
+            // national count (answers "what assets do we have?").
+            const where = layerHasAnyLevelField(target)
+              ? buildWhereForLayer(target, sel, chosenFieldRef.current)
+              : "1=1";
+            next[def.key] = await target.queryFeatureCount({ where } as never);
+          } catch {
+            next[def.key] = null;
+          }
+        }),
+      );
+      setKpis(next);
+      setKpiLoading(false);
+      return;
+    }
+
     const layer = sourceLayerRef.current;
     if (!layer) return;
     setKpiLoading(true);
@@ -996,7 +1055,7 @@ export default function JurisdictionDashboardPage({
         setSiteCount(null);
       }
     }
-  }, []);
+  }, [brand.infraKpis]);
 
   // FY25 counts scoped to a clicked geography boundary — shown in its popup so
   // a Division/Region/District selection carries its own metrics (like the KPIs).
@@ -1186,10 +1245,10 @@ export default function JurisdictionDashboardPage({
     setActiveFeature(null);
     setSiteQuery("");
     setRightTab("sites");
-    applyPreset("minimal");
+    applyPreset(brand.initialPreset ?? "minimal");
     const layer = sourceLayerRef.current;
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
-  }, [refreshOptionsFor, applyPreset]);
+  }, [refreshOptionsFor, applyPreset, brand.initialPreset]);
 
   // Enrich one graphic and show it in the detail card. Shared by map clicks and the
   // coincident-feature picker so both produce the same readout.
@@ -1276,7 +1335,7 @@ export default function JurisdictionDashboardPage({
         discoverLayers(map);
 
         // Start at the minimal preset and track per-layer visibility changes.
-        applyPreset("minimal");
+        applyPreset(brand.initialPreset ?? "minimal");
         collectArcJurisdictionLayers(map).forEach((layer) => {
           const handle = (layer as Layer & { watch?: (name: string, cb: () => void) => WatchHandle }).watch?.("visible", refreshLayerSnaps);
           if (handle) handles.push(handle);
@@ -1489,18 +1548,31 @@ export default function JurisdictionDashboardPage({
 
       {/* KPI band */}
       <div className="jd__kpis" data-testid="jd-kpis">
-        {KPI_DEFS.map((def) => (
-          <article key={def.key} className="jd__kpi" title={def.hint}>
-            <span className="jd__kpi-label">{def.label}</span>
-            <strong className="jd__kpi-value" data-loading={kpiLoading ? "true" : "false"}>
-              {kpis[def.key] == null ? "—" : formatNumber(kpis[def.key])}
-            </strong>
-          </article>
-        ))}
-        <article className="jd__kpi jd__kpi--accent" title="Fixed collection sites in the selected geography">
-          <span className="jd__kpi-label">Fixed Sites</span>
-          <strong className="jd__kpi-value">{siteCount == null ? "—" : formatNumber(siteCount)}</strong>
-        </article>
+        {brand.infraKpis
+          ? brand.infraKpis.map((def) => (
+              <article key={def.key} className={`jd__kpi${def.accent ? " jd__kpi--accent" : ""}`} title={def.hint}>
+                <span className="jd__kpi-label">{def.label}</span>
+                <strong className="jd__kpi-value" data-loading={kpiLoading ? "true" : "false"}>
+                  {kpis[def.key] == null ? "—" : formatNumber(kpis[def.key])}
+                </strong>
+              </article>
+            ))
+          : (
+            <>
+              {KPI_DEFS.map((def) => (
+                <article key={def.key} className="jd__kpi" title={def.hint}>
+                  <span className="jd__kpi-label">{def.label}</span>
+                  <strong className="jd__kpi-value" data-loading={kpiLoading ? "true" : "false"}>
+                    {kpis[def.key] == null ? "—" : formatNumber(kpis[def.key])}
+                  </strong>
+                </article>
+              ))}
+              <article className="jd__kpi jd__kpi--accent" title="Fixed collection sites in the selected geography">
+                <span className="jd__kpi-label">Fixed Sites</span>
+                <strong className="jd__kpi-value">{siteCount == null ? "—" : formatNumber(siteCount)}</strong>
+              </article>
+            </>
+          )}
       </div>
 
       <div className="jd__stage">
@@ -1524,7 +1596,7 @@ export default function JurisdictionDashboardPage({
                 <Home aria-hidden="true" size={16} />
               </Link>
               <div className="jd__panel-head-text">
-                <h2>{leftTab === "filters" ? "Filter by Geography" : "Map Layers"}</h2>
+                <h2>{leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
                 <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
               <button type="button" className="jd__collapse-btn" aria-label="Collapse filters" title="Hide filters panel" onClick={() => setLeftOpen(false)}>

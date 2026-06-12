@@ -214,6 +214,20 @@ export default function HubPage() {
             <span className="hub__q">Guided tour — pick a region, fly there on the live map, and step through its donor story.</span>
           </span>
         </Link>
+
+        <Link
+          to="/infrastructure-dashboard"
+          className="hub__card hub__card--map"
+          style={{ backgroundImage: "url(/covers/tools/dashboard-preview.svg)" }}
+          data-testid="hub-card-infrastructure-dashboard"
+        >
+          <span className="hub__scrim" />
+          <span className="hub__index mono">10</span>
+          <span className="hub__body">
+            <span className="hub__title">Infrastructure Dashboard</span>
+            <span className="hub__q">Manufacturing, warehouses, distribution, staging &amp; fixed sites — counts &amp; footprint by division, region &amp; district.</span>
+          </span>
+        </Link>
       </nav>
 
       <footer className="hub__foot">
