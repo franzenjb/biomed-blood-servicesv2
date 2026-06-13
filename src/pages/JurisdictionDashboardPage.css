@@ -534,9 +534,11 @@
   border-bottom: 1px solid var(--arc-gray-100, #e5e5e5);
 }
 .jd__panel-subhead h2 {
-  font-family: var(--font-headline, Georgia, serif);
+  /* Sans to match the app-bar title + tabs (and the Atlas subhead) — no serif
+     heading clashing against the sans chrome around it. */
+  font-family: var(--font-body);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--arc-black, #1a1a1a);
   line-height: 1.2;
 }
