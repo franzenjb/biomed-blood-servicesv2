@@ -1,0 +1,163 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Shared map-app shell primitives — ONE source of truth for the sidebars,
+   tabs, layer rows, and search across all five BioMed map tools (Dashboard,
+   Atlas, Hospital Network, Regional Story Explorer, Infrastructure).
+   Class prefix: .mshell__
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --mshell-line: #d9dee4;
+  --mshell-line-soft: #e9edf1;
+  --mshell-ink: #16212c;
+  --mshell-ink-soft: #5b6976;
+  --mshell-bg: #ffffff;
+  --mshell-bg-soft: #f6f8fa;
+  --mshell-red: #ed1b2e;
+  --mshell-blue: #1e4a6d;
+}
+
+/* ── Tab bar (icon + label) ─────────────────────────────────────────────── */
+.mshell__tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px 0;
+  border-bottom: 1px solid var(--mshell-line-soft);
+}
+.mshell__tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 6px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mshell-ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mshell__tab svg { flex: none; }
+.mshell__tab:hover { color: var(--mshell-ink); }
+.mshell__tab.is-active {
+  color: var(--mshell-red);
+  border-bottom-color: var(--mshell-red);
+}
+.mshell__tab-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--mshell-ink-soft);
+  background: var(--mshell-bg-soft);
+  border: 1px solid var(--mshell-line-soft);
+  border-radius: 999px;
+  padding: 0 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── Layer list: accordion groups + checkbox rows ───────────────────────── */
+.mshell__layers {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mshell__layer-group { display: flex; flex-direction: column; gap: 4px; }
+.mshell__layer-group-row { display: flex; align-items: stretch; gap: 4px; }
+.mshell__layer-group-row .mshell__layer-group-head { flex: 1; }
+.mshell__layer-group-all {
+  flex: none;
+  padding: 0 12px;
+  border: 1px solid var(--mshell-line);
+  border-radius: 8px;
+  background: var(--mshell-bg);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mshell-ink-soft);
+  cursor: pointer;
+}
+.mshell__layer-group-all:hover:not(:disabled) { border-color: var(--mshell-red); color: var(--mshell-red); }
+.mshell__layer-group-all:disabled { opacity: 0.5; cursor: not-allowed; }
+.mshell__layer-marker {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+}
+.mshell__layer-marker img { width: 100%; height: 100%; object-fit: contain; }
+.mshell__layer-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--mshell-line);
+  border-radius: 8px;
+  background: var(--mshell-bg-soft);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.mshell__layer-group-head strong { flex: 1; font-size: 13px; color: var(--mshell-ink); }
+.mshell__layer-group-head b { font-size: 12px; color: var(--mshell-ink-soft); font-weight: 600; }
+.mshell__layer-group-chevron { color: var(--mshell-ink-soft); transition: transform 0.15s ease; }
+.mshell__layer-group[data-open="false"] .mshell__layer-group-chevron { transform: rotate(-90deg); }
+
+.mshell__layer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--mshell-line-soft);
+  border-radius: 8px;
+  background: var(--mshell-bg);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.mshell__layer:hover { border-color: var(--mshell-line); background: #fcfdfe; }
+.mshell__layer[aria-pressed="true"] { border-color: rgba(237, 27, 46, 0.45); background: #fff7f7; }
+.mshell__layer:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* checkbox — the single on/off control for every app */
+.mshell__check {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--mshell-ink-soft);
+  border-radius: 4px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--mshell-bg);
+}
+.mshell__layer[aria-pressed="true"] .mshell__check {
+  background: var(--mshell-red);
+  border-color: var(--mshell-red);
+  color: #fff;
+}
+.mshell__check svg { opacity: 0; }
+.mshell__layer[aria-pressed="true"] .mshell__check svg { opacity: 1; }
+
+.mshell__layer-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--mshell-ink-soft); }
+.mshell__layer-dot--geography { border-radius: 2px; background: rgba(30, 74, 109, 0.7); }
+.mshell__layer-dot--sites { background: #0f9aa8; }
+.mshell__layer-dot--manufacturing { background: #7048b6; }
+.mshell__layer-dot--operations { background: #b8860b; }
+.mshell__layer-dot--hospitals { background: var(--mshell-red); }
+.mshell__layer-dot--reference { background: #737373; }
+
+.mshell__layer-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.mshell__layer-name strong { font-size: 13px; font-weight: 600; color: var(--mshell-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mshell__layer-name small { font-size: 11px; color: var(--mshell-ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mshell__layer-state { font-size: 11px; font-weight: 600; color: var(--mshell-ink-soft); text-transform: uppercase; letter-spacing: 0.04em; flex: none; }
+
+.mshell__empty { padding: 18px 12px; font-size: 13px; color: var(--mshell-ink-soft); }

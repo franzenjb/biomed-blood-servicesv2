@@ -31,6 +31,8 @@ import {
 } from "../config/arcgisLayers";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import { computeSelectionZoomExtent, drawSelectionOutline } from "../utils/biomedGeographyFilter";
+import LayerList from "../components/mapshell/LayerList";
+import "../components/mapshell/mapshell.css";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
 import { applyPresentationMapStyle, quietOpsBasemapId } from "../maps/presentationStyle";
@@ -1617,51 +1619,23 @@ export default function JurisdictionDashboardPage({
             </div>
 
             {leftTab === "layers" ? (
-              <div className="jd__layers" data-testid="jd-layer-list">
-                {!isAuthenticated ? (
-                  <p className="jd__empty">Sign in to load map layers.</p>
-                ) : layerSnaps.length === 0 ? (
-                  <p className="jd__empty">No layers loaded yet.</p>
-                ) : (
-                  LAYER_TYPE_GROUPS.map((groupDef) => {
-                    const groupSnaps = layerSnaps.filter((snap) => groupDef.categories.includes(snap.category));
-                    if (groupSnaps.length === 0) return null;
-                    const onCount = groupSnaps.filter((snap) => snap.visible).length;
-                    const expanded = layerGroupsOpen[groupDef.id] ?? true;
-                    return (
-                      <section key={groupDef.id} className="jd__layer-group" data-expanded={expanded ? "true" : "false"}>
-                        <button
-                          type="button"
-                          className="jd__layer-group-head"
-                          aria-expanded={expanded}
-                          onClick={() => setLayerGroupsOpen((current) => ({ ...current, [groupDef.id]: !expanded }))}
-                        >
-                          <strong>{groupDef.label}</strong>
-                          <b>{onCount}/{groupSnaps.length}</b>
-                          <ChevronDown aria-hidden="true" size={16} className="jd__layer-group-chevron" />
-                        </button>
-                        {expanded &&
-                          groupSnaps.map((snap) => (
-                            <button
-                              key={snap.id}
-                              type="button"
-                              className="jd__layer"
-                              aria-pressed={snap.visible}
-                              onClick={() => toggleMapLayer(snap.id)}
-                            >
-                              <span className={`jd__layer-dot jd__layer-dot--${snap.category}`} aria-hidden="true" />
-                              <span className="jd__layer-name">
-                                <strong>{snap.title}</strong>
-                                <small>{snap.summary}</small>
-                              </span>
-                              <em className="jd__layer-state">{snap.visible ? "On" : "Off"}</em>
-                            </button>
-                          ))}
-                      </section>
-                    );
-                  })
-                )}
-              </div>
+              !isAuthenticated ? (
+                <div className="mshell__layers"><p className="mshell__empty">Sign in to load map layers.</p></div>
+              ) : (
+                <LayerList
+                  testId="jd-layer-list"
+                  groups={LAYER_TYPE_GROUPS.map((groupDef) => ({
+                    id: groupDef.id,
+                    label: groupDef.label,
+                    rows: layerSnaps
+                      .filter((snap) => groupDef.categories.includes(snap.category))
+                      .map((snap) => ({ id: snap.id, title: snap.title, summary: snap.summary, category: snap.category, visible: snap.visible })),
+                  }))}
+                  openGroups={layerGroupsOpen}
+                  onToggleGroup={(groupId) => setLayerGroupsOpen((current) => ({ ...current, [groupId]: !(current[groupId] ?? true) }))}
+                  onToggleLayer={toggleMapLayer}
+                />
+              )
             ) : (
               <>
             <div className="jd__filters">

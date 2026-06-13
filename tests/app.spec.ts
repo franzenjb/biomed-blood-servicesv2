@@ -215,9 +215,9 @@ test.describe("Maps (shared shell)", () => {
     await page.getByRole("tab", { name: "Filter" }).click();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
-    await expect(page.locator(".opsv2__layer-group").first()).toContainText("Hospitals & Patient Care");
+    await expect(page.locator(".mshell__layer-group").first()).toContainText("Hospitals & Patient Care");
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
-    const hospitalLayer = page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" });
+    const hospitalLayer = page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" });
     await expect(hospitalLayer).toContainText("Hospitals receiving Red Cross blood products.");
     await expect(hospitalLayer.locator('[data-testid="ops-layer-legend-marker"]')).toHaveAttribute(
       "data-kind",
@@ -229,9 +229,8 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "List" })).toBeVisible();
     await expect(page.getByText("Layer Group Subtotals")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Jurisdictions & Regions" })).toContainText(
-      "BioMed ownership first; HS boundaries only for alignment comparison.",
-    );
+    // Group headers are now label + on/total count only (shared accordion) — the
+    // per-group description line was dropped for cross-app consistency.
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("BioMed division boundaries.");
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
       "Start here for the national leadership view.",
@@ -240,17 +239,17 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
     // Layer toggles live in the Filter tab (Geography, with search on top, is the default).
     await page.getByRole("tab", { name: "Filter" }).click();
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
     // Search now lives at the top of the Geography tab (no separate Search tab).
     await expect(page.getByRole("tab", { name: "Search" })).toHaveCount(0);
     await page.getByRole("tab", { name: "Geography" }).click();
     await page.getByPlaceholder("Search counties, regions, sites").fill("Dallas");
     await expect(page.getByTestId("ops-search-results")).toBeVisible();
     await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "true");
-    await expect(page.locator(".opsv2__layer-groups")).toBeHidden();
+    await expect(page.locator(".mshell__layers")).toHaveCount(0); // layers are a separate tab — not in the DOM while searching on Geography
     const searchResultBottomGap = await page.evaluate(() => {
       const panel = document.querySelector(".opsv2__panel--left")?.getBoundingClientRect();
       const results = document.querySelector(".opsv2__results")?.getBoundingClientRect();
@@ -297,11 +296,11 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await page.getByRole("tab", { name: "Filter" }).click();
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Hospital Locations" })).toContainText(
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",
     );
     await expect(page.getByRole("button", { name: "Distribution & Operations" })).toContainText("1/4");
-    await expect(page.locator("button.opsv2__layer").filter({ hasText: "Trade Areas by ZIP" })).toContainText(
+    await expect(page.locator("button.mshell__layer").filter({ hasText: "Trade Areas by ZIP" })).toContainText(
       "ZIP donor-share shading, trade-area outline, and supporting BioMed source layer.",
     );
     await expect(page.getByRole("button", { name: "Reference & Supplemental" })).toHaveCount(0);

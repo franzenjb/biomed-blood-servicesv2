@@ -28,6 +28,8 @@ import { Link } from "react-router-dom";
 import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
 import RegionTour, { type TourSlideContext, type TourMobileStats } from "../maps/RegionTour";
+import LayerList from "../components/mapshell/LayerList";
+import "../components/mapshell/mapshell.css";
 import {
   arcJurisdictionMapSource,
   biomedWorkbenchSupplementalLayers,
@@ -2904,96 +2906,33 @@ export default function BiomedOpsWorkbenchPage({
               </button>
             </div>
           </div>
-          <div className="opsv2__layer-groups">
-            {sourceGroups.map((group) => {
-              const groupLayers = filteredLayers.filter((layer) => layer.category === group.id);
-              if (groupLayers.length === 0) return null;
-              const Icon = group.icon;
-              const activeCount = groupLayers.filter((layer) => layer.visible).length;
-              const isExpanded = expandedGroups[group.id] ?? true;
-              return (
-                <section key={group.id} className="opsv2__layer-group" data-expanded={isExpanded ? "true" : "false"}>
-                  <header className="opsv2__layer-group-head">
-                    <button
-                      type="button"
-                      className="opsv2__layer-group-toggle"
-                      aria-expanded={isExpanded}
-                      onClick={() => setExpandedGroups((current) => ({ ...current, [group.id]: !isExpanded }))}
-                    >
-                      <Icon aria-hidden="true" size={17} />
-                      <span>
-                        <strong>{group.label}</strong>
-                        <small>{group.description}</small>
-                      </span>
-                      <b>{activeCount}/{groupLayers.length}</b>
-                      <ChevronDown aria-hidden="true" className="opsv2__group-chevron" size={18} />
-                    </button>
-                    <button
-                      type="button"
-                      className="opsv2__group-all"
-                      disabled={!isAuthenticated}
-                      aria-pressed={activeCount === groupLayers.length}
-                      onClick={() => toggleGroupLayers(group.id)}
-                      title={activeCount === groupLayers.length ? "Turn all off in this group" : "Turn all on in this group"}
-                    >
-                      {activeCount === groupLayers.length ? "All off" : "All on"}
-                    </button>
-                  </header>
-                  {isExpanded && (
-                    <div className="opsv2__layer-list">
-                      {groupLayers.map((layer) => {
-                        const legendMarker = legendMarkerForLayer(layer.title, layer.category);
-                        return (
-                          <button
-                            key={layer.id}
-                            type="button"
-                            className="opsv2__layer"
-                            aria-pressed={layer.visible}
-                            disabled={!isAuthenticated}
-                            onClick={() => toggleLayer(layer.id)}
-                          >
-                            <span className="opsv2__layer-icon-rail">
-                              <span
-                                className="opsv2__legend-marker"
-                                data-kind={legendMarker.kind}
-                                data-testid="ops-layer-legend-marker"
-                                title={legendMarker.label}
-                              >
-                                <img src={legendMarker.url} alt="" aria-hidden="true" />
-                              </span>
-                              <em className="opsv2__layer-status">{layer.visible ? "On" : "Off"}</em>
-                            </span>
-                            <span>
-                              <span className="opsv2__layer-title-row">
-                                <strong>{layer.title}</strong>
-                              </span>
-                              <small>{layer.summary}</small>
-                              {layer.category === "hospitals" && (
-                                <span className="opsv2__tier-legend" aria-label="Hospital tiers">
-                                  <span className="opsv2__tier" data-tier="1">
-                                    <i aria-hidden="true" />
-                                    Tier 1
-                                  </span>
-                                  <span className="opsv2__tier" data-tier="2">
-                                    <i aria-hidden="true" />
-                                    Tier 2
-                                  </span>
-                                  <span className="opsv2__tier" data-tier="3">
-                                    <i aria-hidden="true" />
-                                    Tier 3
-                                  </span>
-                                </span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </section>
-              );
-            })}
-          </div>
+          <LayerList
+            testId="ops-layer-list"
+            rowsDisabled={!isAuthenticated}
+            groups={sourceGroups
+              .map((group) => ({
+                id: group.id,
+                label: group.label,
+                rows: filteredLayers
+                  .filter((layer) => layer.category === group.id)
+                  .map((layer) => {
+                    const marker = legendMarkerForLayer(layer.title, layer.category);
+                    return {
+                      id: layer.id,
+                      title: layer.title,
+                      summary: layer.summary,
+                      category: layer.category,
+                      marker: { url: marker.url, kind: marker.kind, label: marker.label },
+                      visible: layer.visible,
+                    };
+                  }),
+              }))
+              .filter((group) => group.rows.length > 0)}
+            openGroups={expandedGroups}
+            onToggleGroup={(groupId) => setExpandedGroups((current) => ({ ...current, [groupId]: !(current[groupId] ?? true) }))}
+            onToggleLayer={toggleLayer}
+            onToggleGroupAll={(groupId) => toggleGroupLayers(groupId)}
+          />
           </>
           )}
           {leftTab === "geography" && (
