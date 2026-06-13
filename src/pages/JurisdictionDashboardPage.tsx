@@ -305,10 +305,12 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   if (preset === "mobile-fixed") return isMobile || isFixed || t.includes("biomed region");
   if (preset === "collections") return isCollections || t.includes("biomed region");
   if (preset === "hospital") {
-    // Patient-care picture: hospitals, portfolio visuals, distribution, IRL.
+    // Patient-care picture: hospitals, distribution, IRL. Portfolio Footprint,
+    // Final Best Location, and DRD AM Portfolio stay OFF by default (the
+    // "portfolio" token used to catch the unrelated DRD donor-recruitment layer);
+    // they're a click away in the Layers tab.
     const isHospital =
-      t.includes("hospital") || t.includes("portfolio") || t.includes("final best") ||
-      t.includes("distribution") || t.includes("irl");
+      t.includes("hospital") || t.includes("distribution") || t.includes("irl");
     return isHospital || t.includes("biomed region");
   }
   if (preset === "infrastructure") {
@@ -832,7 +834,7 @@ export default function JurisdictionDashboardPage({
   const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
   const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
-  const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
+  const [rightTab, setRightTab] = useState<"sites" | "detail">("detail");
   const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
   const [preset, setPreset] = useState<PresetId>("minimal");
   const [layerSnaps, setLayerSnaps] = useState<BioMedLayerSnapshot[]>([]);
@@ -1349,7 +1351,7 @@ export default function JurisdictionDashboardPage({
     setActiveHitKey(null);
     setActiveFeature(NATIONAL_DETAIL);
     setSiteQuery("");
-    setRightTab("sites");
+    setRightTab("detail");
     applyPreset(brand.initialPreset ?? "minimal");
     const layer = sourceLayerRef.current;
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
@@ -1588,13 +1590,6 @@ export default function JurisdictionDashboardPage({
     [selection],
   );
 
-  const scopeLabel = useMemo(() => {
-    if (selection.district) return selection.district;
-    if (selection.region) return selection.region;
-    if (selection.division) return selection.division;
-    return "National — all BioMed geography";
-  }, [selection]);
-
   const authLabel =
     status === "checking"
       ? "Checking ArcGIS…"
@@ -1614,10 +1609,6 @@ export default function JurisdictionDashboardPage({
     >
       <RcAppBar title={brand.appTitle}>
         {lensControl}
-        <span className="rcbar__chip" title="Current geographic scope">
-          <MapPin aria-hidden="true" size={15} />
-          {scopeLabel}
-        </span>
         <button type="button" className="rcbar__btn" onClick={resetAll} data-testid="jd-reset">
           <RotateCcw aria-hidden="true" size={15} />
           Reset
@@ -1843,8 +1834,8 @@ export default function JurisdictionDashboardPage({
                 active={rightTab}
                 onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
                 tabs={[
-                  { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
                   { id: "detail", label: "Detail", Icon: Info },
+                  { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
                 ]}
               />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>
@@ -1854,8 +1845,20 @@ export default function JurisdictionDashboardPage({
             </div>
 
             <div className="jd__panel-subhead">
-              <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed Site List"}</h2>
-              <p>{rightTab === "detail" && activeFeature ? activeFeature.layerTitle : "Click a site to fly to it"}</p>
+              <h2>
+                {rightTab !== "detail"
+                  ? "Fixed Site List"
+                  : activeFeature && activeFeature.category !== "geography"
+                    ? activeFeature.title
+                    : "Layer Counts"}
+              </h2>
+              <p>
+                {rightTab !== "detail"
+                  ? "Click a site to fly to it"
+                  : activeFeature && activeFeature.category !== "geography"
+                    ? activeFeature.layerTitle
+                    : "For the layers you have on, scoped to your filter."}
+              </p>
             </div>
 
             <div className="jd__right-body">

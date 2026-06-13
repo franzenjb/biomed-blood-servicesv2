@@ -302,7 +302,7 @@ export const hospitalPortfolioFootprintLayerSource = {
   itemId: "0d3534699687410283f7f377a040a744",
   category: "hospitals",
   role: "Shaded hospital-portfolio footprints (tiered service areas).",
-  defaultVisible: true,
+  defaultVisible: false,
   itemUrl: "https://arc-nhq-gis.maps.arcgis.com/home/item.html?id=0d3534699687410283f7f377a040a744",
   mapViewerUrl:
     "https://arc-nhq-gis.maps.arcgis.com/apps/mapviewer/index.html?layers=0d3534699687410283f7f377a040a744"
