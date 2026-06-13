@@ -492,6 +492,7 @@ function composeSiteAddress(raw?: Record<string, unknown>) {
 function typeLabel(feature: MasterFeatureSummary) {
   const t = feature.layerTitle.toLowerCase();
   if (feature.category === "geography") {
+    if (t.includes("national")) return "BioMed Network";
     if (t.includes("division")) return "BioMed Division";
     if (t.includes("region")) return "BioMed Region";
     if (t.includes("district")) return "BioMed District";
@@ -518,6 +519,24 @@ function cardInsight(feature: MasterFeatureSummary) {
   if (feature.category === "geography") return feature.impact;
   return feature.talkingPoint;
 }
+
+// The Detail tab's default subject when no geography is filtered: the whole
+// BioMed network. computeGeoStats detects the "National" layerTitle and sums
+// FY25 totals with no WHERE (where "1=1"), so the card shows US-wide numbers
+// that re-scope as the user drills into a division/region/district.
+const NATIONAL_DETAIL: MasterFeatureSummary = {
+  title: "United States",
+  layerTitle: "BioMed National",
+  category: "geography",
+  impact: "FY25 totals across the entire BioMed network. Filter by division, region, or district to scope these numbers.",
+  talkingPoint: "",
+  geography: [],
+  metrics: [],
+  sourceFields: [],
+  sourceFieldCount: 0,
+  source: "ARC Jurisdiction Map — FY25",
+  rawAttributes: {},
+};
 
 type CardModel = {
   eyebrow: string;
@@ -810,7 +829,7 @@ export default function JurisdictionDashboardPage({
   const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
   const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
-  const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
+  const [rightTab, setRightTab] = useState<"sites" | "detail">("detail");
   const [leftTab, setLeftTab] = useState<"search" | "filters" | "layers">("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
@@ -1073,7 +1092,9 @@ export default function JurisdictionDashboardPage({
     const t = feature.layerTitle.toLowerCase();
     const raw = feature.rawAttributes;
     const sel: Selection = { division: "", region: "", district: "" };
-    if (t.includes("division")) {
+    if (t.includes("national")) {
+      // Leave the selection empty → buildWhereForLayer yields "1=1" → US totals.
+    } else if (t.includes("division")) {
       sel.division = name;
     } else if (t.includes("district")) {
       sel.district = name;
@@ -1281,9 +1302,10 @@ export default function JurisdictionDashboardPage({
         if (LEVELS.some((lvl) => next[lvl])) {
           void showSelectionDetail(next);
         } else {
-          // Filter fully cleared — drop the geography card, back to the site list.
-          setActiveFeature(null);
-          setRightTab("sites");
+          // Filter cleared — fall back to the US-wide totals card (not the site
+          // list); the Sites tab is there when the user wants it.
+          setActiveFeature(NATIONAL_DETAIL);
+          setRightTab("detail");
         }
         return next;
       });
@@ -1295,9 +1317,9 @@ export default function JurisdictionDashboardPage({
     setSelection(EMPTY_SELECTION);
     setCoincidentHits([]);
     setActiveHitKey(null);
-    setActiveFeature(null);
+    setActiveFeature(NATIONAL_DETAIL);
     setSiteQuery("");
-    setRightTab("sites");
+    setRightTab("detail");
     applyPreset(brand.initialPreset ?? "minimal");
     const layer = sourceLayerRef.current;
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
@@ -1460,6 +1482,8 @@ export default function JurisdictionDashboardPage({
         if (cancelled) return;
         await computeKpis(EMPTY_SELECTION);
         await loadSites(EMPTY_SELECTION);
+        // Open on the US-wide Detail card so the right panel leads with numbers.
+        if (!cancelled) setActiveFeature(NATIONAL_DETAIL);
       } catch {
         // swallow — finally still reveals so the loader can't get stuck
       } finally {
@@ -1859,8 +1883,8 @@ export default function JurisdictionDashboardPage({
                 active={rightTab}
                 onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
                 tabs={[
-                  { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
                   { id: "detail", label: "Detail", Icon: Info },
+                  { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
                 ]}
               />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>
