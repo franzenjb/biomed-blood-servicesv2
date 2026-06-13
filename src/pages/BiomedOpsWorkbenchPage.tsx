@@ -11,7 +11,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Compass,
   Layers,
   HelpCircle,
   Home,
@@ -2114,12 +2113,6 @@ export default function BiomedOpsWorkbenchPage({
     }
   }
 
-  const openTour = useCallback(() => {
-    setTourActive(true);
-    setLeftOpen(false);
-    setRightOpen(false);
-  }, []);
-
   // ---- Geography drill-down (division → region → district) --------------
   // Pick the source layer that carries jurisdiction NAME fields (prefer the
   // FY25 / ZIP data layer with the widest coverage), then cache it.
@@ -2789,12 +2782,6 @@ export default function BiomedOpsWorkbenchPage({
           <RotateCcw aria-hidden="true" size={16} />
           Reset map
         </button>
-        {!tourActive && (
-          <button type="button" className="rcbar__btn" onClick={openTour}>
-            <Compass aria-hidden="true" size={16} />
-            Region tour
-          </button>
-        )}
         <button type="button" className="rcbar__icon" onClick={() => setHelpOpen(true)} aria-label="Help" title="Help">
           <HelpCircle aria-hidden="true" size={18} />
         </button>
