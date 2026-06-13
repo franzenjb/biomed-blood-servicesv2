@@ -35,6 +35,8 @@ import { computeSelectionZoomExtent, drawSelectionOutline, queryBoundaryGeometry
 import LayerList from "../components/mapshell/LayerList";
 import MapTabBar from "../components/mapshell/MapTabBar";
 import MapMarkerLegend from "../components/MapMarkerLegend";
+import LayerScorecard from "../components/mapshell/LayerScorecard";
+import { computeLayerScorecard, type ScorecardEntry } from "../utils/biomedScorecard";
 import "../components/mapshell/mapshell.css";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
@@ -844,6 +846,35 @@ export default function JurisdictionDashboardPage({
   // The name field actually chosen for each level (the one that yields names,
   // not codes) on the source layer.
   const chosenFieldRef = useRef<Partial<Record<LevelId, string>>>({});
+  const [scorecard, setScorecard] = useState<ScorecardEntry[]>([]);
+  const [scorecardLoading, setScorecardLoading] = useState(false);
+
+  // Detail scorecard: per-visible-layer counts scoped to the geography filter.
+  // Recomputes on selection or layer-visibility change.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setScorecard([]);
+      return;
+    }
+    const map = getMapElementMap(mapRef.current);
+    if (!map) return;
+    let cancelled = false;
+    setScorecardLoading(true);
+    void computeLayerScorecard(map, selection, chosenFieldRef.current)
+      .then((entries) => {
+        if (cancelled) return;
+        setScorecard(entries);
+        setScorecardLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setScorecard([]);
+        setScorecardLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selection, layerSnaps, isAuthenticated]);
 
   // Fail-open loader so a slow ArcGIS init can never leave the loader stuck.
   useEffect(() => {
@@ -1905,14 +1936,27 @@ export default function JurisdictionDashboardPage({
                       </div>
                     </section>
                   )}
-                  {activeFeature ? (
-                    <CleanFeatureCard feature={activeFeature} geoStats={geoStats} />
+                  {activeFeature && activeFeature.category !== "geography" ? (
+                    <>
+                      <button
+                        type="button"
+                        className="jd__scorecard-back"
+                        onClick={() => setActiveFeature(null)}
+                      >
+                        <ChevronLeft aria-hidden="true" size={15} /> Back to summary
+                      </button>
+                      <CleanFeatureCard feature={activeFeature} geoStats={geoStats} />
+                    </>
+                  ) : coincidentHits.length > 1 ? (
+                    <p className="jd__empty">Select one of the stacked features above.</p>
                   ) : (
-                    <p className="jd__empty">
-                      {coincidentHits.length > 1
-                        ? "Select one of the stacked features above."
-                        : "Click a feature on the map, or pick a site, to see a clean detail card here."}
-                    </p>
+                    <LayerScorecard
+                      testId="jd-scorecard"
+                      entries={scorecard}
+                      loading={scorecardLoading}
+                      scopeLabel={selection.district || selection.region || selection.division || "BioMed National"}
+                      emptyHint="Turn on layers in the Layers tab to see their counts here."
+                    />
                   )}
                 </>
               )}
