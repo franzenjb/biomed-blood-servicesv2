@@ -319,12 +319,11 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
     await expect(page.getByText("FY25 Red Cell Drives")).toBeVisible();
     await expect(page.getByText("FY25 SDP Units")).toBeVisible();
-    // Shared shell: three left tabs (Search · Layers · Geography). The cascading
-    // geography drill-down lives behind the Geography tab (not clickable here —
-    // the sign-in gate overlays the panel when unauthenticated).
-    await expect(page.getByTestId("jd-tab-search")).toBeVisible();
-    await expect(page.getByTestId("jd-tab-layers")).toBeVisible();
+    // Two left tabs (Geography · Layers); Geography opens first. Feature search
+    // was dropped from the dashboard — address search lives on the map (top-right).
+    await expect(page.getByTestId("jd-tab-search")).toHaveCount(0);
     await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
+    await expect(page.getByTestId("jd-tab-layers")).toBeVisible();
     // Standard ArcGIS controls
     const jdWidgetOrder = await page.getByTestId("jd-arcgis").evaluate((element) =>
       Array.from(element.children)
