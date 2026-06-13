@@ -3021,38 +3021,16 @@ export default function BiomedOpsWorkbenchPage({
               <ChevronRight aria-hidden="true" size={17} />
             </button>
           </div>
-          <div className="opsv2__right-tabs" role="tablist" aria-label={`${resultLabel} result views`}>
-            <button
-              type="button"
-              className={rightTab === "current" ? "is-active" : ""}
-              onClick={() => setRightTab("current")}
-              role="tab"
-              aria-selected={rightTab === "current"}
-            >
-              <SlidersHorizontal aria-hidden="true" size={17} />
-              Current
-            </button>
-            <button
-              type="button"
-              className={rightTab === "detail" ? "is-active" : ""}
-              onClick={() => setRightTab("detail")}
-              role="tab"
-              aria-selected={rightTab === "detail"}
-            >
-              <Info aria-hidden="true" size={17} />
-              Detail
-            </button>
-            <button
-              type="button"
-              className={rightTab === "list" ? "is-active" : ""}
-              onClick={() => setRightTab("list")}
-              role="tab"
-              aria-selected={rightTab === "list"}
-            >
-              <List aria-hidden="true" size={17} />
-              List
-            </button>
-          </div>
+          <MapTabBar
+            ariaLabel={`${resultLabel} result views`}
+            active={rightTab}
+            onSelect={setRightTab}
+            tabs={[
+              { id: "current", label: "Current", Icon: SlidersHorizontal },
+              { id: "detail", label: "Detail", Icon: Info },
+              { id: "list", label: "List", Icon: List },
+            ]}
+          />
 
           <div className="opsv2__right-body">
             {rightTab === "current" && (

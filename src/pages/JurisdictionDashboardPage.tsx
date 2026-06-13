@@ -14,8 +14,10 @@ import {
   ChevronLeft,
   ChevronRight,
   HelpCircle,
+  Info,
   Home,
   Layers,
+  List,
   MapPin,
   RotateCcw,
   Search,
@@ -1752,14 +1754,15 @@ export default function JurisdictionDashboardPage({
               </button>
             </div>
 
-            <div className="jd__tabs" role="tablist">
-              <button type="button" role="tab" aria-selected={rightTab === "sites"} className={rightTab === "sites" ? "is-active" : ""} onClick={() => { setRightTab("sites"); void zoomToSites(); }}>
-                Sites {sites.length > 0 && <b>{sites.length}</b>}
-              </button>
-              <button type="button" role="tab" aria-selected={rightTab === "detail"} className={rightTab === "detail" ? "is-active" : ""} onClick={() => setRightTab("detail")}>
-                Detail
-              </button>
-            </div>
+            <MapTabBar
+              ariaLabel="Result views"
+              active={rightTab}
+              onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
+              tabs={[
+                { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
+                { id: "detail", label: "Detail", Icon: Info },
+              ]}
+            />
 
             <div className="jd__right-body">
               {rightTab === "sites" ? (
