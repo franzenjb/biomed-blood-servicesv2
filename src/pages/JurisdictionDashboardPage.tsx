@@ -1670,9 +1670,6 @@ export default function JurisdictionDashboardPage({
           {leftOpen && (
           <>
             <div className="jd__panel-top">
-              <Link to="/hub" className="jd__panel-home" aria-label="Home" title="Home">
-                <Home aria-hidden="true" size={16} />
-              </Link>
               <MapTabBar
                 ariaLabel="Sidebar views"
                 active={leftTab}

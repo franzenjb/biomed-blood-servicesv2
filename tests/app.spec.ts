@@ -341,7 +341,9 @@ test.describe("Maps (shared shell)", () => {
     // Collapsible sidebars (livessaved rail model) + Home in the left sidebar
     await expect(page.getByRole("button", { name: "Collapse panel" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Collapse sites" })).toBeVisible();
-    await expect(page.locator(".jd__panel-home")).toHaveAttribute("href", "/hub");
+    // Single Home — the app-bar one (.rcbar__home, asserted above). No duplicate
+    // Home inside the left panel tab row.
+    await expect(page.locator(".jd__panel-home")).toHaveCount(0);
   });
 
   test("/hospital-network renders the hospital dashboard on the jurisdiction engine", async ({ page }) => {

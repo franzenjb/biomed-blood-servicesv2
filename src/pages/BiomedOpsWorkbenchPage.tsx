@@ -2862,9 +2862,6 @@ export default function BiomedOpsWorkbenchPage({
         {leftOpen && (
         <>
           <div className="opsv2__panel-top">
-            <Link to="/hub" className="opsv2__panel-home" aria-label="Home" title="Home">
-              <Home aria-hidden="true" size={16} />
-            </Link>
             <MapTabBar
               ariaLabel="Sidebar views"
               active={leftTab}
