@@ -2200,7 +2200,21 @@ export default function BiomedOpsWorkbenchPage({
     }
     try {
       const iconExtent = await computeSelectionZoomExtent(map, sel, geoChosenFieldRef.current);
-      if (iconExtent) await view.goTo(iconExtent, { duration: 650 });
+      if (iconExtent) {
+        await view.goTo(iconExtent, { duration: 650 });
+      } else {
+        // Fallback (matches the Jurisdiction Dashboard): no scopable point icons
+        // AND no boundary polygon for this level — region/district have no
+        // dedicated "Biomed Region/District" boundary layer to frame, so division
+        // zoomed but they did not. Use the geo source layer's filtered extent.
+        const layer = geoSourceLayerRef.current;
+        if (layer) {
+          const extentResult = await (layer as FeatureLayer & {
+            queryExtent?: (q: unknown) => Promise<{ extent?: Extent | null }>;
+          }).queryExtent?.({ where: buildWhereForLayer(layer, sel, geoChosenFieldRef.current) });
+          if (extentResult?.extent) await view.goTo(extentResult.extent.clone().expand(1.15), { duration: 650 });
+        }
+      }
     } catch {
       // navigation can be interrupted; the filter still applies
     }

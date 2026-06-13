@@ -9,6 +9,7 @@ import type Layer from "@arcgis/core/layers/Layer";
 import type FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import type Field from "@arcgis/core/layers/support/Field";
 import type MapView from "@arcgis/core/views/MapView";
+import type Geometry from "@arcgis/core/geometry/Geometry";
 import Extent from "@arcgis/core/geometry/Extent";
 import { collectArcJurisdictionLayers } from "./biomedMapSuite";
 
@@ -206,6 +207,35 @@ export async function drawSelectionOutline(
     return outline;
   } catch {
     // outline is decorative; selection filtering still applies
+    return null;
+  }
+}
+
+// The selected geography's BOUNDARY polygon geometry (deepest selected level),
+// in the boundary layer's own spatial reference. Used to spatially scope counts
+// of site layers that carry NO jurisdiction fields (hospitals, warehouses, …):
+// a feature is "in" the selection if its point intersects this polygon.
+export async function queryBoundaryGeometry(
+  map: ArcGISMap,
+  selection: Selection,
+  chosen: Partial<Record<LevelId, string>>,
+): Promise<Geometry | null> {
+  const level = selection.district ? "district" : selection.region ? "region" : selection.division ? "division" : null;
+  if (!level) return null;
+  try {
+    const boundary = collectArcJurisdictionLayers(map)
+      .filter(isQueryableFeatureLayer)
+      .find((candidate) => (candidate.title ?? "").toLowerCase().includes(`biomed ${level}`));
+    if (!boundary) return null;
+    await boundary.load?.();
+    const query = boundary.createQuery();
+    query.where = buildWhereForLayer(boundary, selection, chosen);
+    query.returnGeometry = true;
+    query.outFields = [];
+    query.num = 1;
+    const result = await boundary.queryFeatures(query);
+    return result.features[0]?.geometry ?? null;
+  } catch {
     return null;
   }
 }

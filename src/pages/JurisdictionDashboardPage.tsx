@@ -31,7 +31,7 @@ import {
   type ArcJurisdictionSupplementalLayerSource,
 } from "../config/arcgisLayers";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
-import { computeSelectionZoomExtent, drawSelectionOutline } from "../utils/biomedGeographyFilter";
+import { computeSelectionZoomExtent, drawSelectionOutline, queryBoundaryGeometry } from "../utils/biomedGeographyFilter";
 import { runBiomedFeatureSearch, type BiomedSearchResult, type SearchStatus } from "../utils/biomedFeatureSearch";
 import LayerList from "../components/mapshell/LayerList";
 import FeatureSearch from "../components/mapshell/FeatureSearch";
@@ -981,6 +981,12 @@ export default function JurisdictionDashboardPage({
       setKpiLoading(true);
       const map = getMapElementMap(mapRef.current);
       const layers = collectArcJurisdictionLayers(map).filter(isQueryableFeatureLayer);
+      // Site layers (hospitals, warehouses, distribution, …) carry NO BioMed
+      // jurisdiction fields, so attribute-scoped counts return 0. Scope SPATIALLY
+      // instead: count features whose point falls inside the selected boundary
+      // polygon. With no selection, count the network nationally.
+      const hasSelection = LEVELS.some((level) => sel[level]);
+      const boundaryGeom = hasSelection && map ? await queryBoundaryGeometry(map, sel, chosenFieldRef.current) : null;
       const next: Record<string, number | null> = {};
       await Promise.all(
         brand.infraKpis.map(async (def) => {
@@ -993,11 +999,15 @@ export default function JurisdictionDashboardPage({
             return;
           }
           try {
-            // Network totals ("what assets do we have?"). The site layers don't
-            // carry reliable BioMed jurisdiction values, so geography-scoped
-            // counts silently return 0 — count nationally; the map + site list
-            // still scope to the selection.
-            next[def.key] = await target.queryFeatureCount({ where: "1=1" } as never);
+            if (boundaryGeom) {
+              next[def.key] = await target.queryFeatureCount({
+                geometry: boundaryGeom,
+                spatialRelationship: "intersects",
+                where: "1=1",
+              } as never);
+            } else {
+              next[def.key] = await target.queryFeatureCount({ where: "1=1" } as never);
+            }
           } catch {
             next[def.key] = null;
           }
