@@ -237,30 +237,21 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
-    // Layer toggles live in the Filter tab (Geography, with search on top, is the default).
+    // Three left tabs: Search · Layers · Geography (shared shell). Layer toggles
+    // live in the Layers tab.
     await page.getByRole("tab", { name: "Layers" }).click();
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
-    // Search now lives at the top of the Geography tab (no separate Search tab).
-    await expect(page.getByRole("tab", { name: "Search" })).toHaveCount(0);
-    await page.getByRole("tab", { name: "Geography" }).click();
+    // Search is its own tab now.
+    await page.getByRole("tab", { name: "Search" }).click();
     await page.getByPlaceholder("Search counties, regions, sites").fill("Dallas");
     await expect(page.getByTestId("ops-search-results")).toBeVisible();
-    await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "true");
-    await expect(page.locator(".mshell__layers")).toHaveCount(0); // layers are a separate tab — not in the DOM while searching on Geography
-    const searchResultBottomGap = await page.evaluate(() => {
-      const panel = document.querySelector(".opsv2__panel--left")?.getBoundingClientRect();
-      const results = document.querySelector(".opsv2__results")?.getBoundingClientRect();
-      return panel && results ? panel.bottom - results.bottom : Number.POSITIVE_INFINITY;
-    });
-    expect(searchResultBottomGap).toBeLessThanOrEqual(24);
     await page.getByPlaceholder("Search counties, regions, sites").fill("");
-    await expect(page.locator(".opsv2__panel--left")).toHaveAttribute("data-has-query", "false");
 
-    // Geography drill-down tab (ported from the dashboard): three cascading
-    // selects, child levels disabled until the parent is chosen.
+    // Geography drill-down tab — three cascading selects, child levels disabled
+    // until the parent is chosen.
     await page.getByRole("tab", { name: "Geography" }).click();
     await expect(page.getByTestId("ops-geo-division")).toBeVisible();
     await expect(page.getByTestId("ops-geo-region")).toBeDisabled();
@@ -327,10 +318,12 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
     await expect(page.getByText("FY25 Red Cell Drives")).toBeVisible();
     await expect(page.getByText("FY25 SDP Units")).toBeVisible();
-    // Cascading jurisdiction filters; region/district disabled until parent picked
-    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
-    await expect(page.getByTestId("jd-filter-region")).toBeDisabled();
-    await expect(page.getByTestId("jd-filter-district")).toBeDisabled();
+    // Shared shell: three left tabs (Search · Layers · Geography). The cascading
+    // geography drill-down lives behind the Geography tab (not clickable here —
+    // the sign-in gate overlays the panel when unauthenticated).
+    await expect(page.getByTestId("jd-tab-search")).toBeVisible();
+    await expect(page.getByTestId("jd-tab-layers")).toBeVisible();
+    await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
     // Standard ArcGIS controls
     const jdWidgetOrder = await page.getByTestId("jd-arcgis").evaluate((element) =>
       Array.from(element.children)
@@ -362,7 +355,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(kpis.getByText("IRL Labs")).toBeVisible();
     await expect(kpis.getByText("Portfolio Footprints")).toBeVisible();
     await expect(kpis.getByText("FY25 Red Cell Drives")).toHaveCount(0);
-    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
+    await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
   });
 
   // Retired routes fall through to the home redirect.
@@ -420,7 +413,7 @@ test.describe("Explore Regions", () => {
     await expect(page.locator(".rcbar__titles h1")).toHaveText("Explore Regions");
     // Same live KPI band + region filters as the Jurisdiction Dashboard.
     await expect(page.getByTestId("jd-kpis").locator(".jd__kpi")).toHaveCount(5);
-    await expect(page.getByTestId("jd-filter-division")).toBeVisible();
+    await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
     // Branded sign-in gate (real private layers, not synthetic data).
     await expect(
       page.getByRole("heading", { name: "Sign in to explore regions" }),

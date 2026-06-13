@@ -32,7 +32,9 @@ import {
 } from "../config/arcgisLayers";
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import { computeSelectionZoomExtent, drawSelectionOutline } from "../utils/biomedGeographyFilter";
+import { runBiomedFeatureSearch, type BiomedSearchResult, type SearchStatus } from "../utils/biomedFeatureSearch";
 import LayerList from "../components/mapshell/LayerList";
+import FeatureSearch from "../components/mapshell/FeatureSearch";
 import MapTabBar from "../components/mapshell/MapTabBar";
 import "../components/mapshell/mapshell.css";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
@@ -808,7 +810,11 @@ export default function JurisdictionDashboardPage({
   const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
   const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
-  const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
+  const [leftTab, setLeftTab] = useState<"search" | "filters" | "layers">("search");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchStatus, setSearchStatus] = useState<SearchStatus>("idle");
+  const [searchResults, setSearchResults] = useState<BiomedSearchResult[]>([]);
+  const searchRunRef = useRef(0);
   const [preset, setPreset] = useState<PresetId>("minimal");
   const [layerSnaps, setLayerSnaps] = useState<BioMedLayerSnapshot[]>([]);
   const [layerGroupsOpen, setLayerGroupsOpen] = useState<Record<string, boolean>>({});
@@ -1261,6 +1267,45 @@ export default function JurisdictionDashboardPage({
     setRightOpen(true);
   }, []);
 
+  // Feature search (Search tab) — shared with the Atlas via the same util.
+  const selectSearchResult = useCallback(async (result: BiomedSearchResult) => {
+    const view = mapRef.current?.view as MapView | undefined;
+    const geometry = result.graphic.geometry as Geometry | null | undefined;
+    if (view && geometry) {
+      try {
+        await view.goTo(zoomTargetForGeometry(geometry), { duration: 650 });
+      } catch { /* navigation interrupted */ }
+    }
+    void applyGraphicSelection(result.graphic);
+    setRightOpen(true);
+  }, [applyGraphicSelection]);
+
+  useEffect(() => {
+    const term = searchQuery.trim();
+    if (term.length < 2) {
+      setSearchResults([]);
+      setSearchStatus(!isAuthenticated && term.length > 0 ? "blocked" : "idle");
+      return;
+    }
+    if (!isAuthenticated) { setSearchStatus("blocked"); setSearchResults([]); return; }
+    searchRunRef.current += 1;
+    const runId = searchRunRef.current;
+    setSearchStatus("searching");
+    const handle = window.setTimeout(async () => {
+      const map = getMapElementMap(mapRef.current);
+      if (!map) { setSearchStatus("error"); return; }
+      try {
+        const results = await runBiomedFeatureSearch(map, term);
+        if (runId !== searchRunRef.current) return;
+        setSearchResults(results);
+        setSearchStatus(results.length > 0 ? "ready" : "empty");
+      } catch {
+        if (runId === searchRunRef.current) setSearchStatus("error");
+      }
+    }, 250);
+    return () => window.clearTimeout(handle);
+  }, [searchQuery, isAuthenticated]);
+
   const selectCoincidentHit = useCallback(
     (hit: CoincidentHit) => {
       setActiveHitKey(hit.key);
@@ -1600,8 +1645,8 @@ export default function JurisdictionDashboardPage({
                 <Home aria-hidden="true" size={16} />
               </Link>
               <div className="jd__panel-head-text">
-                <h2>{leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
-                <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
+                <h2>{leftTab === "search" ? "Search" : leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
+                <p>{leftTab === "search" ? "Find a county, region, district, or site." : leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
               <button type="button" className="jd__collapse-btn" aria-label="Collapse panel" title="Hide panel" onClick={() => setLeftOpen(false)}>
                 <ChevronLeft aria-hidden="true" size={16} />
@@ -1614,12 +1659,26 @@ export default function JurisdictionDashboardPage({
               active={leftTab}
               onSelect={setLeftTab}
               tabs={[
-                { id: "filters", label: "Geography", Icon: MapPin, testId: "jd-tab-filters" },
+                { id: "search", label: "Search", Icon: Search, testId: "jd-tab-search" },
                 { id: "layers", label: "Layers", Icon: Layers, badge: layerSnaps.length > 0 ? layerSnaps.filter((s) => s.visible).length : undefined, testId: "jd-tab-layers" },
+                { id: "filters", label: "Geography", Icon: MapPin, testId: "jd-tab-filters" },
               ]}
             />
 
-            {leftTab === "layers" ? (
+            {leftTab === "search" ? (
+              <FeatureSearch
+                query={searchQuery}
+                onQueryChange={setSearchQuery}
+                status={searchStatus}
+                resultsTestId="jd-search-results"
+                results={searchResults.map((result) => ({
+                  id: result.id,
+                  title: result.title,
+                  subtitle: result.layerTitle,
+                  onSelect: () => void selectSearchResult(result),
+                }))}
+              />
+            ) : leftTab === "layers" ? (
               !isAuthenticated ? (
                 <div className="mshell__layers"><p className="mshell__empty">Sign in to load map layers.</p></div>
               ) : (

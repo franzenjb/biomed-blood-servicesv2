@@ -30,6 +30,7 @@ import RcAppBar from "../components/RcAppBar";
 import RegionTour, { type TourSlideContext, type TourMobileStats } from "../maps/RegionTour";
 import LayerList from "../components/mapshell/LayerList";
 import MapTabBar from "../components/mapshell/MapTabBar";
+import FeatureSearch from "../components/mapshell/FeatureSearch";
 import "../components/mapshell/mapshell.css";
 import {
   arcJurisdictionMapSource,
@@ -81,7 +82,7 @@ import "./BiomedOpsWorkbenchPage.css";
 type WorkbenchPreset = BioMedPresenterModeId | "default-workbench" | "all-layers" | "clean-map";
 type WatchHandle = { remove?: () => void };
 type RightTab = "current" | "detail" | "list";
-type LeftTab = "filter" | "geography";
+type LeftTab = "search" | "filter" | "geography";
 type ArcgisSearchElement = HTMLElement & {
   popupDisabled?: boolean;
   popupTemplate?: unknown;
@@ -1522,7 +1523,7 @@ export default function BiomedOpsWorkbenchPage({
   const [rightOpen, setRightOpen] = useState(true);
   const [rightTab, setRightTab] = useState<RightTab>("current");
   // Geography first: it now carries the search box (top) + the drill-down.
-  const [leftTab, setLeftTab] = useState<LeftTab>("geography");
+  const [leftTab, setLeftTab] = useState<LeftTab>("search");
   const [mapReady, setMapReady] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tourActive, setTourActive] = useState(false);
@@ -2876,8 +2877,9 @@ export default function BiomedOpsWorkbenchPage({
             active={leftTab}
             onSelect={setLeftTab}
             tabs={[
-              { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
+              { id: "search", label: "Search", Icon: Search, testId: "ops-tab-search" },
               { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
+              { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
             ]}
           />
           {leftTab === "filter" && (
@@ -2922,37 +2924,22 @@ export default function BiomedOpsWorkbenchPage({
           />
           </>
           )}
+          {leftTab === "search" && (
+            <FeatureSearch
+              query={query}
+              onQueryChange={setQuery}
+              status={searchStatus}
+              resultsTestId="ops-search-results"
+              results={searchResults.map((result) => ({
+                id: result.id,
+                title: result.title,
+                subtitle: result.layerTitle,
+                onSelect: () => void selectSearchResult(result),
+              }))}
+            />
+          )}
           {leftTab === "geography" && (
           <>
-          <label className="opsv2__search">
-            <Search aria-hidden="true" size={16} />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search counties, regions, sites" />
-          </label>
-          {query.trim().length > 0 ? (
-            <section className="opsv2__results" data-testid="ops-search-results" aria-label="Map search results">
-              {searchStatus === "idle" && <p>Type at least 2 characters.</p>}
-              {searchStatus === "blocked" && <p>Sign in to search live map features.</p>}
-              {searchStatus === "searching" && <p>Searching BioMed layers...</p>}
-              {searchStatus === "empty" && <p>No matching features found.</p>}
-              {searchStatus === "error" && <p>Search failed. Try a more specific term.</p>}
-              {searchStatus === "ready" && (
-                <>
-                  <div className="opsv2__results-head">
-                    <strong>{searchResults.length} results</strong>
-                    <span>Click to zoom</span>
-                  </div>
-                  <div className="opsv2__results-list">
-                    {searchResults.map((result) => (
-                      <button key={result.id} type="button" className="opsv2__result" onClick={() => void selectSearchResult(result)}>
-                        <strong>{result.title}</strong>
-                        <span>{result.layerTitle}</span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </section>
-          ) : (
           <div className="opsv2__geo">
             <p className="opsv2__geo-intro">Drill from division to district. Filters the map and zooms to the selection.</p>
             {LEVELS.map((level) => {
@@ -2993,7 +2980,6 @@ export default function BiomedOpsWorkbenchPage({
             )}
             {!isAuthenticated && <p className="opsv2__search-hint">Sign in to filter by geography.</p>}
           </div>
-          )}
           </>
           )}
         </>
