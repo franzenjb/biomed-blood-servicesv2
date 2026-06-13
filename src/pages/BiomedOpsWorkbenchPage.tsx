@@ -271,8 +271,14 @@ function featureDisplayTitle(feature: MasterFeatureSummary) {
     "Facility Name",
     "Facility",
     "Site Name",
+    "Hospital Name",
+    "Hospital",
+    "Account Name",
+    "Account",
+    "Organization Name",
+    "Organization",
     "Site",
-    "Hospital"
+    "Name"
   ]);
   const title = (feature.category === "geography" ? feature.title : preferredPlaceTitle || feature.title).trim();
   const layerTitle = feature.layerTitle.toLowerCase();
@@ -1215,6 +1221,7 @@ type CoincidentHit = {
   key: string;
   graphic: Graphic;
   title: string;
+  subtitle: string;
   layerTitle: string;
   category: MasterLayerCategory;
   isPoint: boolean;
@@ -1234,12 +1241,18 @@ function collectOperationalHits(results: unknown[], map?: ReturnType<typeof getM
     if (seen.has(key)) return;
     seen.add(key);
     const layerTitle = hitGraphicLayerTitle(graphic);
-    const summary = summarizeMasterFeature(graphic, layerTitle);
+    const summary = summarizeMasterFeature(graphic, layerTitle, true);
+    const title = featureDisplayTitle(summary) || layerTitle || "Feature";
+    // Distinguish stacked features that share a title (e.g. 9 "Hospital
+    // Locations"): show each one's address/place, falling back to its kind.
+    const address = composeFeatureAddress(summary);
+    const subtitle = address && address !== title ? address : featureKindLabel(summary);
     ranked.push({
       hit: {
         key,
         graphic,
-        title: featureDisplayTitle(summary) || layerTitle || "Feature",
+        title,
+        subtitle: subtitle || summary.layerTitle || layerTitle,
         layerTitle: summary.layerTitle || layerTitle,
         category: summary.category,
         isPoint: layer?.geometryType === "point",
@@ -2018,7 +2031,20 @@ export default function BiomedOpsWorkbenchPage({
     if (!layer) return;
     layer.visible = !layer.visible;
     if (layer.visible) revealParentGroups(layer);
+    else clearSelectionFromLayer(safeLayerTitle(layer));
     refreshLayers();
+  }
+
+  // Turning a layer OFF must drop any detail card / stacked-marker picker that
+  // came from it — otherwise the right panel shows a feature no longer on the
+  // map (e.g. a hospital card lingering after Hospital Locations is hidden).
+  function clearSelectionFromLayer(layerTitle: string) {
+    setCoincidentHits((hits) => hits.filter((hit) => hit.layerTitle !== layerTitle));
+    setSelectedFeature((current) => (current && current.layerTitle === layerTitle ? null : current));
+    setSelectedGraphic((current) => {
+      const currentTitle = current ? hitGraphicLayerTitle(current) : "";
+      return currentTitle === layerTitle ? null : current;
+    });
   }
 
   // A child of a hidden GroupLayer renders nothing — turning a layer on must
@@ -2048,6 +2074,7 @@ export default function BiomedOpsWorkbenchPage({
       if (layer) {
         layer.visible = visible;
         if (visible) revealParentGroups(layer);
+        else clearSelectionFromLayer(safeLayerTitle(layer));
       }
     });
     refreshLayers();
@@ -3045,7 +3072,7 @@ export default function BiomedOpsWorkbenchPage({
                             onClick={() => selectCoincidentHit(hit)}
                           >
                             <strong>{hit.title}</strong>
-                            <span>{hit.layerTitle}</span>
+                            <span>{hit.subtitle}</span>
                           </button>
                         );
                       })}
