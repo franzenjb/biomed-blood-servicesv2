@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import NotesPanel from "./components/NotesPanel";
+// Notes/cohort FAB temporarily hidden (2026-06-13, Dragon's request). Restore by
+// re-adding the import + <NotesPanel /> below.
+// import NotesPanel from "./components/NotesPanel";
 import { GlobalAboutTheData } from "./components/DataSourcesModal";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -54,7 +56,7 @@ export default function App() {
         </Routes>
       </Suspense>
       <GlobalAboutTheData />
-      <NotesPanel />
+      {/* <NotesPanel /> — temporarily hidden per Dragon (2026-06-13) */}
     </div>
   );
 }

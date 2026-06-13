@@ -46,7 +46,9 @@ test.describe("Hub", () => {
   });
 });
 
-test.describe("Notes panel", () => {
+// Notes/cohort FAB temporarily hidden (2026-06-13, Dragon's request). Re-enable
+// this suite when <NotesPanel /> is restored in App.tsx.
+test.describe.skip("Notes panel", () => {
   test("adds, edits, completes, reopens, and removes a universal task", async ({ page }) => {
     const noteText = `Playwright local notes probe ${Date.now()}`;
     const editedText = `${noteText} - edited`;
