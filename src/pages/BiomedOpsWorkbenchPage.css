@@ -627,6 +627,25 @@
   background: #fff;
 }
 
+.opsv2__scorecard-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 12px 12px 0;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid #e1e5ea;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--arc-gray-700, #4a4a4a);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.opsv2__scorecard-back:hover {
+  border-color: var(--arc-red, #ed1b2e);
+  color: var(--arc-red, #ed1b2e);
+}
+
 .opsv2__coincident {
   border: 1px solid #e1e5ea;
   border-radius: 8px;

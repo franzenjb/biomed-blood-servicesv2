@@ -5,6 +5,54 @@
    Class prefix: .mshell__
    ─────────────────────────────────────────────────────────────────────────── */
 
+/* ── Layer scorecard: per-layer counts scoped to the geography filter ───── */
+.mshell__scorecard {
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mshell__scorecard-scope {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mshell-red, #ed1b2e);
+}
+.mshell__scorecard-empty {
+  font-size: 13px;
+  color: var(--mshell-ink-soft, #5b6976);
+}
+.mshell__scorecard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mshell__scorecard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--mshell-line-soft, #e9edf1);
+}
+.mshell__scorecard-row:last-child {
+  border-bottom: none;
+}
+.mshell__scorecard-name {
+  font-size: 14px;
+  color: var(--mshell-ink, #16212c);
+  min-width: 0;
+}
+.mshell__scorecard-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--mshell-ink, #16212c);
+  flex: none;
+}
+
 /* ONE typeface across the operational map-tool chrome. The app inherits an
    editorial 3-font brand (serif Libre Baskerville headlines + IBM Plex Mono
    data + sans body) that suits the decks/story pages but reads as a jumble in

@@ -29,7 +29,8 @@ import RcAppBar from "../components/RcAppBar";
 import RegionTour, { type TourSlideContext, type TourMobileStats } from "../maps/RegionTour";
 import LayerList from "../components/mapshell/LayerList";
 import MapTabBar from "../components/mapshell/MapTabBar";
-import FeatureSearch from "../components/mapshell/FeatureSearch";
+import LayerScorecard from "../components/mapshell/LayerScorecard";
+import { computeLayerScorecard, type ScorecardEntry } from "../utils/biomedScorecard";
 import "../components/mapshell/mapshell.css";
 import {
   arcJurisdictionMapSource,
@@ -1548,7 +1549,37 @@ export default function BiomedOpsWorkbenchPage({
   const [geoOptions, setGeoOptions] = useState<Record<LevelId, string[]>>({ division: [], region: [], district: [] });
   const geoSourceLayerRef = useRef<FeatureLayer | null>(null);
   const geoChosenFieldRef = useRef<Partial<Record<LevelId, string>>>({});
+  // Detail scorecard: per-visible-layer counts, scoped to the geography filter.
+  const [scorecard, setScorecard] = useState<ScorecardEntry[]>([]);
+  const [scorecardLoading, setScorecardLoading] = useState(false);
   const { status, userId, error, isAuthenticated, signIn } = useRedCrossArcGISAuth();
+
+  // Recompute the Detail scorecard whenever the geography filter or the set of
+  // visible layers changes — the right panel always reflects the current inputs.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setScorecard([]);
+      return;
+    }
+    const map = getMapElementMap(mapRef.current);
+    if (!map) return;
+    let cancelled = false;
+    setScorecardLoading(true);
+    void computeLayerScorecard(map, geoSelection, geoChosenFieldRef.current)
+      .then((entries) => {
+        if (cancelled) return;
+        setScorecard(entries);
+        setScorecardLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setScorecard([]);
+        setScorecardLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [geoSelection, layers, isAuthenticated]);
 
   // Deep-link: /ops?tour=1 opens the guided region tour straight away.
   useEffect(() => {
@@ -3071,15 +3102,30 @@ export default function BiomedOpsWorkbenchPage({
                   data-testid={selectedFeature?.category === "hospitals" ? "ops-hospital-feature-card" : "ops-selected-feature-card"}
                 >
                   {selectedFeature ? (
-                    selectedFeature.category === "hospitals" ? (
-                      <HospitalFeatureCard feature={selectedFeature} />
-                    ) : (
-                      <FeatureInfoCard feature={selectedFeature} />
-                    )
+                    <>
+                      <button
+                        type="button"
+                        className="opsv2__scorecard-back"
+                        onClick={() => { setSelectedFeature(null); setSelectedGraphic(null); setCoincidentHits([]); }}
+                      >
+                        <ChevronLeft aria-hidden="true" size={15} /> Back to summary
+                      </button>
+                      {selectedFeature.category === "hospitals" ? (
+                        <HospitalFeatureCard feature={selectedFeature} />
+                      ) : (
+                        <FeatureInfoCard feature={selectedFeature} />
+                      )}
+                    </>
+                  ) : coincidentHits.length > 1 ? (
+                    <p className="opsv2__empty">Select one of the stacked features above.</p>
                   ) : (
-                    <p className="opsv2__empty">
-                      {coincidentHits.length > 1 ? "Select one of the stacked features above." : "No feature selected."}
-                    </p>
+                    <LayerScorecard
+                      testId="ops-scorecard"
+                      entries={scorecard}
+                      loading={scorecardLoading}
+                      scopeLabel={geoSelection.district || geoSelection.region || geoSelection.division || "BioMed National"}
+                      emptyHint="Turn on layers in the Layers tab to see their counts here."
+                    />
                   )}
                 </section>
               </>

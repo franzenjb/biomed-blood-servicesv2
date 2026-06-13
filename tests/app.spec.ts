@@ -258,11 +258,11 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.getByText("Open Street Map")).toHaveCount(0);
+    // Detail leads with the geography-scoped layer scorecard (no feature clicked).
     await page.getByRole("tab", { name: "Detail" }).click();
-    await expect(page.getByText("No feature selected.")).toBeVisible();
+    await expect(page.getByTestId("ops-scorecard")).toBeVisible();
     await expect(page.getByText("Available fields")).toHaveCount(0);
     await expect(page.getByText("Source fields")).toHaveCount(0);
-    await expect(page.getByText("Additional details")).toHaveCount(0);
     await page.getByRole("tab", { name: "List" }).click();
     await expect(page.getByText("Active Layer Stack")).toBeVisible();
     await expect(page.getByText("Search Results")).toHaveCount(0);
