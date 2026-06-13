@@ -1224,6 +1224,34 @@ export default function JurisdictionDashboardPage({
     }
   }, []);
 
+  // When the user filters by geography, surface that area's Detail card (FY25
+  // totals for the division/region/district) instead of leaving the panel on
+  // the Sites list — the filtered area's story is what they just asked for.
+  const showSelectionDetail = useCallback(async (sel: Selection) => {
+    const map = getMapElementMap(mapRef.current);
+    const level = sel.district ? "district" : sel.region ? "region" : sel.division ? "division" : null;
+    if (!map || !level) return;
+    try {
+      const boundary = collectArcJurisdictionLayers(map)
+        .filter(isQueryableFeatureLayer)
+        .find((candidate) => (candidate.title ?? "").toLowerCase().includes(`biomed ${level}`));
+      if (!boundary) return;
+      await boundary.load?.();
+      const query = boundary.createQuery();
+      query.where = buildWhereForLayer(boundary, sel, chosenFieldRef.current);
+      query.returnGeometry = false;
+      query.outFields = ["*"];
+      query.num = 1;
+      const result = await boundary.queryFeatures(query);
+      const graphic = result.features?.[0];
+      if (!graphic) return;
+      setActiveFeature(summarizeMasterFeature(graphic, boundary.title ?? undefined, true));
+      setRightTab("detail");
+    } catch {
+      // detail is best-effort; the Sites tab is still one click away
+    }
+  }, []);
+
   // React to selection changes (after layers discovered).
   useEffect(() => {
     if (!isAuthenticated || !sourceLayerRef.current) return;
@@ -1250,10 +1278,17 @@ export default function JurisdictionDashboardPage({
           next.district = "";
         }
         void refreshOptionsFor(level, next);
+        if (LEVELS.some((lvl) => next[lvl])) {
+          void showSelectionDetail(next);
+        } else {
+          // Filter fully cleared — drop the geography card, back to the site list.
+          setActiveFeature(null);
+          setRightTab("sites");
+        }
         return next;
       });
     },
-    [refreshOptionsFor],
+    [refreshOptionsFor, showSelectionDetail],
   );
 
   const resetAll = useCallback(() => {
