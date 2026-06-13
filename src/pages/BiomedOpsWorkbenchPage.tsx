@@ -2860,28 +2860,28 @@ export default function BiomedOpsWorkbenchPage({
         )}
         {leftOpen && (
         <>
-          <div className="opsv2__panel-head">
+          <div className="opsv2__panel-top">
             <Link to="/hub" className="opsv2__panel-home" aria-label="Home" title="Home">
               <Home aria-hidden="true" size={16} />
             </Link>
-            <div>
-              <h2>Layer Controls</h2>
-              <p>{layerCounts.visible} active of {layerCounts.total} layers.</p>
-            </div>
+            <MapTabBar
+              ariaLabel="Sidebar views"
+              active={leftTab}
+              onSelect={setLeftTab}
+              tabs={[
+                { id: "search", label: "Search", Icon: Search, testId: "ops-tab-search" },
+                { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
+                { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
+              ]}
+            />
             <button type="button" className="opsv2__rail-btn" aria-label="Collapse layer controls" onClick={() => setLeftOpen(false)}>
               <ChevronLeft aria-hidden="true" size={18} />
             </button>
           </div>
-          <MapTabBar
-            ariaLabel="Sidebar views"
-            active={leftTab}
-            onSelect={setLeftTab}
-            tabs={[
-              { id: "search", label: "Search", Icon: Search, testId: "ops-tab-search" },
-              { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
-              { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
-            ]}
-          />
+          <div className="opsv2__panel-subhead">
+            <h2>{leftTab === "search" ? "Search" : leftTab === "geography" ? "Filter by Geography" : "Map Layers"}</h2>
+            <p>{leftTab === "search" ? "Find a county, region, district, or site." : leftTab === "geography" ? "Drill from division to district." : `${layerCounts.visible} active of ${layerCounts.total} layers.`}</p>
+          </div>
           {leftTab === "filter" && (
           <>
           <div className="opsv2__layer-actions">
@@ -2997,26 +2997,26 @@ export default function BiomedOpsWorkbenchPage({
         )}
         {rightOpen && (
         <>
-          <div className="opsv2__panel-head">
-            <div>
-              <p className="opsv2__panel-kicker">Results</p>
-              <h2>{currentTitle}</h2>
-              <p>{currentSubtitle}</p>
-            </div>
+          <div className="opsv2__panel-top">
+            <MapTabBar
+              ariaLabel={`${resultLabel} result views`}
+              active={rightTab}
+              onSelect={setRightTab}
+              tabs={[
+                { id: "current", label: "Current", Icon: SlidersHorizontal },
+                { id: "detail", label: "Detail", Icon: Info },
+                { id: "list", label: "List", Icon: List },
+              ]}
+            />
             <button type="button" className="opsv2__rail-btn" aria-label={`Collapse ${resultLabel.toLowerCase()} results`} onClick={() => setRightOpen(false)}>
               <ChevronRight aria-hidden="true" size={17} />
             </button>
           </div>
-          <MapTabBar
-            ariaLabel={`${resultLabel} result views`}
-            active={rightTab}
-            onSelect={setRightTab}
-            tabs={[
-              { id: "current", label: "Current", Icon: SlidersHorizontal },
-              { id: "detail", label: "Detail", Icon: Info },
-              { id: "list", label: "List", Icon: List },
-            ]}
-          />
+          <div className="opsv2__panel-subhead">
+            <p className="opsv2__panel-kicker">Results</p>
+            <h2>{currentTitle}</h2>
+            <p>{currentSubtitle}</p>
+          </div>
 
           <div className="opsv2__right-body">
             {rightTab === "current" && (

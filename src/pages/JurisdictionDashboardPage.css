@@ -491,6 +491,44 @@
   border-bottom: 1px solid var(--arc-gray-100, #e5e5e5);
 }
 
+/* Tabs-on-top panel layout: [Home · tabs · Hide] row, then a contextual
+   sub-header that describes the active tab's content (not above the tabs). */
+.jd__panel-top {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 6px 10px 0;
+}
+.jd__panel-top .mshell__tabs {
+  flex: 1;
+  padding: 0;
+  border-bottom: none;
+}
+.jd__panel-top .jd__panel-home {
+  align-self: center;
+  flex-shrink: 0;
+}
+.jd__panel-top .jd__collapse-btn {
+  align-self: center;
+  flex-shrink: 0;
+}
+.jd__panel-subhead {
+  padding: 10px 16px 12px;
+  border-bottom: 1px solid var(--arc-gray-100, #e5e5e5);
+}
+.jd__panel-subhead h2 {
+  font-family: var(--font-headline, Georgia, serif);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--arc-black, #1a1a1a);
+  line-height: 1.2;
+}
+.jd__panel-subhead p {
+  font-size: 12px;
+  color: var(--arc-gray-500, #737373);
+  margin-top: 2px;
+}
+
 .jd__panel-head > svg {
   color: var(--arc-red, #ed1b2e);
   flex-shrink: 0;

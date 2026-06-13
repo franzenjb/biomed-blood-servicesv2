@@ -462,6 +462,39 @@
   border-bottom: 1px solid #e1e5ea;
 }
 
+/* Tabs-on-top: [Home · tabs · Hide] row, then a contextual sub-header. */
+.opsv2__panel-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 0;
+}
+.opsv2__panel-top .mshell__tabs {
+  flex: 1;
+  padding: 0;
+  border-bottom: none;
+}
+.opsv2__panel-top .opsv2__panel-home,
+.opsv2__panel-top .opsv2__rail-btn {
+  flex-shrink: 0;
+}
+.opsv2__panel-subhead {
+  padding: 10px 20px 13px;
+  border-bottom: 1px solid #e1e5ea;
+}
+.opsv2__panel-subhead h2 {
+  font-family: var(--font-body);
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.opsv2__panel-subhead p {
+  margin-top: 3px;
+  color: #697480;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
 .opsv2__panel-head h2 {
   font-family: var(--font-body);
   font-size: 18px;

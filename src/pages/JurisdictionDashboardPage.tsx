@@ -1640,30 +1640,30 @@ export default function JurisdictionDashboardPage({
           )}
           {leftOpen && (
           <>
-            <div className="jd__panel-head">
+            <div className="jd__panel-top">
               <Link to="/hub" className="jd__panel-home" aria-label="Home" title="Home">
                 <Home aria-hidden="true" size={16} />
               </Link>
-              <div className="jd__panel-head-text">
-                <h2>{leftTab === "search" ? "Search" : leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
-                <p>{leftTab === "search" ? "Find a county, region, district, or site." : leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
-              </div>
+              <MapTabBar
+                ariaLabel="Sidebar views"
+                active={leftTab}
+                onSelect={setLeftTab}
+                tabs={[
+                  { id: "search", label: "Search", Icon: Search, testId: "jd-tab-search" },
+                  { id: "layers", label: "Layers", Icon: Layers, badge: layerSnaps.length > 0 ? layerSnaps.filter((s) => s.visible).length : undefined, testId: "jd-tab-layers" },
+                  { id: "filters", label: "Geography", Icon: MapPin, testId: "jd-tab-filters" },
+                ]}
+              />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse panel" title="Hide panel" onClick={() => setLeftOpen(false)}>
                 <ChevronLeft aria-hidden="true" size={16} />
                 Hide
               </button>
             </div>
 
-            <MapTabBar
-              ariaLabel="Sidebar views"
-              active={leftTab}
-              onSelect={setLeftTab}
-              tabs={[
-                { id: "search", label: "Search", Icon: Search, testId: "jd-tab-search" },
-                { id: "layers", label: "Layers", Icon: Layers, badge: layerSnaps.length > 0 ? layerSnaps.filter((s) => s.visible).length : undefined, testId: "jd-tab-layers" },
-                { id: "filters", label: "Geography", Icon: MapPin, testId: "jd-tab-filters" },
-              ]}
-            />
+            <div className="jd__panel-subhead">
+              <h2>{leftTab === "search" ? "Search" : leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
+              <p>{leftTab === "search" ? "Find a county, region, district, or site." : leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
+            </div>
 
             {leftTab === "search" ? (
               <FeatureSearch
@@ -1802,26 +1802,26 @@ export default function JurisdictionDashboardPage({
           )}
           {rightOpen && (
           <>
-            <div className="jd__panel-head">
-              <div className="jd__panel-head-text">
-                <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed Site List"}</h2>
-                <p>{rightTab === "detail" && activeFeature ? activeFeature.layerTitle : "Click a site to fly to it"}</p>
-              </div>
+            <div className="jd__panel-top">
+              <MapTabBar
+                ariaLabel="Result views"
+                active={rightTab}
+                onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
+                tabs={[
+                  { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
+                  { id: "detail", label: "Detail", Icon: Info },
+                ]}
+              />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>
                 Hide
                 <ChevronRight aria-hidden="true" size={16} />
               </button>
             </div>
 
-            <MapTabBar
-              ariaLabel="Result views"
-              active={rightTab}
-              onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
-              tabs={[
-                { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
-                { id: "detail", label: "Detail", Icon: Info },
-              ]}
-            />
+            <div className="jd__panel-subhead">
+              <h2>{rightTab === "detail" && activeFeature ? activeFeature.title : "Fixed Site List"}</h2>
+              <p>{rightTab === "detail" && activeFeature ? activeFeature.layerTitle : "Click a site to fly to it"}</p>
+            </div>
 
             <div className="jd__right-body">
               {rightTab === "sites" ? (

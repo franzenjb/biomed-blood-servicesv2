@@ -211,8 +211,9 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
-    await expect(page.getByRole("heading", { name: "Layer Controls" })).toBeVisible();
+    // Tabs are at the top of the panel; a contextual sub-header sits below them.
     await page.getByRole("tab", { name: "Layers" }).click();
+    await expect(page.getByRole("heading", { name: "Map Layers" })).toBeVisible();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.locator(".mshell__layer-group").first()).toContainText("Hospitals & Patient Care");
