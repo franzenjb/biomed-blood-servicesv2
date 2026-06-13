@@ -12,31 +12,29 @@ test.describe("Home (hero)", () => {
 });
 
 test.describe("Hub", () => {
-  test("is the grid of 5 chapters + 5 tool tiles, and navigates", async ({ page }) => {
+  test("is the grid of 5 chapters + 3 tool tiles, and navigates", async ({ page }) => {
     await page.goto("/hub");
     await expect(page.getByTestId("hub")).toBeVisible();
-    await expect(page.locator(".hub__grid .hub__card")).toHaveCount(10);
+    await expect(page.locator(".hub__grid .hub__card")).toHaveCount(8);
     for (const id of ["blood-101", "collections", "journey", "distribution", "future-demand"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    // 5 tool tiles (#6-#10): dashboard, ops, hospital network, Explore Regions, infrastructure
-    for (const id of ["map-dashboard", "ops-workbench", "hospital-network", "explore-regions", "infrastructure-dashboard"]) {
+    // 3 tool tiles (#6-#8): merged BioMed Dashboard, BioMed Atlas, Regional Story Explorer.
+    for (const id of ["map-dashboard", "ops-workbench", "explore-regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toBeVisible();
     }
-    await expect(page.getByTestId("hub-card-infrastructure-dashboard").locator(".hub__index")).toHaveText("10");
-    await expect(page.getByTestId("hub-card-infrastructure-dashboard")).toHaveAttribute("href", "/infrastructure-dashboard");
+    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__index")).toHaveText("06");
+    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("BioMed Dashboard");
+    await expect(page.getByTestId("hub-card-ops-workbench").locator(".hub__index")).toHaveText("07");
+    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("08");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__title")).toHaveText("Regional Story Explorer");
     await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__q")).toHaveText("Guided tour — pick a region, fly there on the live map, and step through its donor story.");
-    await expect(page.getByTestId("hub-card-map-dashboard").locator(".hub__title")).toHaveText("Jurisdiction Dashboard");
-    await expect(page.getByTestId("hub-card-hospital-network").locator(".hub__index")).toHaveText("08");
-    await expect(page.getByTestId("hub-card-explore-regions").locator(".hub__index")).toHaveText("09");
-    // stale separated/legacy map links are gone from the hub
-    for (const id of ["map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas", "regions"]) {
+    // The 3 dashboards merged into one tile — the separate hospital/infrastructure tiles are gone.
+    for (const id of ["hospital-network", "infrastructure-dashboard", "map", "dashboard", "map-v3", "map-tool", "ops", "layers", "maps-menu", "layer-atlas", "regions"]) {
       await expect(page.getByTestId(`hub-card-${id}`)).toHaveCount(0);
     }
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("href", "/jurisdiction-dashboard");
     await expect(page.getByTestId("hub-card-ops-workbench")).toHaveAttribute("href", "/biomed-ops-workbench");
-    await expect(page.getByTestId("hub-card-hospital-network")).toHaveAttribute("href", "/hospital-network");
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("href", "/ops?tour=1");
     await expect(page.getByTestId("hub-card-map-dashboard")).toHaveAttribute("style", /dashboard-preview\.svg/);
     await expect(page.getByTestId("hub-card-explore-regions")).toHaveAttribute("style", /explore-regions-map\.png/);
@@ -359,6 +357,21 @@ test.describe("Maps (shared shell)", () => {
     await expect(kpis.getByText("Portfolio Footprints")).toBeVisible();
     await expect(kpis.getByText("FY25 Red Cell Drives")).toHaveCount(0);
     await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
+  });
+
+  test("merged dashboard: View switcher carries three lenses and deep-links preselect them", async ({ page }) => {
+    await page.goto("/jurisdiction-dashboard");
+    const lens = page.getByTestId("dashboard-lens");
+    await expect(lens).toBeVisible();
+    await expect(lens.locator("option")).toHaveCount(3);
+    await expect(lens).toHaveValue("overview");
+
+    await page.goto("/hospital-network");
+    await expect(page.getByTestId("dashboard-lens")).toHaveValue("hospital");
+
+    await page.goto("/infrastructure-dashboard");
+    await expect(page.getByTestId("dashboard-lens")).toHaveValue("infrastructure");
+    await expect(page.locator(".rcbar__titles h1")).toHaveText("Infrastructure Dashboard");
   });
 
   // Retired routes fall through to the home redirect.

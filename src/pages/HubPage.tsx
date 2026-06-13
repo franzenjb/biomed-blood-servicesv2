@@ -168,8 +168,8 @@ export default function HubPage() {
           <span className="hub__scrim" />
           <span className="hub__index mono">06</span>
           <span className="hub__body">
-            <span className="hub__title">Jurisdiction Dashboard</span>
-            <span className="hub__q">BioMed boundaries, FY25 counts &amp; clickable sites - filter by division, region &amp; district.</span>
+            <span className="hub__title">BioMed Dashboard</span>
+            <span className="hub__q">One dashboard, three views — Jurisdiction, Hospital Network &amp; Infrastructure. KPIs and clickable sites, filter by division, region &amp; district.</span>
           </span>
         </Link>
 
@@ -188,44 +188,16 @@ export default function HubPage() {
         </Link>
 
         <Link
-          to="/hospital-network"
-          className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/hospital-network.jpg)" }}
-          data-testid="hub-card-hospital-network"
-        >
-          <span className="hub__scrim" />
-          <span className="hub__index mono">08</span>
-          <span className="hub__body">
-            <span className="hub__title">Hospital Network</span>
-            <span className="hub__q">Tier, distribution sites, portfolio footprint &amp; coverage.</span>
-          </span>
-        </Link>
-
-        <Link
           to="/ops?tour=1"
           className="hub__card hub__card--map"
           style={{ backgroundImage: "url(/covers/tools/explore-regions-map.png)" }}
           data-testid="hub-card-explore-regions"
         >
           <span className="hub__scrim" />
-          <span className="hub__index mono">09</span>
+          <span className="hub__index mono">08</span>
           <span className="hub__body">
             <span className="hub__title">Regional Story Explorer</span>
             <span className="hub__q">Guided tour — pick a region, fly there on the live map, and step through its donor story.</span>
-          </span>
-        </Link>
-
-        <Link
-          to="/infrastructure-dashboard"
-          className="hub__card hub__card--map"
-          style={{ backgroundImage: "url(/covers/tools/dashboard-preview.svg)" }}
-          data-testid="hub-card-infrastructure-dashboard"
-        >
-          <span className="hub__scrim" />
-          <span className="hub__index mono">10</span>
-          <span className="hub__body">
-            <span className="hub__title">Infrastructure Dashboard</span>
-            <span className="hub__q">Manufacturing, warehouses, distribution, staging &amp; fixed sites — counts &amp; footprint by division, region &amp; district.</span>
           </span>
         </Link>
       </nav>

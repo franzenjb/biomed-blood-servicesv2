@@ -804,8 +804,11 @@ export const DEFAULT_JURISDICTION_BRAND: JurisdictionBrand = {
 
 export default function JurisdictionDashboardPage({
   brand = DEFAULT_JURISDICTION_BRAND,
+  lensControl,
 }: {
   brand?: JurisdictionBrand;
+  /** Optional "View" switcher rendered first in the app bar (BioMed Dashboard lenses). */
+  lensControl?: ReactNode;
 }) {
   useArcgisComponents();
   const mapRef = useRef<ArcgisMapElement | null>(null);
@@ -1622,6 +1625,7 @@ export default function JurisdictionDashboardPage({
       data-testid={brand.testId}
     >
       <RcAppBar title={brand.appTitle}>
+        {lensControl}
         <span className="rcbar__chip" title="Current geographic scope">
           <MapPin aria-hidden="true" size={15} />
           {scopeLabel}
