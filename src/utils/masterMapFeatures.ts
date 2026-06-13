@@ -381,7 +381,7 @@ export function getMasterLayerImpact(layerTitle: string, category: MasterLayerCa
   if (category === "manufacturing") return "Shows where operational capacity turns donor generosity into patient-ready products.";
   if (category === "sites") return "Shows the physical access points and logistics anchors that make collection and distribution possible.";
   if (category === "operations") return "Connects FY25 collection activity to the geography and teams responsible for donor reach.";
-  if (category === "geography") return "Frames the jurisdiction story so a donor audience can understand local reach without raw operational clutter.";
+  if (category === "geography") return "";
   if (category === "hospitals") return "Connects the BioMed network to hospitals receiving Red Cross blood products.";
   return "Adds source context for the BioMed operating map.";
 }

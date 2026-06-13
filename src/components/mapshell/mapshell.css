@@ -5,6 +5,21 @@
    Class prefix: .mshell__
    ─────────────────────────────────────────────────────────────────────────── */
 
+/* ONE typeface across the operational map-tool chrome. The app inherits an
+   editorial 3-font brand (serif Libre Baskerville headlines + IBM Plex Mono
+   data + sans body) that suits the decks/story pages but reads as a jumble in
+   dense dashboard panels. Inside the tool chrome — panels, collapsed rails,
+   the shared modal, and the dashboard KPI band — re-point the headline and
+   data fonts to the body sans so every label is one font. The story/deck
+   surfaces (RegionTour, section decks) are NOT scoped here and keep the brand. */
+.jd,
+.jd__modal,
+.opsv2__panel,
+.opsv2__rail {
+  --font-headline: var(--font-body);
+  --font-data: var(--font-body);
+}
+
 :root {
   --mshell-line: #d9dee4;
   --mshell-line-soft: #e9edf1;

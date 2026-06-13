@@ -226,10 +226,10 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.getByText("Use for local donor access.")).toHaveCount(0);
     await expect(page.getByText("Use for distribution and patient-care readiness.")).toHaveCount(0);
-    await expect(page.getByRole("tab", { name: "Current" })).toBeVisible();
+    // Right panel: Detail + List (the "Current" geography-rollup tab was removed).
+    await expect(page.getByRole("tab", { name: "Current" })).toHaveCount(0);
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "List" })).toBeVisible();
-    await expect(page.getByText("Layer Group Subtotals")).toBeVisible();
     // Group headers are now label + on/total count only (shared accordion) — the
     // per-group description line was dropped for cross-app consistency.
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).toContainText("BioMed division boundaries.");
@@ -238,18 +238,14 @@ test.describe("Maps (shared shell)", () => {
     );
     await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
-    // Three left tabs: Search · Layers · Geography (shared shell). Layer toggles
+    // Two left tabs now: Geography · Layers (Search was removed). Layer toggles
     // live in the Layers tab.
+    await expect(page.getByRole("tab", { name: "Search" })).toHaveCount(0);
     await page.getByRole("tab", { name: "Layers" }).click();
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" })).toHaveAttribute("aria-pressed", "false");
-    // Search is its own tab now.
-    await page.getByRole("tab", { name: "Search" }).click();
-    await page.getByPlaceholder("Search counties, regions, sites").fill("Dallas");
-    await expect(page.getByTestId("ops-search-results")).toBeVisible();
-    await page.getByPlaceholder("Search counties, regions, sites").fill("");
 
     // Geography drill-down tab — three cascading selects, child levels disabled
     // until the parent is chosen.

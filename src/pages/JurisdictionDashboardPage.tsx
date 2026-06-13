@@ -665,7 +665,7 @@ function CleanFeatureCard({
         </div>
       )}
 
-      <p className="jd-card__insight">{model.insight}</p>
+      {model.insight && <p className="jd-card__insight">{model.insight}</p>}
 
       {model.address && (
         <div className="jd-card__address">
@@ -830,7 +830,7 @@ export default function JurisdictionDashboardPage({
   const [coincidentHits, setCoincidentHits] = useState<CoincidentHit[]>([]);
   const [activeHitKey, setActiveHitKey] = useState<string | null>(null);
   const [geoStats, setGeoStats] = useState<Array<{ label: string; value: string }> | null>(null);
-  const [rightTab, setRightTab] = useState<"sites" | "detail">("detail");
+  const [rightTab, setRightTab] = useState<"sites" | "detail">("sites");
   const [leftTab, setLeftTab] = useState<"filters" | "layers">("filters");
   const [preset, setPreset] = useState<PresetId>("minimal");
   const [layerSnaps, setLayerSnaps] = useState<BioMedLayerSnapshot[]>([]);
@@ -1263,8 +1263,11 @@ export default function JurisdictionDashboardPage({
       const result = await boundary.queryFeatures(query);
       const graphic = result.features?.[0];
       if (!graphic) return;
+      // Populate the Detail card for the filtered area, but DON'T switch to it —
+      // the top KPI band already shows these FY25 totals, so leave the right
+      // panel on Sites (the scoped site list is the non-redundant view). Detail
+      // is there on the tab when the user wants the card.
       setActiveFeature(summarizeMasterFeature(graphic, boundary.title ?? undefined, true));
-      setRightTab("detail");
     } catch {
       // detail is best-effort; the Sites tab is still one click away
     }
@@ -1299,10 +1302,9 @@ export default function JurisdictionDashboardPage({
         if (LEVELS.some((lvl) => next[lvl])) {
           void showSelectionDetail(next);
         } else {
-          // Filter cleared — fall back to the US-wide totals card (not the site
-          // list); the Sites tab is there when the user wants it.
+          // Filter cleared — reset the Detail card to US-wide totals, but keep
+          // the panel on Sites (the default, non-redundant view).
           setActiveFeature(NATIONAL_DETAIL);
-          setRightTab("detail");
         }
         return next;
       });
@@ -1316,7 +1318,7 @@ export default function JurisdictionDashboardPage({
     setActiveHitKey(null);
     setActiveFeature(NATIONAL_DETAIL);
     setSiteQuery("");
-    setRightTab("detail");
+    setRightTab("sites");
     applyPreset(brand.initialPreset ?? "minimal");
     const layer = sourceLayerRef.current;
     if (layer) void refreshOptionsFor("all", EMPTY_SELECTION);
@@ -1825,8 +1827,8 @@ export default function JurisdictionDashboardPage({
                 active={rightTab}
                 onSelect={(id) => { setRightTab(id); if (id === "sites") void zoomToSites(); }}
                 tabs={[
-                  { id: "detail", label: "Detail", Icon: Info },
                   { id: "sites", label: "Sites", Icon: List, badge: sites.length > 0 ? sites.length : undefined },
+                  { id: "detail", label: "Detail", Icon: Info },
                 ]}
               />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>

@@ -425,7 +425,7 @@ function featureInsight(feature: MasterFeatureSummary) {
     if (layerTitle.includes("district")) return "BioMed district grouping local teams under a shared operating plan.";
     if (layerTitle.includes("chapter")) return "Red Cross chapter footprint framing local presence and community ties.";
     if (layerTitle.includes("county") || layerTitle.includes("counties")) return "County context for grounding operations in familiar local geography.";
-    if (layerTitle.includes("state")) return "State context framing reach without raw operational clutter.";
+    if (layerTitle.includes("state")) return "State-level context for the surrounding BioMed geography.";
     return feature.impact;
   }
 
@@ -1507,7 +1507,7 @@ export default function BiomedOpsWorkbenchPage({
     setSelectedGraphic(enriched);
     if (summary) {
       setRightOpen(true);
-      setRightTab(summary.category === "geography" ? "current" : "detail");
+      setRightTab("detail");
     }
   }, []);
 
@@ -1520,9 +1520,9 @@ export default function BiomedOpsWorkbenchPage({
   const [spatialRollup, setSpatialRollup] = useState<BioMedSpatialRollupSummary | null>(null);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  const [rightTab, setRightTab] = useState<RightTab>("current");
+  const [rightTab, setRightTab] = useState<RightTab>("detail");
   // Geography first: it now carries the search box (top) + the drill-down.
-  const [leftTab, setLeftTab] = useState<LeftTab>("search");
+  const [leftTab, setLeftTab] = useState<LeftTab>("geography");
   const [mapReady, setMapReady] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [tourActive, setTourActive] = useState(false);
@@ -2073,7 +2073,7 @@ export default function BiomedOpsWorkbenchPage({
     setSelectedGraphic(result.graphic);
     setExpandedGroups((current) => ({ ...current, [result.category]: true }));
     setRightOpen(true);
-    setRightTab(summary.category === "geography" ? "current" : "detail");
+    setRightTab("detail");
 
     const view = mapRef.current?.view as MapView | undefined;
     const geometry = result.graphic.geometry as Geometry | null | undefined;
@@ -2094,7 +2094,7 @@ export default function BiomedOpsWorkbenchPage({
     setSelectedFeature(null);
     setSelectedGraphic(null);
     setSpatialRollup(null);
-    setRightTab("current");
+    setRightTab("detail");
     closeSearchPopup();
     applyPreset(DEFAULT_WORKBENCH_PRESET);
 
@@ -2867,9 +2867,8 @@ export default function BiomedOpsWorkbenchPage({
               active={leftTab}
               onSelect={setLeftTab}
               tabs={[
-                { id: "search", label: "Search", Icon: Search, testId: "ops-tab-search" },
-                { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
                 { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
+                { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
               ]}
             />
             <button type="button" className="opsv2__rail-btn" aria-label="Collapse layer controls" onClick={() => setLeftOpen(false)}>
@@ -2877,8 +2876,8 @@ export default function BiomedOpsWorkbenchPage({
             </button>
           </div>
           <div className="opsv2__panel-subhead">
-            <h2>{leftTab === "search" ? "Search" : leftTab === "geography" ? "Filter by Geography" : "Map Layers"}</h2>
-            <p>{leftTab === "search" ? "Find a county, region, district, or site." : leftTab === "geography" ? "Drill from division to district." : `${layerCounts.visible} active of ${layerCounts.total} layers.`}</p>
+            <h2>{leftTab === "geography" ? "Filter by Geography" : "Map Layers"}</h2>
+            <p>{leftTab === "geography" ? "Drill from division to district." : `${layerCounts.visible} active of ${layerCounts.total} layers.`}</p>
           </div>
           {leftTab === "filter" && (
           <>
@@ -2921,20 +2920,6 @@ export default function BiomedOpsWorkbenchPage({
             onToggleGroupAll={(groupId) => toggleGroupLayers(groupId)}
           />
           </>
-          )}
-          {leftTab === "search" && (
-            <FeatureSearch
-              query={query}
-              onQueryChange={setQuery}
-              status={searchStatus}
-              resultsTestId="ops-search-results"
-              results={searchResults.map((result) => ({
-                id: result.id,
-                title: result.title,
-                subtitle: result.layerTitle,
-                onSelect: () => void selectSearchResult(result),
-              }))}
-            />
           )}
           {leftTab === "geography" && (
           <>
@@ -3001,7 +2986,6 @@ export default function BiomedOpsWorkbenchPage({
               active={rightTab}
               onSelect={setRightTab}
               tabs={[
-                { id: "current", label: "Current", Icon: SlidersHorizontal },
                 { id: "detail", label: "Detail", Icon: Info },
                 { id: "list", label: "List", Icon: List },
               ]}
