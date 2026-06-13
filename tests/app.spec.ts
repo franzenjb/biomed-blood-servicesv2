@@ -212,7 +212,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Layer Controls" })).toBeVisible();
-    await page.getByRole("tab", { name: "Filter" }).click();
+    await page.getByRole("tab", { name: "Layers" }).click();
     await expect(page.getByTestId("ops-layer-legend-marker")).toHaveCount(18);
     await expect(page.getByTestId("ops-layer-legend-marker").first()).toHaveAttribute("data-kind", /.+/);
     await expect(page.locator(".mshell__layer-group").first()).toContainText("Hospitals & Patient Care");
@@ -238,7 +238,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
     // Layer toggles live in the Filter tab (Geography, with search on top, is the default).
-    await page.getByRole("tab", { name: "Filter" }).click();
+    await page.getByRole("tab", { name: "Layers" }).click();
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Fixed Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Distribution Sites" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Biomed Regions" })).toHaveAttribute("aria-pressed", "true");
@@ -265,7 +265,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("ops-geo-division")).toBeVisible();
     await expect(page.getByTestId("ops-geo-region")).toBeDisabled();
     await expect(page.getByTestId("ops-geo-district")).toBeDisabled();
-    await page.getByRole("tab", { name: "Filter" }).click();
+    await page.getByRole("tab", { name: "Layers" }).click();
 
     await page.getByRole("button", { name: "Reset map" }).click();
     await expect(page.locator("select")).toHaveValue("default-workbench");
@@ -294,7 +294,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.locator('arcgis-search[slot="top-right"]')).toHaveCount(1);
     await expect(page.locator('arcgis-scale-bar[slot="bottom-left"]')).toHaveCount(1);
     await expect(page.locator('arcgis-expand[slot="bottom-right"] arcgis-basemap-gallery')).toHaveCount(1);
-    await page.getByRole("tab", { name: "Filter" }).click();
+    await page.getByRole("tab", { name: "Layers" }).click();
     await expect(page.getByRole("button", { name: "Hospitals & Patient Care" })).toContainText("0/1");
     await expect(page.locator("button.mshell__layer").filter({ hasText: "Hospital Locations" })).toContainText(
       "Hospitals receiving Red Cross blood products.",
@@ -346,7 +346,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("tab", { name: "Detail" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Sign in to load the Jurisdiction Dashboard" })).toBeVisible({ timeout: 20_000 });
     // Collapsible sidebars (livessaved rail model) + Home in the left sidebar
-    await expect(page.getByRole("button", { name: "Collapse filters" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Collapse panel" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Collapse sites" })).toBeVisible();
     await expect(page.locator(".jd__panel-home")).toHaveAttribute("href", "/hub");
   });

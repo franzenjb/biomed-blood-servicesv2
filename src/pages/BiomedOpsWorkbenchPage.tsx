@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
-  Filter,
+  Layers,
   HelpCircle,
   Home,
   Info,
@@ -29,6 +29,7 @@ import RcMark from "../components/RcMark";
 import RcAppBar from "../components/RcAppBar";
 import RegionTour, { type TourSlideContext, type TourMobileStats } from "../maps/RegionTour";
 import LayerList from "../components/mapshell/LayerList";
+import MapTabBar from "../components/mapshell/MapTabBar";
 import "../components/mapshell/mapshell.css";
 import {
   arcJurisdictionMapSource,
@@ -2870,29 +2871,15 @@ export default function BiomedOpsWorkbenchPage({
               <ChevronLeft aria-hidden="true" size={18} />
             </button>
           </div>
-          <div className="opsv2__left-tabs" role="tablist" aria-label="Layer panel views">
-            <button
-              type="button"
-              className={leftTab === "geography" ? "is-active" : ""}
-              onClick={() => setLeftTab("geography")}
-              role="tab"
-              aria-selected={leftTab === "geography"}
-              data-testid="ops-tab-geography"
-            >
-              <MapPin aria-hidden="true" size={17} />
-              Geography
-            </button>
-            <button
-              type="button"
-              className={leftTab === "filter" ? "is-active" : ""}
-              onClick={() => setLeftTab("filter")}
-              role="tab"
-              aria-selected={leftTab === "filter"}
-            >
-              <Filter aria-hidden="true" size={17} />
-              Filter
-            </button>
-          </div>
+          <MapTabBar
+            ariaLabel="Sidebar views"
+            active={leftTab}
+            onSelect={setLeftTab}
+            tabs={[
+              { id: "geography", label: "Geography", Icon: MapPin, testId: "ops-tab-geography" },
+              { id: "filter", label: "Layers", Icon: Layers, badge: layerCounts.total > 0 ? layerCounts.visible : undefined, testId: "ops-tab-layers" },
+            ]}
+          />
           {leftTab === "filter" && (
           <>
           <div className="opsv2__layer-actions">

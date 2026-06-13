@@ -16,7 +16,6 @@ import {
   HelpCircle,
   Home,
   Layers,
-  ListFilter,
   MapPin,
   RotateCcw,
   Search,
@@ -32,6 +31,7 @@ import {
 import { addArcgisPortalLayers, addChapterViewBiomedGroup } from "../utils/arcgisMasterLayers";
 import { computeSelectionZoomExtent, drawSelectionOutline } from "../utils/biomedGeographyFilter";
 import LayerList from "../components/mapshell/LayerList";
+import MapTabBar from "../components/mapshell/MapTabBar";
 import "../components/mapshell/mapshell.css";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
@@ -1601,22 +1601,21 @@ export default function JurisdictionDashboardPage({
                 <h2>{leftTab === "filters" ? (brand.filterHeading ?? "Filter by Geography") : "Map Layers"}</h2>
                 <p>{leftTab === "filters" ? "Drill from division to district." : "Toggle what shows on the map."}</p>
               </div>
-              <button type="button" className="jd__collapse-btn" aria-label="Collapse filters" title="Hide filters panel" onClick={() => setLeftOpen(false)}>
+              <button type="button" className="jd__collapse-btn" aria-label="Collapse panel" title="Hide panel" onClick={() => setLeftOpen(false)}>
                 <ChevronLeft aria-hidden="true" size={16} />
                 Hide
               </button>
             </div>
 
-            <div className="jd__tabs jd__tabs--left" role="tablist">
-              <button type="button" role="tab" aria-selected={leftTab === "filters"} className={leftTab === "filters" ? "is-active" : ""} onClick={() => setLeftTab("filters")} data-testid="jd-tab-filters">
-                <ListFilter aria-hidden="true" size={15} />
-                Filters
-              </button>
-              <button type="button" role="tab" aria-selected={leftTab === "layers"} className={leftTab === "layers" ? "is-active" : ""} onClick={() => setLeftTab("layers")} data-testid="jd-tab-layers">
-                <Layers aria-hidden="true" size={15} />
-                Layers {layerSnaps.length > 0 && <b>{layerSnaps.filter((snap) => snap.visible).length}</b>}
-              </button>
-            </div>
+            <MapTabBar
+              ariaLabel="Sidebar views"
+              active={leftTab}
+              onSelect={setLeftTab}
+              tabs={[
+                { id: "filters", label: "Geography", Icon: MapPin, testId: "jd-tab-filters" },
+                { id: "layers", label: "Layers", Icon: Layers, badge: layerSnaps.length > 0 ? layerSnaps.filter((s) => s.visible).length : undefined, testId: "jd-tab-layers" },
+              ]}
+            />
 
             {leftTab === "layers" ? (
               !isAuthenticated ? (
