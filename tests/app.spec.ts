@@ -199,7 +199,7 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("biomed-ops-workbench")).toBeVisible();
     await expect(page.locator(".rcbar__home")).toHaveAttribute("href", "/hub");
     await expect(page.locator(".rcbar__titles h1")).toHaveText("BioMed Atlas");
-    await expect(page.getByText("Quick View")).toBeVisible();
+    await expect(page.getByText("Quick View")).toHaveCount(0);
     const opsWidgetOrder = await page.getByTestId("biomed-ops-arcgis").evaluate((element) =>
       Array.from(element.children)
         .filter((child) => child.getAttribute("slot") === "top-left")
@@ -236,7 +236,6 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByRole("button", { name: "Biomed Divisions" })).not.toContainText(
       "Start here for the national leadership view.",
     );
-    await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
     // Two left tabs now: Geography · Layers (Search was removed). Layer toggles
     // live in the Layers tab.
@@ -256,7 +255,6 @@ test.describe("Maps (shared shell)", () => {
     await page.getByRole("tab", { name: "Layers" }).click();
 
     await page.getByRole("button", { name: "Reset map" }).click();
-    await expect(page.locator("select")).toHaveValue("default-workbench");
     await expect(page.getByText("3 active of 18 layers.")).toBeVisible();
     await expect(page.getByTestId("biomed-ops-arcgis")).toHaveAttribute("basemap", "gray-vector");
     await expect(page.getByText("Open Street Map")).toHaveCount(0);

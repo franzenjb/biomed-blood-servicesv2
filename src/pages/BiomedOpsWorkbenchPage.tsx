@@ -2792,19 +2792,6 @@ export default function BiomedOpsWorkbenchPage({
       aria-label={title}
     >
       <RcAppBar title={tourActive ? "Regional Story Explorer" : title}>
-        <label className="rcbar__field">
-          Quick View
-          <select value={preset} onChange={(event) => applyPreset(event.target.value as WorkbenchPreset)}>
-            <option value="default-workbench">Default Workbench</option>
-            <option value="all-layers">All BioMed Layers</option>
-            <option value="clean-map">Clean Map</option>
-            {presenterModes.map((mode) => (
-              <option key={mode.id} value={mode.id}>
-                {mode.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <button type="button" className="rcbar__btn" onClick={() => void resetMap()}>
           <RotateCcw aria-hidden="true" size={16} />
           Reset map

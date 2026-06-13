@@ -1587,21 +1587,6 @@ export default function JurisdictionDashboardPage({
           <MapPin aria-hidden="true" size={15} />
           {scopeLabel}
         </span>
-        <label className="rcbar__field">
-          Quick View
-          <select
-            value={preset}
-            disabled={!isAuthenticated}
-            onChange={(event) => applyPreset(event.target.value as PresetId)}
-            data-testid="jd-quickview"
-          >
-            {PRESETS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
         <button type="button" className="rcbar__btn" onClick={resetAll} data-testid="jd-reset">
           <RotateCcw aria-hidden="true" size={15} />
           Reset
