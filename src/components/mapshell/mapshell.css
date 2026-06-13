@@ -24,12 +24,13 @@
   border-bottom: 1px solid var(--mshell-line-soft);
 }
 .mshell__tab {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0; /* allow tabs to shrink so a sibling Hide button is never clipped */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  padding: 9px 6px;
+  gap: 6px;
+  padding: 9px 5px;
   border: none;
   border-bottom: 2px solid transparent;
   background: none;
@@ -41,6 +42,11 @@
   white-space: nowrap;
 }
 .mshell__tab svg { flex: none; }
+.mshell__tab-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .mshell__tab:hover { color: var(--mshell-ink); }
 .mshell__tab.is-active {
   color: var(--mshell-red);

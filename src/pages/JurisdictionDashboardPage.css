@@ -511,6 +511,23 @@
 .jd__panel-top .jd__collapse-btn {
   align-self: center;
   flex-shrink: 0;
+  width: 34px;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
+}
+/* Icon-only collapse in the tab row — frees width so the tabs + Home + toggle
+   always fit. Label stays for screen readers via aria-label/title. */
+.jd__panel-top .jd__btn-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 .jd__panel-subhead {
   padding: 10px 16px 12px;
@@ -820,6 +837,28 @@
 .jd__sw--region { background: rgba(190, 225, 242, 0.5); border: 1.5px solid rgba(18, 24, 31, 0.7); }
 .jd__sw--district { background: rgba(190, 225, 242, 0.35); border: 1px solid rgba(18, 24, 31, 0.5); }
 .jd__sw--site { background: var(--arc-red, #ed1b2e); border-radius: 50%; width: 12px; height: 12px; }
+
+/* A legend that follows another (boundary + map-marker legends) shouldn't
+   re-stick to the bottom or draw a second divider. */
+.jd__legend + .jd__legend {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 2px;
+}
+
+/* Live symbol swatch rendered from each layer's actual renderer. */
+.jd__legend-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.jd__legend-swatch > * { max-width: 18px; max-height: 18px; }
+.jd__legend-swatch canvas,
+.jd__legend-swatch img,
+.jd__legend-swatch svg { max-width: 18px; max-height: 18px; }
 
 .jd__disclaimer {
   padding: 10px 16px 16px;

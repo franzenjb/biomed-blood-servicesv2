@@ -252,6 +252,13 @@ export async function computeLiveIconExtent(
   chosen: Partial<Record<LevelId, string>>,
 ) {
   const hasSelection = LEVELS.some((level) => selection[level]);
+  const deepest: LevelId | null = selection.district
+    ? "district"
+    : selection.region
+      ? "region"
+      : selection.division
+        ? "division"
+        : null;
   const pointLayers = collectArcJurisdictionLayers(map)
     .filter(isQueryableFeatureLayer)
     .filter((layer) => layer.geometryType === "point" && layer.visible);
@@ -265,6 +272,12 @@ export async function computeLiveIconExtent(
       // its NATIONAL points would balloon the extent to the whole country and
       // make the zoom a no-op. Skip it; scopable layers define the frame.
       if (hasSelection && query.where === "1=1") continue;
+      // Only let layers actually scoped to the DEEPEST selected level define the
+      // frame. A layer that carries only a coarser field (e.g. division) would
+      // be filtered to all of "North Central" and spread its icons across the
+      // whole division — ballooning a district zoom back out to the division.
+      // The boundary polygon (queryBoundaryExtent) still frames the exact level.
+      if (deepest && !resolveLevelField(layer, deepest, chosen)) continue;
       query.returnGeometry = true;
       query.outFields = [];
       (query as { outSpatialReference?: unknown }).outSpatialReference = { wkid: 4326 };

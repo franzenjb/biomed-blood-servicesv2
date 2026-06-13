@@ -36,6 +36,7 @@ import { runBiomedFeatureSearch, type BiomedSearchResult, type SearchStatus } fr
 import LayerList from "../components/mapshell/LayerList";
 import FeatureSearch from "../components/mapshell/FeatureSearch";
 import MapTabBar from "../components/mapshell/MapTabBar";
+import MapMarkerLegend from "../components/MapMarkerLegend";
 import "../components/mapshell/mapshell.css";
 import { useArcgisComponents } from "../hooks/useArcgisComponents";
 import { useRedCrossArcGISAuth } from "../hooks/useRedCrossArcGISAuth";
@@ -794,7 +795,7 @@ export default function JurisdictionDashboardPage({
   const [mapReady, setMapReady] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  const leftWidth = 340;
+  const leftWidth = 380;
   const rightWidth = 380;
 
   const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION);
@@ -1666,7 +1667,7 @@ export default function JurisdictionDashboardPage({
               />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse panel" title="Hide panel" onClick={() => setLeftOpen(false)}>
                 <ChevronLeft aria-hidden="true" size={16} />
-                Hide
+                <span className="jd__btn-label">Hide</span>
               </button>
             </div>
 
@@ -1760,6 +1761,11 @@ export default function JurisdictionDashboardPage({
               </ul>
             </section>
 
+            <MapMarkerLegend
+              map={getMapElementMap(mapRef.current)}
+              refreshKey={layerSnaps.filter((s) => s.visible).map((s) => s.title).join("|")}
+            />
+
             <p className="jd__disclaimer">
               Boundaries reflect the authoritative BioMed operational source layer and update when the source updates.
               BioMed territories may differ from Humanitarian Services jurisdictions.
@@ -1823,7 +1829,7 @@ export default function JurisdictionDashboardPage({
                 ]}
               />
               <button type="button" className="jd__collapse-btn" aria-label="Collapse sites" title="Hide sites panel" onClick={() => setRightOpen(false)}>
-                Hide
+                <span className="jd__btn-label">Hide</span>
                 <ChevronRight aria-hidden="true" size={16} />
               </button>
             </div>

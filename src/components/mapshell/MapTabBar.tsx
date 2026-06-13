@@ -36,7 +36,7 @@ export default function MapTabBar<Id extends string>({
           data-testid={tab.testId}
         >
           <tab.Icon aria-hidden="true" size={16} />
-          {tab.label}
+          <span className="mshell__tab-label">{tab.label}</span>
           {tab.badge != null && tab.badge !== "" && <span className="mshell__tab-badge">{tab.badge}</span>}
         </button>
       ))}
