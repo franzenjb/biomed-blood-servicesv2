@@ -2930,10 +2930,10 @@ export default function BiomedOpsWorkbenchPage({
             <span>{layerCounts.visible} of {layerCounts.total} on</span>
             <div className="opsv2__layer-actions-buttons">
               <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(true)}>
-                All on
+                All On
               </button>
               <button type="button" className="opsv2__layer-action" disabled={!isAuthenticated} onClick={() => setAllLayersVisible(false)}>
-                All off
+                All Off
               </button>
             </div>
           </div>
@@ -3002,7 +3002,7 @@ export default function BiomedOpsWorkbenchPage({
                   </button>
                 ))}
                 <button type="button" className="opsv2__geo-chip opsv2__geo-chip--clear" onClick={resetGeography}>
-                  Clear all
+                  Clear All
                 </button>
               </div>
             )}

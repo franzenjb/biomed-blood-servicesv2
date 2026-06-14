@@ -1736,7 +1736,7 @@ export default function JurisdictionDashboardPage({
                       onChange={(event) => onSelectLevel(level, event.target.value)}
                       data-testid={`jd-filter-${level}`}
                     >
-                      <option value="">{`All ${level === "division" ? "divisions" : level === "region" ? "regions" : "districts"}`}</option>
+                      <option value="">{`All ${level === "division" ? "Divisions" : level === "region" ? "Regions" : "Districts"}`}</option>
                       {options[level].map((value) => (
                         <option key={value} value={value}>
                           {value}
@@ -1758,7 +1758,7 @@ export default function JurisdictionDashboardPage({
                   </button>
                 ))}
                 <button type="button" className="jd__chip jd__chip--clear" onClick={resetAll}>
-                  Clear all
+                  Clear All
                 </button>
               </div>
             )}

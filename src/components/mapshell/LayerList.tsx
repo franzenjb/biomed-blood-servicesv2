@@ -79,7 +79,7 @@ export default function LayerList({
                     onClick={() => onToggleGroupAll(group.id, !allOn)}
                     title={allOn ? "Turn all off in this group" : "Turn all on in this group"}
                   >
-                    {allOn ? "All off" : "All on"}
+                    {allOn ? "All Off" : "All On"}
                   </button>
                 )}
               </div>
