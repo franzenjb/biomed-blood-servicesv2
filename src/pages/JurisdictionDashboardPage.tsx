@@ -1769,7 +1769,6 @@ export default function JurisdictionDashboardPage({
                 <li><i className="jd__sw jd__sw--division" /> BioMed Division</li>
                 <li><i className="jd__sw jd__sw--region" /> BioMed Region</li>
                 <li><i className="jd__sw jd__sw--district" /> BioMed District</li>
-                <li><i className="jd__sw jd__sw--site" /> Fixed collection site</li>
               </ul>
             </section>
 

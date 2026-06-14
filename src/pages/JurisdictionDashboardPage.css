@@ -854,10 +854,11 @@
   flex-shrink: 0;
 }
 
-.jd__sw--division { background: rgba(189, 214, 224, 0.5); border: 2px solid rgba(18, 24, 31, 0.84); }
-.jd__sw--region { background: rgba(190, 225, 242, 0.5); border: 1.5px solid rgba(18, 24, 31, 0.7); }
-.jd__sw--district { background: rgba(190, 225, 242, 0.35); border: 1px solid rgba(18, 24, 31, 0.5); }
-.jd__sw--site { background: var(--arc-red, #ed1b2e); border-radius: 50%; width: 12px; height: 12px; }
+/* Distinct but quiet pastels so the three tiers read apart at a glance; the
+   border weight still steps down division -> region -> district. */
+.jd__sw--division { background: #d6e4f0; border: 2px solid #7591ad; }
+.jd__sw--region { background: #dceae0; border: 1.5px solid #7ba088; }
+.jd__sw--district { background: #f3ebd8; border: 1px solid #c4ac7c; }
 
 /* A legend that follows another (boundary + map-marker legends) shouldn't
    re-stick to the bottom or draw a second divider. */
