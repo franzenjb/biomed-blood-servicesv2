@@ -145,7 +145,9 @@ export async function loadLevelOptions(
       const values = result.features
         .map((feature) => feature.attributes?.[field.name])
         .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-        .map((value) => value.trim());
+        .map((value) => value.trim())
+        // Drop catch-all buckets that aren't real jurisdictions to pick.
+        .filter((value) => !/^(non.?collection|unassigned|n\/?a|none|tbd)\b/i.test(value));
       const unique = Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
       if (unique.length === 0) continue;
       const nameLike = unique.filter((value) => !looksLikeCodeValue(value)).length;

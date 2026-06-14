@@ -27,7 +27,11 @@ export default function LayerScorecard({
       ) : (
         <ul className="mshell__scorecard-list">
           {entries.map((entry) => (
-            <li key={entry.id} className="mshell__scorecard-row">
+            <li
+              key={entry.id}
+              className="mshell__scorecard-row"
+              data-zero={entry.value === 0 || entry.value == null ? "true" : "false"}
+            >
               <span className="mshell__scorecard-name">{entry.title}</span>
               <strong className="mshell__scorecard-value">
                 {entry.value == null ? "—" : entry.value.toLocaleString()}

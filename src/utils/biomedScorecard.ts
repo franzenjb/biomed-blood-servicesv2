@@ -53,14 +53,17 @@ export async function computeLayerScorecard(
       try {
         if (!hasSelection) {
           value = await layer.queryFeatureCount({ where: "1=1" } as never);
-        } else if (layerHasAnyLevelField(layer)) {
-          value = await layer.queryFeatureCount({ where: buildWhereForLayer(layer, selection, chosen) } as never);
         } else if (boundaryGeom) {
+          // Count what's physically inside the selected boundary — the same
+          // source of truth the KPI band uses. Attribute fields on some layers
+          // are state-style (not BioMed jurisdiction) and would falsely read 0.
           value = await layer.queryFeatureCount({
             geometry: boundaryGeom,
             spatialRelationship: "intersects",
             where: "1=1",
           } as never);
+        } else if (layerHasAnyLevelField(layer)) {
+          value = await layer.queryFeatureCount({ where: buildWhereForLayer(layer, selection, chosen) } as never);
         } else {
           value = await layer.queryFeatureCount({ where: "1=1" } as never);
         }
