@@ -7,19 +7,22 @@ import type { ScorecardEntry } from "../../utils/biomedScorecard";
 export default function LayerScorecard({
   entries,
   scopeLabel,
+  heading,
   loading,
   emptyHint,
   testId,
 }: {
   entries: ScorecardEntry[];
   scopeLabel: string;
+  heading?: string;
   loading?: boolean;
   emptyHint?: string;
   testId?: string;
 }) {
   return (
     <section className="mshell__scorecard" aria-label="Layer counts for the current filter" data-testid={testId}>
-      <p className="mshell__scorecard-scope">{scopeLabel}</p>
+      {scopeLabel ? <p className="mshell__scorecard-scope">{scopeLabel}</p> : null}
+      {heading ? <p className="mshell__scorecard-heading">{heading}</p> : null}
       {loading ? (
         <p className="mshell__scorecard-empty">Counting…</p>
       ) : entries.length === 0 ? (
