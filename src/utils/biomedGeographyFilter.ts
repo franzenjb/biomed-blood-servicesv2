@@ -116,7 +116,7 @@ export function levelLabel(level: LevelId) {
 }
 
 export function levelAllLabel(level: LevelId) {
-  return `All ${level === "division" ? "divisions" : level === "region" ? "regions" : "districts"}`;
+  return `All ${level === "division" ? "Divisions" : level === "region" ? "Regions" : "Districts"}`;
 }
 
 // Distinct NAME values for one level, queried from `layer` within the parent

@@ -1433,7 +1433,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
             this view updates with them — there is nothing to refresh by hand.
           </p>
 
-          <h3>How to use it</h3>
+          <h3>How to Use It</h3>
           <ul>
             <li><b>Sign in</b> — top-right, with your Red Cross ArcGIS account, to load the live web map.</li>
             <li><b>Quick View</b> — preset layer sets: Default workbench, All BioMed layers, Clean map, or a presenter story.</li>
@@ -1450,7 +1450,7 @@ function WorkbenchHelpModal({ title, onClose }: { title: string; onClose: () => 
             <div className="jd__modal-stat"><span>Popups</span><strong>Clean cards</strong></div>
           </div>
 
-          <h3>Map controls</h3>
+          <h3>Map Controls</h3>
           <p>
             Home and Zoom sit top-left, the Basemap gallery bottom-right. <b>Reset map</b> returns to the default view
             and clears the current selection.

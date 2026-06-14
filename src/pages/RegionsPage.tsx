@@ -17,7 +17,7 @@ import {
 
 const communityImpact = (
   <>
-    <h3>Donor diversity &amp; population representation</h3>
+    <h3>Donor Diversity &amp; Population Representation</h3>
     <p>
       Broadening the donor base isn't optics — it's medicine. The closest-matched blood keeps sickle
       cell patients alive, and those matches come from donors who share their heritage. Recruiting
@@ -25,7 +25,7 @@ const communityImpact = (
       medicine.
     </p>
 
-    <h3>Sickle cell &amp; community impact</h3>
+    <h3>Sickle Cell &amp; Community Impact</h3>
     <p>
       About 100,000 Americans live with sickle cell disease and often need transfusions every few
       weeks. Since 2021 the Red Cross has screened 290,000+ diverse donors for the sickle cell trait.

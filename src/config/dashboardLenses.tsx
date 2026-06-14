@@ -16,7 +16,7 @@ export type DashboardLensId = "overview" | "hospital" | "infrastructure";
 
 const hospitalAboutExtra = (
   <>
-    <h3>What this view answers</h3>
+    <h3>What This View Answers</h3>
     <p>
       The patient-care side of the blood supply: the hospitals the Red Cross serves, the
       distribution sites and reference labs that supply them, and the tiered portfolio
@@ -33,7 +33,7 @@ const hospitalAboutExtra = (
 
 const infraAboutExtra = (
   <>
-    <h3>What this view answers</h3>
+    <h3>What This View Answers</h3>
     <p>
       In one glance: what BioMed supply-chain assets exist and where. Manufacturing, warehouses,
       distribution anchors, mobile staging, and fixed collection sites — counted across the network,

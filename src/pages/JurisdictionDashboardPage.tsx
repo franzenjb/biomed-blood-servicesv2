@@ -1764,7 +1764,7 @@ export default function JurisdictionDashboardPage({
             )}
 
             <section className="jd__legend" aria-label="Boundary legend">
-              <h3>Boundary legend</h3>
+              <h3>Boundary Legend</h3>
               <ul>
                 <li><i className="jd__sw jd__sw--division" /> BioMed Division</li>
                 <li><i className="jd__sw jd__sw--region" /> BioMed Region</li>
@@ -2009,7 +2009,7 @@ export default function JurisdictionDashboardPage({
                 this dashboard updates with them — there is nothing to refresh by hand.
               </p>
 
-              <h3>How to use it</h3>
+              <h3>How to Use It</h3>
               <ul>
                 <li><b>KPI band</b> — FY25 totals (red cell drives, collections, SDP, plasma) and fixed-site count, recomputed as you filter.</li>
                 <li><b>Filter by geography</b> — drill Division → Region → District; the map flies to the live icons in that scope and the counts follow.</li>
@@ -2034,7 +2034,7 @@ export default function JurisdictionDashboardPage({
                 donor-facing collection sites in scope. Geographies are shown by name, never code.
               </p>
 
-              <h3>Known limitations</h3>
+              <h3>Known Limitations</h3>
               <p>
                 BioMed operational territories can differ from Humanitarian Services jurisdictions. Per-site counts appear
                 only where the source layer carries them; otherwise see the network totals in the KPI band.
