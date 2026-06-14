@@ -133,6 +133,38 @@
   cursor: not-allowed;
 }
 
+/* Segmented "View" control — three lenses side by side, active highlighted. */
+.rcbar__seg {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #cfd6dd;
+  border-radius: 9px;
+  background: #f1f4f7;
+}
+.rcbar__seg-btn {
+  appearance: none;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #4a5560;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.rcbar__seg-btn:hover {
+  color: var(--arc-red, #ed1b2e);
+}
+.rcbar__seg-btn.is-active {
+  background: var(--arc-red, #ed1b2e);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(18, 24, 31, 0.18);
+}
+
 .rcbar__btn {
   display: inline-flex;
   align-items: center;

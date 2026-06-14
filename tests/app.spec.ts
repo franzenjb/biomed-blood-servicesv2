@@ -358,14 +358,14 @@ test.describe("Maps (shared shell)", () => {
     await page.goto("/jurisdiction-dashboard");
     const lens = page.getByTestId("dashboard-lens");
     await expect(lens).toBeVisible();
-    await expect(lens.locator("option")).toHaveCount(3);
-    await expect(lens).toHaveValue("overview");
+    await expect(lens.locator("button")).toHaveCount(3);
+    await expect(lens.locator('button[aria-pressed="true"]')).toHaveAttribute("data-value", "overview");
 
     await page.goto("/hospital-network");
-    await expect(page.getByTestId("dashboard-lens")).toHaveValue("hospital");
+    await expect(page.getByTestId("dashboard-lens").locator('button[aria-pressed="true"]')).toHaveAttribute("data-value", "hospital");
 
     await page.goto("/infrastructure-dashboard");
-    await expect(page.getByTestId("dashboard-lens")).toHaveValue("infrastructure");
+    await expect(page.getByTestId("dashboard-lens").locator('button[aria-pressed="true"]')).toHaveAttribute("data-value", "infrastructure");
     await expect(page.locator(".rcbar__titles h1")).toHaveText("Infrastructure Dashboard");
   });
 

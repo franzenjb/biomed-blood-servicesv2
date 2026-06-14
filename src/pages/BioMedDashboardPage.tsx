@@ -19,24 +19,21 @@ export default function BioMedDashboardPage({ lens = "overview" }: { lens?: Dash
   const active = lensById(lens);
 
   const lensControl = (
-    <label className="rcbar__field">
-      View
-      <select
-        value={active.id}
-        onChange={(event) => {
-          const next = lensById(event.target.value as DashboardLensId);
-          navigate(next.path);
-        }}
-        data-testid="dashboard-lens"
-        aria-label="Dashboard view"
-      >
-        {DASHBOARD_LENSES.map((option) => (
-          <option key={option.id} value={option.id}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="rcbar__seg" role="group" aria-label="Dashboard view" data-testid="dashboard-lens">
+      {DASHBOARD_LENSES.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          className={`rcbar__seg-btn${option.id === active.id ? " is-active" : ""}`}
+          aria-pressed={option.id === active.id}
+          data-value={option.id}
+          title={option.label}
+          onClick={() => navigate(option.path)}
+        >
+          {option.label.replace(/ (Dashboard|Network)$/, "")}
+        </button>
+      ))}
+    </div>
   );
 
   return <JurisdictionDashboardPage key={active.id} brand={active.brand} lensControl={lensControl} />;
