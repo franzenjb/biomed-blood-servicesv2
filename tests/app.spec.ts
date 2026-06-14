@@ -345,12 +345,11 @@ test.describe("Maps (shared shell)", () => {
     await expect(page.getByTestId("hospital-network-dashboard")).toBeVisible();
     await expect(page.locator(".rcbar__titles h1")).toHaveText("Hospital Network");
     await expect(page.getByText("Sign in to load the Hospital Network")).toBeVisible();
-    // Count-KPI band: hospital-network KPIs, not the FY25 collection sums.
+    // Top band is FY25 performance on every lens now; the hospital/asset counts
+    // moved to the right-bar Detail scorecard.
     const kpis = page.getByTestId("jd-kpis");
-    await expect(kpis.getByText("Hospitals Served")).toBeVisible();
-    await expect(kpis.getByText("IRL Labs")).toBeVisible();
-    await expect(kpis.getByText("Portfolio Footprints")).toBeVisible();
-    await expect(kpis.getByText("FY25 Red Cell Drives")).toHaveCount(0);
+    await expect(kpis.getByText("FY25 Red Cell Drives")).toBeVisible();
+    await expect(kpis.getByText("Hospitals Served")).toHaveCount(0);
     await expect(page.getByTestId("jd-tab-filters")).toBeVisible();
   });
 

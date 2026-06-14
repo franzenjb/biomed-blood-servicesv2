@@ -1,6 +1,5 @@
 import {
   DEFAULT_JURISDICTION_BRAND,
-  type InfraKpiDef,
   type JurisdictionBrand,
 } from "../pages/JurisdictionDashboardPage";
 import { hospitalNetworkSupplementalLayers } from "./arcgisLayers";
@@ -8,25 +7,12 @@ import { hospitalNetworkSupplementalLayers } from "./arcgisLayers";
 /* The three dashboard "lenses" — one engine (JurisdictionDashboardPage), three
    audience framings. Merged into a single BioMed Dashboard with a View switcher
    so there's one tool to learn and one place a fix lands, instead of three
-   near-identical apps. Each lens still has its own route (deep-links preserved)
-   and its own KPI band / supplemental layers / about copy. */
+   near-identical apps. Each lens has its own route (deep-links preserved),
+   supplemental layers, and default layer preset. The TOP KPI band is FY25
+   performance on every lens (drives/collections/SDP/plasma/fixed); each lens's
+   asset counts live in the right-bar Detail scorecard. */
 
 export type DashboardLensId = "overview" | "hospital" | "infrastructure";
-
-const HOSPITAL_KPIS: InfraKpiDef[] = [
-  { key: "hospitals", label: "Hospitals Served", hint: "Hospitals receiving Red Cross blood products", layerTokens: [["hospital locations"], ["hospital"]], accent: true },
-  { key: "distribution", label: "Distribution Sites", hint: "Distribution & fulfillment anchors", layerTokens: [["distribution"]] },
-  { key: "irl", label: "IRL Labs", hint: "Immunohematology reference labs", layerTokens: [["irl"]] },
-  { key: "portfolios", label: "Portfolio Footprints", hint: "Tiered hospital-portfolio service areas", layerTokens: [["portfolio footprint"], ["portfolio"]] },
-];
-
-const INFRA_KPIS: InfraKpiDef[] = [
-  { key: "manufacturing", label: "Manufacturing Sites", hint: "Manufacturing & processing locations", layerTokens: [["manufactur"]] },
-  { key: "warehouse", label: "Warehouses", hint: "Warehouse & BioMed logistics anchors", layerTokens: [["warehouse"]] },
-  { key: "distribution", label: "Distribution Sites", hint: "Distribution & fulfillment anchors", layerTokens: [["distribution"]] },
-  { key: "staging", label: "Staging Sites", hint: "Mobile staging & collection support sites", layerTokens: [["staging"]] },
-  { key: "fixed", label: "Fixed Sites", hint: "Donor-facing fixed collection sites", layerTokens: [["fixed sites"]], accent: true },
-];
 
 const hospitalAboutExtra = (
   <>
@@ -74,7 +60,6 @@ const HOSPITAL_BRAND: JurisdictionBrand = {
   calloutSub: "Hospitals, portfolios, distribution, and IRL labs in one place.",
   aboutExtra: hospitalAboutExtra,
   supplementalLayers: hospitalNetworkSupplementalLayers,
-  infraKpis: HOSPITAL_KPIS,
   initialPreset: "hospital",
   filterHeading: "Filter by Geography",
 };
@@ -92,7 +77,6 @@ const INFRASTRUCTURE_BRAND: JurisdictionBrand = {
   calloutTitle: "BioMed Supply-Chain Infrastructure",
   calloutSub: "Manufacturing, warehouses, distribution, staging, and fixed sites in one place.",
   aboutExtra: infraAboutExtra,
-  infraKpis: INFRA_KPIS,
   initialPreset: "infrastructure",
   filterHeading: "Filter by Geography",
 };

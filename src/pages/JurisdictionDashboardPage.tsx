@@ -1953,17 +1953,13 @@ export default function JurisdictionDashboardPage({
                   ) : coincidentHits.length > 1 ? (
                     <p className="jd__empty">Select one of the stacked features above.</p>
                   ) : (
-                    <>
-                      {activeFeature ? <CleanFeatureCard feature={activeFeature} geoStats={geoStats} /> : null}
-                      <LayerScorecard
-                        testId="jd-scorecard"
-                        entries={scorecard}
-                        loading={scorecardLoading}
-                        scopeLabel=""
-                        heading="Sites on the map"
-                        emptyHint="Turn on layers in the Layers tab to see their counts here."
-                      />
-                    </>
+                    <LayerScorecard
+                      testId="jd-scorecard"
+                      entries={scorecard}
+                      loading={scorecardLoading}
+                      scopeLabel={selection.district || selection.region || selection.division || "BioMed National"}
+                      emptyHint="Turn on layers in the Layers tab to see their counts here."
+                    />
                   )}
                 </>
               )}
