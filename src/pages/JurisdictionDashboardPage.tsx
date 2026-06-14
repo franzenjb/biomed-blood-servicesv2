@@ -305,12 +305,14 @@ function shouldShowLayerForPreset(title: string, preset: PresetId) {
   if (preset === "mobile-fixed") return isMobile || isFixed || t.includes("biomed region");
   if (preset === "collections") return isCollections || t.includes("biomed region");
   if (preset === "hospital") {
-    // Patient-care picture: hospitals, distribution, IRL. Portfolio Footprint,
-    // Final Best Location, and DRD AM Portfolio stay OFF by default (the
-    // "portfolio" token used to catch the unrelated DRD donor-recruitment layer);
-    // they're a click away in the Layers tab.
+    // Patient-care picture: hospital LOCATIONS, distribution, IRL. Explicitly
+    // exclude footprint/portfolio so "Hospital Portfolio Footprint" (which
+    // contains "hospital"), "Final Best Location", and "DRD AM Portfolio" stay
+    // OFF on load — they're a click away in the Layers tab.
     const isHospital =
-      t.includes("hospital") || t.includes("distribution") || t.includes("irl");
+      (t.includes("hospital") && !t.includes("footprint") && !t.includes("portfolio")) ||
+      t.includes("distribution") ||
+      t.includes("irl");
     return isHospital || t.includes("biomed region");
   }
   if (preset === "infrastructure") {
@@ -1852,13 +1854,11 @@ export default function JurisdictionDashboardPage({
                     ? activeFeature.title
                     : "Area Detail"}
               </h2>
-              <p>
-                {rightTab !== "detail"
-                  ? "Click a site to fly to it"
-                  : activeFeature && activeFeature.category !== "geography"
-                    ? activeFeature.layerTitle
-                    : "FY25 totals and site counts for your filter."}
-              </p>
+              {rightTab !== "detail" ? (
+                <p>Click a site to fly to it</p>
+              ) : activeFeature && activeFeature.category !== "geography" ? (
+                <p>{activeFeature.layerTitle}</p>
+              ) : null}
             </div>
 
             <div className="jd__right-body">
